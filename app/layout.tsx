@@ -1,23 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Roboto } from "next/font/google";
+import { Roboto } from "next/font/google";
 
 import "./globals.css";
 import TopBar from "@/components/TopBar";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const roboto = Roboto({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-// const robot = Roboto({
-//   variable: "--robot"
-// })
+  weight: ["400", "500"],
+  variable: "--font-roboto"
+})
 
 export const metadata: Metadata = {
   title: "Country Communication",
@@ -32,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased px-3`}
+        className={`${roboto.variable} antialiased px-3`}
       >
         {/* Top Bar */}
         <TopBar />

@@ -24,7 +24,7 @@ export default function TripleSlider() {
     ];
 
     return (
-        <section className="relative h-[calc(100vh-64px)] flex items-center">
+        <section className="relative flex items-center">
 
             <Swiper
                 effect={"coverflow"}
