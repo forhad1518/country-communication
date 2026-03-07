@@ -1,11 +1,21 @@
+"use client"
+import { useState } from "react";
 import "@/app/globals.css"
+import Link from "next/link";
 export default function AdminLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     /* Controll Menu */
     const controllMenu = [
         { button: "Dashboard", link: "", logoLink: "" },
+        { button: "Blog", link: "", logoLink: "" },
+        { button: "Protflio", link: "", logoLink: "" },
         { button: "User", link: "", logoLink: "" },
         { button: "Settings", link: "", logoLink: "" }
-    ]
+    ];
+
+    /* Active Button */
+    const [isActive, SetIsActive] = useState("Dashboard");
+    // console.log(isActive);
+
     return (
         <html lang="en">
             <body>
@@ -21,9 +31,9 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
                         <nav className="flex-1 p-4 space-y-2">
 
                             {
-                                controllMenu.map(menu => <a key={menu.button} className="block px-4 py-2 rounded hover:bg-[#007777]">
+                                controllMenu.map(menu => <Link href={menu.link || "#"} onClick={() => SetIsActive(menu.button)} key={menu.button} className={`block px-4 py-2 rounded hover:bg-[#007777] ${isActive === menu.button ? "bg-[#007777]" : ""}`}>
                                     {menu.button}
-                                </a>)
+                                </Link>)
                             }
                         </nav>
 
@@ -36,7 +46,7 @@ export default function AdminLayout({ children }: Readonly<{ children: React.Rea
                         <header className="h-16 bg-white shadow flex items-center justify-between px-6">
 
                             <h1 className="font-semibold text-gray-700">
-                                Dashboard
+                                {isActive}
                             </h1>
 
                             <div className="text-[#009999] font-semibold">
