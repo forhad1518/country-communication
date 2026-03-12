@@ -9,10 +9,10 @@ import "swiper/css/pagination";
 
 import Image from "next/image";
 
-import slide1 from "@/public/images/guardians-of-the-galaxy.jpg";
-import slide2 from "@/public/images/justice-league.jpg";
-import slide3 from "@/public/images/spider-man.jpg";
-import slide4 from "@/public/images/thor-ragnarok.jpg";
+import slide1 from "@/public/images/hero/hero1.jpeg";
+import slide2 from "@/public/images/hero/hero2.jpeg";
+import slide3 from "@/public/images/hero/hero3.jpeg";
+import slide4 from "@/public/images/hero/hero4.jpeg";
 
 export default function TripleSlider() {
 
@@ -24,7 +24,7 @@ export default function TripleSlider() {
     ];
 
     return (
-        <section className="relative flex items-center">
+        <section className="relative flex items-center justify-center overflow-hidden">
 
             <Swiper
                 effect={"coverflow"}
@@ -32,9 +32,9 @@ export default function TripleSlider() {
                 slidesPerView={"auto"}
                 slideToClickedSlide={true}
                 loop={true}
-                speed={900}
+                speed={3000}
                 autoplay={{
-                    delay: 3000,
+                    delay: 5000,
                     disableOnInteraction: false
                 }}
                 pagination={{ clickable: true }}
@@ -46,17 +46,18 @@ export default function TripleSlider() {
                     modifier: 2.5,
                     slideShadows: false,
                 }}
-                className="w-full max-w-7xl"
+                className="w-10/12 max-w-7xl"
             >
 
                 {slides.map((slide, index) => (
 
                     <SwiperSlide
                         key={index}
-                        className="w-[70%]! md:w-[50%]! lg:w-[40%]!"
+                        // className="w-[70%]! md:w-[50%]! lg:w-[40%]!"
+                        // className="overflow-hidden"
                     >
 
-                        <div className="relative h-125 rounded-3xl overflow-hidden">
+                        <div className="relative h-[calc(100vh-100px)] rounded-3xl overflow-x-hidden">
 
                             <Image
                                 src={slide.img}

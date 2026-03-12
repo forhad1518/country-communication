@@ -25,10 +25,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} antialiased px-3`}
+        className={`${roboto.variable} antialiased`}
       >
-        {/* Top Bar */}
-        <TopBar />
         {/* Nav Bar */}
         <Navbar/>
         {children}
