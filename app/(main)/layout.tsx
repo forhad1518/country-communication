@@ -3,7 +3,7 @@ import { Roboto } from "next/font/google";
 
 import "@/app/globals.css";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+import Footer from "@/components/sections/home/Footer";
 import Navbar from "@/components/Navbar";
 
 const roboto = Roboto({

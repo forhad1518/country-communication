@@ -1,5 +1,5 @@
 import booth from "@/public/images/about_booth.jpg"
-import ButtonP from "./button/ButtonP";
+import ButtonP from "../../button/ButtonP";
 export default function AboutUs(){
     return(
         <div className="flex flex-col lg:flex-row">
