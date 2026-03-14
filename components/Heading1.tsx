@@ -1,11 +1,14 @@
+import "@/app/globals.css";
+
 type headingProps = {
-    textUnderline: string,
     text: string
 }
-export default function Heading1({textUnderline, text}: headingProps){
-    return(
-        <div>
-            <h1 className="text-3xl lg:text-5xl md:text-4xl font-bold my-8 uppercase"><span className="underline decoration-primaryColor hover:decoration-primaryColor-hover">{textUnderline}</span> {text}</h1>
+export default function Heading1({ text }: headingProps) {
+    return (
+        <div className="inset-0 bg-gradient-to-r from-transparent via-teal-600 to-transparent animate-gradient w-[70%] mx-auto py-4 my-8">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center text-white">
+                {text}
+            </h1>
         </div>
-    ); 
+    );
 }

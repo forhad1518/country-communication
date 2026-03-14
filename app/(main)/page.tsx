@@ -13,12 +13,12 @@ export default function Home() {
       </div>
       {/* About Us Section */}
       <div className="w-10/12 mx-auto">
-        <Heading1 textUnderline="about" text="us" />
+        <Heading1 text="About us" />
         <AboutUs/>
       </div>
       {/* Our Portfolio  Section*/}
       <div className="w-10/12 mx-auto">
-        <Heading1 textUnderline="our" text="Portfolio"/>
+        <Heading1 text="Portfolio"/>
       </div>
     </main>
   );
