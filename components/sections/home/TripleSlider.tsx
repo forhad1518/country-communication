@@ -57,7 +57,7 @@ export default function TripleSlider() {
                         // className="overflow-hidden"
                     >
 
-                        <div className="relative h-[calc(100vh-100px)] rounded-3xl overflow-x-hidden">
+                        <div className="relative h-[calc(30vh)] md:h-[calc(40vh)] lg:h-[calc(100vh-100px)] rounded-3xl overflow-x-hidden">
 
                             <Image
                                 src={slide.img}
@@ -66,7 +66,7 @@ export default function TripleSlider() {
                                 className="object-cover"
                             />
 
-                            <div className="absolute inset-0 bg-black/40"></div>
+                            <div className="absolute inset-0"></div>
 
                             <div className="absolute bottom-10 left-10 text-white">
                                 <h2 className="text-3xl font-bold">

@@ -3,6 +3,7 @@ import Heading1 from "@/components/Heading1";
 import HeroSwiper from "@/components/sections/home/HeroSwiper";
 import TripleSlider from "@/components/sections/home/TripleSlider";
 import Offer_service from "@/components/sections/home/Offer_service";
+import Our_services from "@/components/sections/home/Our_services";
 
 
 export default function Home() {
@@ -13,16 +14,20 @@ export default function Home() {
         <TripleSlider />
       </div>
       <div className="mt-8">
-        <Offer_service/>
+        <Offer_service />
+      </div>
+      {/* About Us Section */}
+      <div className="w-10/12 mx-auto">
+        <Our_services />
       </div>
       {/* About Us Section */}
       <div className="w-10/12 mx-auto">
         <Heading1 text="About us" />
-        <AboutUs/>
+        <AboutUs />
       </div>
       {/* Our Portfolio  Section*/}
       <div className="w-10/12 mx-auto">
-        <Heading1 text="Portfolio"/>
+        <Heading1 text="Portfolio" />
       </div>
     </main>
   );
