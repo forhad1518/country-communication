@@ -5,6 +5,7 @@ import TripleSlider from "@/components/sections/home/TripleSlider";
 import Offer_service from "@/components/sections/home/Offer_service";
 import Our_services from "@/components/sections/home/Our_services";
 import Workflow from "@/components/sections/home/Workflow";
+import Working_process from "@/components/sections/home/Working_process";
 
 
 export default function Home() {
@@ -21,8 +22,13 @@ export default function Home() {
       <div className="w-10/12 mx-auto">
         <Our_services />
       </div>
+      {/* WorkFLow Section */}
       <div className="w-10/12 mx-auto my-10">
         <Workflow />
+      </div>
+      {/* Working process */}
+      <div>
+        <Working_process/>
       </div>
       {/* About Us Section */}
       <div className="w-10/12 mx-auto">
