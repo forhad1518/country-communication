@@ -24,14 +24,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://kit.fontawesome.com/6a3dc81c54.js" crossOrigin="anonymous"></script>
+      </head>
       <body
         className={`${roboto.variable} antialiased`}
       >
         {/* Nav Bar */}
-        <Navbar/>
+        <Navbar />
         {children}
         {/* Footer */}
-        <Footer/>
+        <Footer />
       </body>
     </html>
   );
