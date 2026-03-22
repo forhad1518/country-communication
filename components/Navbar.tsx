@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import logo from "../public/logo_COCO.png";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import path from "path";
+
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
-
+    const pathName = usePathname();
+    const isActive = (href: string) => {
+        return pathName === href;
+    }
     return (
         <nav className="bg-gray-200 shadow-md text-sm">
             <div className="w-10/12 mx-auto flex items-center justify-between py-3">
@@ -16,10 +23,10 @@ export default function Navbar() {
                 {/* Desktop / tablet menu */}
                 <div className="hidden md:flex items-center gap-6">
                     <ul className="flex gap-x-4 uppercase text-black/80 font-semibold">
-                        <li className="hover:text-primaryColor-hover transition cursor-pointer">About Us</li>
-                        <li className="hover:text-primaryColor-hover transition cursor-pointer">Services</li>
-                        <li className="hover:text-primaryColor-hover transition cursor-pointer">Portfolio</li>
-                        <li className="hover:text-primaryColor-hover transition cursor-pointer">Blog/News</li>
+                        <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/") ? "text-primaryColor" : ""}`} href={""}>About Us</Link>
+                        <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/services") ? "text-primaryColor" : ""}`} href={""}>Services</Link>
+                        <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/portfolio") ? "text-primaryColor" : ""}`} href={"/portfolio"}>Portfolio</Link>
+                        <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/blog") ? "text-primaryColor" : ""}`} href={""}>Blog/News</Link>
                     </ul>
                     <div>
                         <button className="bg-black rounded-full text-white px-4 py-1">Let&apos;s Talk</button>
@@ -54,10 +61,10 @@ export default function Navbar() {
             <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? "max-h-screen" : "max-h-0"}`}>
                 <div className={`w-10/12 mx-auto bg-white py-4 ${open ? "opacity-100" : "opacity-0"}`}>
                     <ul className="flex flex-col gap-3 uppercase text-black/80 font-semibold">
-                        <li className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer">About Us</li>
-                        <li className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer">Services</li>
-                        <li className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer">Portfolio</li>
-                        <li className="py-2 px-4 hover:text-primaryColor-hover transition cursor-pointer">Blog/News</li>
+                        <Link className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer" href={""}>About Us</Link>
+                        <Link className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer" href={""}>Services</Link>
+                        <Link className="py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer" href={""}>Portfolio</Link>
+                        <Link className="py-2 px-4 hover:text-primaryColor-hover transition cursor-pointer" href={""}>Blog/News</Link>
                     </ul>
                     <div className="mt-4 px-4">
                         <button className="w-full bg-black rounded-full text-white px-4 py-2">Let&apos;s Talk</button>
