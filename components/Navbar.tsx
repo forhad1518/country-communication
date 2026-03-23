@@ -28,7 +28,7 @@ export default function Navbar() {
                             <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/") ? "text-primaryColor" : ""}`} href={""}>About Us</Link>
                             <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/services") ? "text-primaryColor" : ""}`} href={""}>Services</Link>
                             <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/portfolio") ? "text-primaryColor" : ""}`} href={"/portfolio"}>Portfolio</Link>
-                            <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/blog") ? "text-primaryColor" : ""}`} href={""}>Blog/News</Link>
+                            <Link className={`hover:text-primaryColor-hover transition cursor-pointer ${isActive("/blog") ? "text-primaryColor" : ""}`} href={"/blog"}>Blog/News</Link>
                         </ul>
                         <div>
                             <button className="bg-black rounded-full text-white px-4 py-1">Let&apos;s Talk</button>
@@ -66,7 +66,7 @@ export default function Navbar() {
                             <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer ${isActive("/") ? "text-primaryColor" : ""}`} href={""}>About Us</Link>
                             <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer ${isActive("/services") ? "text-primaryColor" : ""}`} href={""}>Services</Link>
                             <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primaryColor-hover transition cursor-pointer ${isActive("/portfolio") ? "text-primaryColor" : ""}`} href={"/portfolio"}>Portfolio</Link>
-                            <Link className={`py-2 px-4 hover:text-primaryColor-hover transition cursor-pointer ${isActive("/blog") ? "text-primaryColor" : ""}`} href={""}>Blog/News</Link>
+                            <Link className={`py-2 px-4 hover:text-primaryColor-hover transition cursor-pointer ${isActive("/blog") ? "text-primaryColor" : ""}`} href={"/blog"}>Blog/News</Link>
                         </ul>
                         <div className="mt-4 px-4">
                             <button className="w-full bg-black rounded-full text-white px-4 py-2">Let&apos;s Talk</button>
