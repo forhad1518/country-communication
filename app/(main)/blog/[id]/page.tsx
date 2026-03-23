@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function BlogPage({ params }: { params: { id: string } }) {
+export default function BlogPage() {
     const [progress, setProgress] = useState(0);
+    const router = useRouter();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -27,9 +30,24 @@ export default function BlogPage({ params }: { params: { id: string } }) {
                 style={{ width: `${progress}%` }}
                 className="fixed top-0 left-0 h-1 bg-primaryColor z-50"
             />
+            <div className="w-10/12 mx-auto py-8 flex justify-between items-center">
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+                >
+                    ← Back
+                </button>
 
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 border px-4 py-2 rounded-lg hover:bg-gray-50 transition"
+                >
+                    Home
+                </Link>
+            </div>
             {/* HERO */}
             <div className="h-105 bg-gray-200 flex items-center justify-center">
+                {/* TOP NAV BUTTONS */}
                 <h1 className="text-5xl font-bold">Blog Title</h1>
             </div>
 

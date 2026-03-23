@@ -18,9 +18,11 @@ export default function Navbar() {
         <Slide direction="down" >
             <nav className="bg-gray-200 shadow-md text-sm">
                 <div className="w-10/12 mx-auto flex items-center justify-between py-3">
-                    <div className="w-32.5">
-                        <img className="w-full" src={logo.src} alt="Country Communication Logo" />
-                    </div>
+                    <Link href="/">
+                        <div className="w-32.5">
+                            <img className="w-full" src={logo.src} alt="Country Communication Logo" />
+                        </div>
+                    </Link>
 
                     {/* Desktop / tablet menu */}
                     <div className="hidden md:flex items-center gap-6">
