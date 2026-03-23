@@ -113,10 +113,9 @@ export default function BlogPage() {
                                 <p className="text-gray-600 mt-3 text-sm">
                                     {blog.excerpt}
                                 </p>
-
-                                <button className="mt-4 text-primaryColor font-medium">
+                                <Link href={`/blog/${blog.id}`} className="mt-4 text-primaryColor font-medium cursor-pointer">
                                     Read More →
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     ))}

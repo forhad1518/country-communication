@@ -58,7 +58,6 @@ export default function Navbar() {
                         </button>
                     </div>
                 </div>
-
                 {/* Mobile menu panel */}
                 <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? "max-h-screen" : "max-h-0"}`}>
                     <div className={`w-10/12 mx-auto bg-white py-4 ${open ? "opacity-100" : "opacity-0"}`}>
