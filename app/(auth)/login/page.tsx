@@ -9,12 +9,11 @@ export default function UserAuth() {
         password: "",
     });
 
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState({email: "", password: ""});
 
     const validate = () => {
-        let err = {};
+        let err = { email: "", password: ""};
 
-        if (!form.name) err.name = "Name is required";
         if (!/\S+@\S+\.\S+/.test(form.email))
             err.email = "Invalid email";
         if (form.password.length < 6)
