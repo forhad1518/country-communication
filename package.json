@@ -9,10 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "daisyui": "^5.5.19",
+    "axios": "^1.13.6",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
     "framer-motion": "^12.38.0",
     "gray-matter": "^4.0.3",
-    "next": "16.1.6",
+    "mongoose": "^9.3.2",
+    "next": "^16.2.1",
     "react": "19.2.3",
     "react-awesome-reveal": "^4.3.1",
     "react-dom": "19.2.3",
