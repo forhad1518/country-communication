@@ -1,6 +1,6 @@
 import portfolio from "../models/portfolio";
 
-export const createBlog = async (data) => {
+export const createPortfolio = async (data) => {
     try {
         const newPortfolio = new portfolio(data);
         await newPortfolio.save();

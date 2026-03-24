@@ -9,7 +9,6 @@ const portfolioSchema = new mongoose.Schema({
         type: String, 
         required: true,
     },
-    slug: {type: String, required: true, unique: true,},
     projectInfo: {
         clientName: {type: String, required: true,},
         boothSize: {type: String, required: true,},
