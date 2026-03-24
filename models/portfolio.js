@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import { type } from "os";
-import { title } from "process";
+
 const portfolioSchema = new mongoose.Schema({
     title: {
         type: String,

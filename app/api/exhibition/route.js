@@ -1,12 +1,13 @@
-import exhibiton from "../../../models/exhibiton";
+import connectDB from "../../../config/connectDB";
+import { createExhibition } from "../../../repositories/exhibition.repo";
 import { successResponse, errorResponse } from "../../../utils/response";
 
 export async function POST(request) {
+    await connectDB();
     try{
         const body = await request.json();
-        const newExhibition = new exhibiton(body);
-        const savedExhibition = await newExhibition.save();
-        return successResponse(savedExhibition);
+        const data = await createExhibition(body);
+        return successResponse(data);
     }catch(error){
         return errorResponse(error.message);
     }
