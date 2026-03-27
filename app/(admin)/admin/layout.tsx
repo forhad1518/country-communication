@@ -13,7 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { button: "Blog", link: "/admin/blog" },
         { button: "Portfolio", link: "/admin/portfolio" },
         { button: "Exhibition", link: "/admin/exhibition" },
-        { button: "User", link: "/admin/users" },
+        { button: "Users", link: "/admin/users" },
         { button: "Settings", link: "/admin/settings" }
     ];
 
