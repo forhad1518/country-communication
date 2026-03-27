@@ -1,3 +1,4 @@
+"use server"
 import connectDB from "../../../config/connectDB";
 import { createExhibition } from "../../../repositories/exhibition.repo";
 import { successResponse, errorResponse } from "../../../utils/response";
