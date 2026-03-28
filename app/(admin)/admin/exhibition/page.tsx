@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import Image from "next/image";
-
+import { axiosInstance } from "@/app/lib/axios";
+import axios from "axios";
 export default function ExhibitionPage() {
+
 
     const [form, setForm] = useState({
         name: "",
@@ -12,19 +14,31 @@ export default function ExhibitionPage() {
         image: null
     });
 
+    // console.log(form);
+
+
     const [preview, setPreview] = useState(null);
     const [data, setData] = useState([]);
 
-    const handleImage = (e) => {
-        const file = e.target.files[0];
-        setForm({ ...form, image: file });
+    const handleImage = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-        if (file) {
-            setPreview(URL.createObjectURL(file));
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await axios.post("/api/upload", formData);
+            console.log(res.data);
+            return res.data.url;
+
+        } catch (err) {
+            console.log(err);
         }
     };
+    
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
 
         const newItem = {
@@ -43,6 +57,11 @@ export default function ExhibitionPage() {
         });
 
         setPreview(null);
+        const imgUrl = axios.post("/api/upload", form).then(res => res.data.url).catch(err => console.log(err));
+        console.log(imgUrl);
+        // axiosInstance.post("/exhibition", newItem)
+        //     .then(res => console.log(res.data))
+        //     .catch(err => console.log(err));
     };
 
     return (
@@ -60,6 +79,7 @@ export default function ExhibitionPage() {
                     <input
                         type="text"
                         placeholder="Exhibition Name"
+
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
@@ -68,13 +88,16 @@ export default function ExhibitionPage() {
                     <input
                         type="text"
                         placeholder="Location"
+
                         value={form.location}
                         onChange={(e) => setForm({ ...form, location: e.target.value })}
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
                     />
 
                     <input
-                        type="date"
+                        type="text"
+                        placeholder="Description"
+
                         value={form.date}
                         onChange={(e) => setForm({ ...form, date: e.target.value })}
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
@@ -82,12 +105,13 @@ export default function ExhibitionPage() {
 
                     {/* IMAGE UPLOAD */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm text-gray-600">Upload Image</label>
+                        <label className="text-sm text-gray-600">Upload Exhibition logo</label>
 
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={handleImage}
+
+                            onChange={(e) => handleImage(e)}
                             className="border p-2 rounded-lg"
                         />
 
