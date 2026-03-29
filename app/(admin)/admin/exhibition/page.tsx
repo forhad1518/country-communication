@@ -3,65 +3,58 @@
 import { ChangeEvent, useState } from "react";
 import Image from "next/image";
 import { axiosInstance } from "@/app/lib/axios";
+// import handleImage from "@/app/lib/upload.imageS"
 import axios from "axios";
+
 export default function ExhibitionPage() {
-
-
-    const [form, setForm] = useState({
-        name: "",
-        location: "",
-        date: "",
-        image: null
-    });
-
-    // console.log(form);
-
 
     const [preview, setPreview] = useState(null);
     const [data, setData] = useState([]);
 
-    const handleImage = async (e: ChangeEvent<HTMLInputElement>) => {
+    const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file) return;
+        if (file) {
+            setPreview(URL.createObjectURL(file));
+        }
+    }
+
+    const handleSubmit = async (e: { preventDefault: () => void; target: { exhibiton_name: { value: any; }; location: { value: any; }; description: { value: any; }; logo: { files: any[]; }; reset: () => void; }; }) => {
+        e.preventDefault();
+
+        const exhibitionName = e.target.exhibiton_name.value;
+        const location = e.target.location.value;
+        const description = e.target.description.value;
+
+        const file = e.target.logo?.files?.[0];
+        if (!file) return alert("Please upload an image");
 
         try {
+            // Upload image first
             const formData = new FormData();
             formData.append("file", file);
 
             const res = await axios.post("/api/upload", formData);
-            console.log(res.data);
-            return res.data.url;
+            const imageUrl = res.data.url;
 
-        } catch (err) {
-            console.log(err);
+            // Prepare final data
+            const newData = {
+                exhibitionName,
+                location,
+                description,
+                logo: imageUrl,
+            };
+
+            // Save in DB
+            const response = await axios.post("/api/exhibition", newData);
+            setData(prev => [...prev, response.data.data]);
+            console.log(response.data.data);
+            setPreview(null);
+            e.target.reset();
+
+        } catch (error) {
+            console.error(error);
+            alert("Error occurred");
         }
-    };
-    
-
-    const handleSubmit = async (e: { preventDefault: () => void; }) => {
-        e.preventDefault();
-
-        const newItem = {
-            ...form,
-            id: Date.now(),
-            image: preview
-        };
-
-        setData([newItem, ...data]);
-
-        setForm({
-            name: "",
-            location: "",
-            date: "",
-            image: null
-        });
-
-        setPreview(null);
-        const imgUrl = axios.post("/api/upload", form).then(res => res.data.url).catch(err => console.log(err));
-        console.log(imgUrl);
-        // axiosInstance.post("/exhibition", newItem)
-        //     .then(res => console.log(res.data))
-        //     .catch(err => console.log(err));
     };
 
     return (
@@ -79,27 +72,21 @@ export default function ExhibitionPage() {
                     <input
                         type="text"
                         placeholder="Exhibition Name"
-
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        name="exhibiton_name"
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
                     />
 
                     <input
                         type="text"
                         placeholder="Location"
-
-                        value={form.location}
-                        onChange={(e) => setForm({ ...form, location: e.target.value })}
+                        name="location"
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
                     />
 
                     <input
                         type="text"
                         placeholder="Description"
-
-                        value={form.date}
-                        onChange={(e) => setForm({ ...form, date: e.target.value })}
+                        name="description"
                         className="border p-3 rounded-lg focus:ring-2 focus:ring-primaryColor"
                     />
 
@@ -110,7 +97,7 @@ export default function ExhibitionPage() {
                         <input
                             type="file"
                             accept="image/*"
-
+                            name="logo"
                             onChange={(e) => handleImage(e)}
                             className="border p-2 rounded-lg"
                         />
@@ -168,7 +155,7 @@ export default function ExhibitionPage() {
                             </div>
 
                             <div className="flex justify-between mt-3 text-sm">
-                                <span>{item.date}</span>
+                                <span>{item.description}</span>
 
                                 <div className="space-x-2">
                                     <button className="px-3 py-1 bg-accentColor text-white rounded">
@@ -217,7 +204,7 @@ export default function ExhibitionPage() {
 
                                     <td>{item.name}</td>
                                     <td>{item.location}</td>
-                                    <td>{item.date}</td>
+                                    <td>{item.description}</td>
 
                                     <td className="text-center space-x-2">
                                         <button className="px-3 py-1 text-sm bg-accentColor text-white rounded">
