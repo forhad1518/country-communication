@@ -11,8 +11,8 @@ import { Slide } from "react-awesome-reveal";
 export default function Navbar() {
     const [open, setOpen] = useState(false);
     const pathName = usePathname();
-    const isActive = (href: string) => {
-        return pathName === href;
+    const isActive = (link: string) => {
+        return pathName.startsWith(link) && (link === "/" ? pathName === "/" : true);
     }
     return (
         <Slide direction="down" >

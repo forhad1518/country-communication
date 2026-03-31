@@ -11,17 +11,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const controllMenu = [
         { button: "Dashboard", link: "/admin" },
         { button: "Blog", link: "/admin/blog" },
-        { button: "Portfolio", link: "/admin/portfolio/" },
+        { button: "Portfolio", link: "/admin/portfolio" },
         { button: "Exhibition", link: "/admin/exhibition" },
         { button: "Users", link: "/admin/users" },
         { button: "Settings", link: "/admin/settings" }
     ];
-
-    const getTitle = () => {
-        const current = controllMenu.find(m => m.link === pathname);
-        return current?.button || "Dashboard";
+    const isAcite = (link: string) => {
+        return pathname.startsWith(link) && (link === "/admin" ? pathname === "/admin" : true);
     };
-
     return (
         <div className="h-screen flex overflow-hidden bg-gray-100">
 
@@ -39,7 +36,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             key={menu.button}
                             href={menu.link}
                             className={`block px-4 py-2 rounded transition
-                                ${pathname === menu.link
+                                ${isAcite(menu.link)
                                     ? "bg-primary-hover"
                                     : "hover:bg-primary-hover"
                                 }`}
@@ -58,7 +55,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <header className="h-16 bg-white shadow flex items-center justify-between px-6">
 
                     <h1 className="font-semibold text-gray-700">
-                        {getTitle()}
+                        {controllMenu.find(menu => isAcite(menu.link))?.button}
                     </h1>
 
                     <div className="text-primary font-semibold">
@@ -82,7 +79,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         key={menu.button}
                         href={menu.link}
                         className={`flex flex-col items-center text-xs
-                            ${pathname === menu.link
+                            ${isAcite(menu.link)
                                 ? "text-primary"
                                 : "text-gray-500"
                             }`}

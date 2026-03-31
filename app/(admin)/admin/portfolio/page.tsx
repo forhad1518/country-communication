@@ -4,9 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 
+export interface PortfolioItem {
+  designImage: string;
+  title: string;
+  exhibition_name: string;
+  projectInfo?: {
+    clientName?: string;
+  };
+}
+
 export default function PortfolioPage() {
 
-  const [data] = useState([]);
+  const [data] = useState<PortfolioItem[]>([]);
 
   return (
     <div className="space-y-6">
