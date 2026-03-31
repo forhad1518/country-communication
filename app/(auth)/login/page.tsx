@@ -43,7 +43,7 @@ export default function UserAuth() {
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-white px-4">
             <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-5">
 
-                <h1 className="text-3xl font-semibold text-center text-primaryColor">Login</h1>
+                <h1 className="text-3xl font-semibold text-center text-primary">Login</h1>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -76,7 +76,7 @@ export default function UserAuth() {
                         )}
                     </div>
 
-                    <button className="w-full bg-primaryColor text-white py-2 rounded-lg hover:bg-primaryColor-hover transition cursor-pointer">
+                    <button className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary-hover transition cursor-pointer">
                         Login
                     </button>
                 </form>

@@ -1,6 +1,6 @@
 "use server"
 import connectDB from "../../../config/connectDB";
-import { createExhibition } from "../../../repositories/exhibition.repo";
+import { createExhibition, getAllExhibitions } from "../../../repositories/exhibition.repo";
 import { successResponse, errorResponse } from "../../../utils/response";
 
 export async function POST(request) {
@@ -15,7 +15,7 @@ export async function POST(request) {
     }
 };
 
-export async function GET(request) {
+export async function GET() {
     await connectDB();
     try{
         const data = await getAllExhibitions();

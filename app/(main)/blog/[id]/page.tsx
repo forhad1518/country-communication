@@ -28,7 +28,7 @@ export default function BlogPage() {
             {/* READING PROGRESS */}
             <div
                 style={{ width: `${progress}%` }}
-                className="fixed top-0 left-0 h-1 bg-primaryColor z-50"
+                className="fixed top-0 left-0 h-1 bg-primary z-50"
             />
             <div className="w-10/12 mx-auto py-8 flex justify-between items-center">
                 <button

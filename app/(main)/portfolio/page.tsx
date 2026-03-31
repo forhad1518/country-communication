@@ -45,7 +45,7 @@ export default function Portfolio() {
                             <Slide key={p.id} direction="down">
                             <div
                                 
-                                className="group bg-white border-primaryColor border hover:border-primaryColor-hover rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition"
+                                className="group bg-white border-primary border hover:border-primary-hover rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition"
                             >
                                 <div className="overflow-hidden">
                                     <img
@@ -59,7 +59,7 @@ export default function Portfolio() {
                                     <p className="text-sm text-gray-500 mt-1">{p.location}</p>
                                     <p className="text-sm text-gray-400">{p.size}</p>
                                     <Link href={`/portfolio/${p.id}`}>
-                                        <button className="mt-4 text-primaryColor font-medium cursor-pointer hover:text-primaryColor-hover transition">
+                                        <button className="mt-4 text-primary font-medium cursor-pointer hover:text-primary-hover transition">
                                             View Project →
                                         </button>
                                     </Link>
@@ -77,14 +77,14 @@ export default function Portfolio() {
                             className={`px-5 py-2 rounded-lg border
               ${page === 1
                                     ? "text-gray-300 border-gray-200"
-                                    : "text-primaryColor border-primaryColor hover:bg-primaryColor hover:text-white"
+                                    : "text-primary border-primary hover:bg-primary hover:text-white"
                                 }`}
                         >
                             Previous
                         </button>
 
                         <span className="text-gray-600">
-                            Page  <span className="text-primaryColor">{page}</span> of <span className="text-primaryColor">{totalPages}</span>
+                            Page  <span className="text-primary">{page}</span> of <span className="text-primary">{totalPages}</span>
                         </span>
 
                         <button
@@ -93,7 +93,7 @@ export default function Portfolio() {
                             className={`px-5 py-2 rounded-lg border
               ${page === totalPages
                                     ? "text-gray-300 border-gray-200"
-                                    : "text-primaryColor border-primaryColor hover:bg-primaryColor hover:text-white"
+                                    : "text-primary border-primary hover:bg-primary hover:text-white"
                                 }`}
                         >
                             Next

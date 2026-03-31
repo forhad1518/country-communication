@@ -12,7 +12,7 @@ export async function createExhibition(data) {
 
 export async function getAllExhibitions() {
     try {
-        const exhibitions = await exhibition.find().sort({ createdAt: -1 });
+        const exhibitions = await exhibition.find();
         return exhibitions;
     } catch (error) {
         throw new Error(error.message);

@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="h-screen flex overflow-hidden bg-gray-100">
 
             {/* Sidebar */}
-            <aside className="w-64 bg-primaryColor text-white hidden md:flex flex-col">
+            <aside className="w-64 bg-primary text-white hidden md:flex flex-col">
 
                 <div className="h-16 flex items-center px-6 font-bold border-b border-white/20">
                     Logo
@@ -40,8 +40,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             href={menu.link}
                             className={`block px-4 py-2 rounded transition
                                 ${pathname === menu.link
-                                    ? "bg-primaryColor-hover"
-                                    : "hover:bg-primaryColor-hover"
+                                    ? "bg-primary-hover"
+                                    : "hover:bg-primary-hover"
                                 }`}
                         >
                             {menu.button}
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         {getTitle()}
                     </h1>
 
-                    <div className="text-primaryColor font-semibold">
+                    <div className="text-primary font-semibold">
                         Admin
                     </div>
 
@@ -83,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         href={menu.link}
                         className={`flex flex-col items-center text-xs
                             ${pathname === menu.link
-                                ? "text-primaryColor"
+                                ? "text-primary"
                                 : "text-gray-500"
                             }`}
                     >

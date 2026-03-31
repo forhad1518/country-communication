@@ -98,7 +98,7 @@ export default function BlogPage() {
                             </div>
 
                             <div className="p-5">
-                                <p className="text-primaryColor text-sm font-medium">
+                                <p className="text-primary text-sm font-medium">
                                     {blog.category}
                                 </p>
 
@@ -113,7 +113,7 @@ export default function BlogPage() {
                                 <p className="text-gray-600 mt-3 text-sm">
                                     {blog.excerpt}
                                 </p>
-                                <Link href={`/blog/${blog.id}`} className="mt-4 text-primaryColor font-medium cursor-pointer">
+                                <Link href={`/blog/${blog.id}`} className="mt-4 text-primary font-medium cursor-pointer">
                                     Read More →
                                 </Link>
                             </div>
@@ -126,7 +126,7 @@ export default function BlogPage() {
                     <div className="text-center mt-12">
                         <button
                             onClick={() => setVisible(visible + 6)}
-                            className="px-8 py-3 bg-primaryColor text-white rounded-lg hover:opacity-90 transition"
+                            className="px-8 py-3 bg-primary text-white rounded-lg hover:opacity-90 transition"
                         >
                             See More
                         </button>
