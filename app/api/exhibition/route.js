@@ -29,7 +29,6 @@ export async function DELETE(request) {
     await connectDB();
     try {
         const { id } = await request.json();
-        console.log("Received ID for deletion:", id); // Debug log
         const data = await deleteExhibition(id);
         return successResponse(data);
     } catch (error) {

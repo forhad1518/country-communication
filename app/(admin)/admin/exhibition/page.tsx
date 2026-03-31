@@ -85,7 +85,6 @@ export default function ExhibitionPage() {
             // Save in DB
             const response = await axios.post("/api/exhibition", newData);
             setData(prev => [...prev, response.data.data]);
-            console.log(response.data.data);
             setPreview(null);
             form.reset();
             setSkeletonLoading(false);

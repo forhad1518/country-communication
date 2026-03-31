@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const controllMenu = [
         { button: "Dashboard", link: "/admin" },
         { button: "Blog", link: "/admin/blog" },
-        { button: "Portfolio", link: "/admin/portfolio" },
+        { button: "Portfolio", link: "/admin/portfolio/" },
         { button: "Exhibition", link: "/admin/exhibition" },
         { button: "Users", link: "/admin/users" },
         { button: "Settings", link: "/admin/settings" }
@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 : "text-gray-500"
                             }`}
                     >
-                        <span>⬤</span>
+                        <span>##</span>
                         <span>{menu.button}</span>
                     </Link>
                 ))}

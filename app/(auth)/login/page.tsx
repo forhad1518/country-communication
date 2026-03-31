@@ -34,8 +34,6 @@ export default function UserAuth() {
         e.preventDefault();
         if (!validate()) return;
 
-        console.log(form);
-
         // future api call
     };
 
