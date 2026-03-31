@@ -45,7 +45,7 @@ export async function updateExhibition(id, data) {
 
 export async function deleteExhibition(id) {
     try {
-        const deletedExhibition = await exhibiton.findByIdAndDelete(id);
+        const deletedExhibition = await exhibition.findByIdAndDelete(id);
         if (!deletedExhibition) {
             throw new Error("Exhibition not found");
         }

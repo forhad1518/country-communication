@@ -28,7 +28,22 @@ export default function ExhibitionPage() {
             }
         }
         fatchExibitions();
-    }, [])
+    }, [data.length])
+
+    // delete exhibition
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this exhibition?")) return;
+        setSkeletonLoading(true);
+        try {
+            await axios.delete("/api/exhibition", { data: { id } });
+            setData(prev => prev.filter(item => item._id !== id));
+            setSkeletonLoading(false);
+        } catch (error) {
+            console.error(error);
+            alert("Error deleting exhibition");
+            setSkeletonLoading(false);
+        }
+    };
     // Preview image before upload
     const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -192,7 +207,7 @@ export default function ExhibitionPage() {
                                     <button className="px-3 py-1 bg-accent text-white rounded">
                                         Edit
                                     </button>
-                                    <button className="px-3 py-1 bg-red-500 text-white rounded">
+                                    <button className="px-3 py-1 bg-red-500 text-white rounded cursor-pointer" onClick={() => handleDelete(item._id)}>
                                         Delete
                                     </button>
                                 </div>
@@ -221,6 +236,7 @@ export default function ExhibitionPage() {
                             </thead>
 
                             <tbody>
+                                
                                 {data.map((item, i) => (
                                     <tr key={item._id} className="border-b hover:bg-gray-50">
 
@@ -244,7 +260,9 @@ export default function ExhibitionPage() {
                                             <button className="px-3 py-1 text-sm bg-accent text-white rounded">
                                                 Edit
                                             </button>
-                                            <button className="px-3 py-1 text-sm bg-red-500 text-white rounded">
+                                            <button className="px-3 py-1 text-sm bg-red-500 text-white rounded cursor-pointer"
+                                                onClick={() => handleDelete(item._id)}
+                                            >
                                                 Delete
                                             </button>
                                         </td>
