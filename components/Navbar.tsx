@@ -4,7 +4,6 @@ import { useState } from "react";
 import logo from "../public/logo_COCO.png";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import path from "path";
 import { Slide } from "react-awesome-reveal";
 
 

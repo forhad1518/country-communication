@@ -5,6 +5,7 @@ import Image from "next/image";
 import axios from "axios";
 import SubmitLoading from "@/components/skeleton/SubmitLoading";
 import { TableSkeleton } from "@/components/skeleton/TableSkeleton";
+import slugify from "@/utils/slugify"
 
 export default function ExhibitionPage() {
     const [Loading, setLoading] = useState(true);
@@ -70,8 +71,9 @@ export default function ExhibitionPage() {
             // Upload image first
             const uploadData = new FormData();
             uploadData.append("file", file);
-
-            const res = await axios.post("/api/upload", uploadData);
+            const slug = slugify(exhibitionName)
+            uploadData.append("fileName", `${Date.now()}_${slug}`);
+            const res = await axios.post("/api/exhibition/upload", uploadData);
             const imageUrl = res.data.url;
 
             // Prepare final data
@@ -245,7 +247,7 @@ export default function ExhibitionPage() {
                                             <Image
                                                 src={item.logo}
                                                 alt="img"
-                                                width={80}
+                                                width={90}
                                                 height={50}
                                                 className="rounded object-cover h-10"
                                             />

@@ -4,6 +4,7 @@ export async function POST(req) {
     try {
         const data = await req.formData();
         const file = data.get("file");
+        const fileName = data.get("fileName");
 
         if (!file) {
             return Response.json({ success: false, message: "No file" });
@@ -14,7 +15,7 @@ export async function POST(req) {
 
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                { folder: "exhibition" },
+                { folder: "portfolio" , public_id: fileName},
                 (error, result) => {
                     if (error) reject(error);
                     else resolve(result);
