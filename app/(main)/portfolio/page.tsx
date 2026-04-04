@@ -5,37 +5,54 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Slide } from "react-awesome-reveal";
 import axios from "axios";
+import Image from "next/image";
+
+// ✅ TYPES
+type ProjectInfo = {
+    clientName?: string;
+    boothSize?: string;
+    projectOverview?: string;
+};
+
+type PortfolioType = {
+    _id: string;
+    title: string;
+    exhibition_name: string;
+    slug: string;
+    designImage: string;
+    projectInfo?: ProjectInfo;
+};
 
 export default function Portfolio() {
-
-    const [data, setData] = useState([]);
-    const [page, setPage] = useState(1);
+    const [data, setData] = useState<PortfolioType[]>([]);
+    const [page, setPage] = useState<number>(1);
 
     const perPage = 20;
 
-    //Fetch Data
+    // ✅ Fetch Data
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await axios.get("/api/portfolio");
+                const res = await axios.get<{ data: PortfolioType[] }>(
+                    "/api/portfolio"
+                );
                 setData(res.data.data || []);
             } catch (err) {
                 console.error("Error fetching portfolio:", err);
             }
         };
+
         fetchData();
     }, []);
 
-    // Pagination Logic
+    // ✅ Pagination Logic
     const totalPages = Math.ceil(data.length / perPage);
     const start = (page - 1) * perPage;
     const currentProjects = data.slice(start, start + perPage);
 
     return (
         <div className="bg-white">
-
             <div className="min-h-screen w-10/12 mx-auto">
-
                 {/* HEADER */}
                 <div className="text-center py-8 lg:py-12 md:py-10">
                     <Heading1 text="Our Portfolio" />
@@ -46,26 +63,23 @@ export default function Portfolio() {
 
                 {/* GRID */}
                 <div className="pb-16">
-
                     <div className="grid gap-6 grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-
                         {currentProjects.map((p) => (
                             <Slide key={p._id} direction="down">
-
                                 <div className="group bg-white border border-primary hover:border-primary-hover rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition">
 
                                     {/* IMAGE */}
-                                    <div className="overflow-hidden">
-                                        <img
+                                    <div className="relative w-full h-52 overflow-hidden">
+                                        <Image
                                             src={p.designImage}
-                                            alt={p.title}
-                                            className="w-full h-52 object-cover group-hover:scale-110 transition duration-500"
+                                            alt={`${p.title} exhibition booth design`}
+                                            fill
+                                            className="object-cover group-hover:scale-110 transition duration-500"
                                         />
                                     </div>
 
                                     {/* CONTENT */}
                                     <div className="p-4">
-
                                         <h3 className="font-semibold text-gray-800">
                                             {p.title}
                                         </h3>
@@ -83,14 +97,10 @@ export default function Portfolio() {
                                                 View Project →
                                             </button>
                                         </Link>
-
                                     </div>
-
                                 </div>
-
                             </Slide>
                         ))}
-
                     </div>
 
                     {/* EMPTY STATE */}
@@ -103,9 +113,8 @@ export default function Portfolio() {
                     {/* PAGINATION */}
                     {data.length > 0 && (
                         <div className="flex justify-center items-center gap-4 mt-12">
-
                             <button
-                                onClick={() => setPage(page - 1)}
+                                onClick={() => setPage((prev) => prev - 1)}
                                 disabled={page === 1}
                                 className={`px-5 py-2 rounded-lg border
                   ${page === 1
@@ -117,12 +126,15 @@ export default function Portfolio() {
                             </button>
 
                             <span className="text-gray-600">
-                                Page <span className="text-primary">{page}</span> of{" "}
-                                <span className="text-primary">{totalPages}</span>
+                                Page{" "}
+                                <span className="text-primary">{page}</span> of{" "}
+                                <span className="text-primary">
+                                    {totalPages}
+                                </span>
                             </span>
 
                             <button
-                                onClick={() => setPage(page + 1)}
+                                onClick={() => setPage((prev) => prev + 1)}
                                 disabled={page === totalPages}
                                 className={`px-5 py-2 rounded-lg border
                   ${page === totalPages
@@ -132,10 +144,8 @@ export default function Portfolio() {
                             >
                                 Next
                             </button>
-
                         </div>
                     )}
-
                 </div>
             </div>
         </div>

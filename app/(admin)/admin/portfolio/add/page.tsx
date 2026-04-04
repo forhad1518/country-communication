@@ -6,6 +6,7 @@ import slugify from "@/utils/slugify";
 import axios from "axios";
 import uploadFiles from "@/helpers/upload.image";
 import SubmitLoading from "@/components/skeleton/SubmitLoading";
+import parseKeywords from "@/utils/parseKeyword";
 export default function AddPortfolio() {
   // set skeleton preview state
   const [loading, setLoading] = useState(false);
@@ -44,6 +45,7 @@ export default function AddPortfolio() {
 
     try {
       const slug = slugify(formData.get("title") as string);
+      const keyword = parseKeywords(formData.get("keywords") as string);
 
       // Design image upload
       const designImageUrl = await uploadFiles({
@@ -76,7 +78,7 @@ export default function AddPortfolio() {
           boothSize: formData.get("boothSize"),
           projectOverview: formData.get("overview"),
         },
-        keywords: formData.get("keywords"),
+        keywords: keyword,
         designImage: designImageUrl,
         liveImage: liveImageUrl,
         galleryImage: galleryImageUrls,

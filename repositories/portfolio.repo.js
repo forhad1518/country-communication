@@ -31,6 +31,22 @@ export const getPortfolioById = async (id) => {
     }
 };
 
+export const getPortfolioBySlug = async (slug) => {
+    try {
+        const foundPortfolio = await portfolio.findOne({ slug }).lean();
+        if (!foundPortfolio) {
+            throw new Error("Portfolio not found");
+        }
+        return {
+            ...foundPortfolio,
+            _id: foundPortfolio._id.toString(),
+            createdAt: foundPortfolio.createdAt?.toString(),
+        };
+    } catch (error) {
+        throw new Error("Error fetching portfolio: " + error.message);
+    }
+};
+
 export const updatePortfolio = async (id, data) => {
     try {
         const updatedPortfolio = await portfolio.findByIdAndUpdate(id, data, { new: true });

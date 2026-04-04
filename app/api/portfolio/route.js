@@ -1,8 +1,9 @@
-// import { createPortfolioService } from "../../../services/portfolio.service";
+import connectDB from "@/config/connectDB";
 import {createPortfolio, getAllPortfolios } from "@/repositories/portfolio.repo";
-import { successResponse, errorResponse } from "../../../utils/response";
+import { successResponse, errorResponse } from "@/utils/response";
 
 export async function POST(request) {
+    await connectDB();
     try{
         const body = await request.json();
         const data = await createPortfolio(body);
@@ -13,6 +14,7 @@ export async function POST(request) {
 };
 
 export async function GET() {
+    await connectDB();
     try{
         const data = await getAllPortfolios();
         return successResponse(data);
