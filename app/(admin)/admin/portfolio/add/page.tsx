@@ -78,10 +78,12 @@ export default function AddPortfolio() {
         },
         keywords: formData.get("keywords"),
         designImage: designImageUrl,
-        LiveImage: liveImageUrl,
-        gallaryImage: galleryImageUrls,
+        liveImage: liveImageUrl,
+        galleryImage: galleryImageUrls,
+        slug: slug,
       };
-      await axios.post("/api/portfolio", data);
+      const res = await axios.post("/api/portfolio", data);
+      console.log("Response:", res.data);
       form.reset();
       setPreview({ design: null, live: null, gallery: [] });
       setLoading(false);

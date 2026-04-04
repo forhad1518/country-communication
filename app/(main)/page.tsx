@@ -1,6 +1,5 @@
 import AboutUs from "@/components/sections/home/AboutUs";
 import Heading1 from "@/components/Heading1";
-import HeroSwiper from "@/components/sections/home/HeroSwiper";
 import TripleSlider from "@/components/sections/home/TripleSlider";
 import Offer_service from "@/components/sections/home/Offer_service";
 import Our_services from "@/components/sections/home/Our_services";

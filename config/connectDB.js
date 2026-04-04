@@ -17,7 +17,7 @@ const connectDB = async () => {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGO_URI, {
-      dbName: "contry_communication",
+      dbName: "country_communication",
       bufferCommands: false,
     });
   }

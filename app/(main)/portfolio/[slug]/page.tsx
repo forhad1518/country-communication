@@ -109,13 +109,13 @@ export default function SinglePortfolio() {
 
                 <div className="grid md:grid-cols-3 gap-6">
                     <Fade cascade damping={1e-1}>
-                    {project.gallery.map((img, i) => (
-                        <img
-                            key={i}
-                            src={img}
-                            className="rounded-lg object-cover w-full h-60"
-                        />
-                    ))}
+                        {project.gallery.map((img, i) => (
+                            <img
+                                key={i}
+                                src={img}
+                                className="rounded-lg object-cover w-full h-60"
+                            />
+                        ))}
                     </Fade>
                 </div>
             </div>

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export interface PortfolioItem {
   designImage: string;
@@ -14,9 +15,20 @@ export interface PortfolioItem {
 }
 
 export default function PortfolioPage() {
-
-  const [data] = useState<PortfolioItem[]>([]);
-
+  const [data, setData] = useState<PortfolioItem[]>([]);
+  useEffect(() => {
+    // fetch portfolio data from api
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/api/portfolio");
+        setData(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching portfolio data:", err);
+      }
+    };
+    fetchData();
+  }, [])
+  console.log("Fetched portfolio data:", data);
   return (
     <div className="space-y-6">
 
@@ -44,7 +56,7 @@ export default function PortfolioPage() {
           )}
 
           {data.map((item, i) => (
-            <div key={i} className="border p-4 rounded-lg">
+            <div key={i} className="border p-4 rounded-lg my-2">
 
               <div className="flex gap-3">
                 <Image
@@ -105,7 +117,7 @@ export default function PortfolioPage() {
                       alt="img"
                       width={60}
                       height={50}
-                      className="rounded"
+                      className="rounded my-1"
                     />
                   </td>
 
