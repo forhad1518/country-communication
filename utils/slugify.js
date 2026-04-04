@@ -1,4 +1,4 @@
-const slugify = (title) => {
+export default function slugify(title) {
     const text = title.toString()
         .toLowerCase()
         .trim()
@@ -8,4 +8,4 @@ const slugify = (title) => {
     return text;
 }
 
-export default slugify;
+// export default slugify;

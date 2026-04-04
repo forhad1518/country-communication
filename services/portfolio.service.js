@@ -1,5 +1,5 @@
-import { createPortfolio } from "../repositories/portfolio.repo";
-import { slugify } from "../utils/slugify";
+import { createPortfolio } from "@/repositories/portfolio.repo";
+import slugify from "@/utils/slugify";
 
 export const createPortfolioService = async (data) => {
     try {

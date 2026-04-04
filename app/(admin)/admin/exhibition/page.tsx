@@ -6,6 +6,7 @@ import axios from "axios";
 import SubmitLoading from "@/components/skeleton/SubmitLoading";
 import { TableSkeleton } from "@/components/skeleton/TableSkeleton";
 import slugify from "@/utils/slugify"
+import uploadFiles from "@/helpers/upload.image";
 
 export default function ExhibitionPage() {
     const [Loading, setLoading] = useState(true);
@@ -68,13 +69,14 @@ export default function ExhibitionPage() {
         if (!file) return alert("Please upload an image");
 
         try {
-            // Upload image first
-            const uploadData = new FormData();
-            uploadData.append("file", file);
-            const slug = slugify(exhibitionName)
-            uploadData.append("fileName", `${Date.now()}_${slug}`);
-            const res = await axios.post("/api/exhibition/upload", uploadData);
-            const imageUrl = res.data.url;
+            // Upload image and get URL
+            const imageUrl = await uploadFiles({
+                type: "single",
+                files: file,
+                slug: slugify(exhibitionName),
+                api: "/api/upload/image",
+                // folder: "exhibition",
+            });
 
             // Prepare final data
             const newData = {
