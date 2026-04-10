@@ -1,79 +1,251 @@
 "use client";
 
-import { useState } from "react";
-import logo from "../public/logo_COCO.png";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Slide } from "react-awesome-reveal";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Menu, X } from "lucide-react";
+import logo from "../public/logo_COCO.png";
 
+// Navigation links type
+interface NavLink {
+    href: string;
+    label: string;
+    hasDropdown?: boolean;
+    dropdownItems?: Array<{ href: string; label: string }>;
+}
+
+const navLinks: NavLink[] = [
+    { href: "/", label: "About Us" },
+    {
+        href: "/services",
+        label: "Services",
+        hasDropdown: true,
+        dropdownItems: [
+            { href: "/services/exhibition", label: "Exhibition Stands" },
+            { href: "/services/event-management", label: "Event Management" },
+            { href: "/services/interior", label: "Interior Design" },
+        ]
+    },
+    { href: "/portfolio", label: "Portfolio" },
+    { href: "/blog", label: "Blog/News" },
+];
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
     const pathName = usePathname();
-    const isActive = (link: string) => {
-        return pathName.startsWith(link) && (link === "/" ? pathName === "/" : true);
-    }
+
+    // Handle scroll effect
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    // Close mobile menu on route change
+    useEffect(() => {
+        setOpen(false);
+        setDropdownOpen(null);
+    }, [pathName]);
+
+    // Check if link is active
+    const isActive = (href: string) => {
+        if (href === "/") {
+            return pathName === "/";
+        }
+        return pathName.startsWith(href);
+    };
+
+    // Toggle dropdown on mobile
+    const toggleDropdown = (label: string) => {
+        setDropdownOpen(dropdownOpen === label ? null : label);
+    };
+
     return (
-        <Slide direction="down" >
-            <nav className="bg-gray-200 shadow-md text-sm">
-                <div className="w-10/12 mx-auto flex items-center justify-between py-3">
-                    <Link href="/">
-                        <div className="w-32.5">
-                            <img className="w-full" src={logo.src} alt="Country Communication Logo" />
+        <motion.nav
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+                    ? "bg-white/95 backdrop-blur-md shadow-lg"
+                    : "bg-gray-100"
+                }`}
+        >
+            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+                <div className="flex items-center justify-between py-3 lg:py-4">
+                    {/* Logo */}
+                    <Link href="/" className="relative z-10">
+                        <div className="w-28 sm:w-32 lg:w-36 transition-transform hover:scale-105">
+                            <Image
+                                src={logo}
+                                alt="Country Communication Logo"
+                                width={144}
+                                height={48}
+                                priority
+                                className="w-full h-auto"
+                            />
                         </div>
                     </Link>
 
-                    {/* Desktop / tablet menu */}
-                    <div className="hidden md:flex items-center gap-6">
-                        <ul className="flex gap-x-4 uppercase text-black/80 font-semibold">
-                            <Link className={`hover:text-primary-hover transition cursor-pointer ${isActive("/") ? "text-primary" : ""}`} href={""}>About Us</Link>
-                            <Link className={`hover:text-primary-hover transition cursor-pointer ${isActive("/services") ? "text-primary" : ""}`} href={""}>Services</Link>
-                            <Link className={`hover:text-primary-hover transition cursor-pointer ${isActive("/portfolio") ? "text-primary" : ""}`} href={"/portfolio"}>Portfolio</Link>
-                            <Link className={`hover:text-primary-hover transition cursor-pointer ${isActive("/blog") ? "text-primary" : ""}`} href={"/blog"}>Blog/News</Link>
+                    {/* Desktop Navigation */}
+                    <div className="hidden lg:flex items-center gap-8">
+                        <ul className="flex gap-x-8">
+                            {navLinks.map((link) => (
+                                <li key={link.href} className="relative group">
+                                    <Link
+                                        href={link.href}
+                                        className={`relative text-sm font-semibold uppercase tracking-wide transition-colors duration-300 ${isActive(link.href)
+                                                ? "text-primary"
+                                                : "text-gray-700 hover:text-primary"
+                                            }`}
+                                    >
+                                        {link.label}
+
+                                        {/* Active Indicator */}
+                                        {isActive(link.href) && (
+                                            <motion.span
+                                                layoutId="activeNav"
+                                                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"
+                                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                            />
+                                        )}
+                                    </Link>
+
+                                    {/* Dropdown for Services */}
+                                    {link.hasDropdown && link.dropdownItems && (
+                                        <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                            <div className="bg-white rounded-lg shadow-xl border border-gray-100 py-2 min-w-[200px]">
+                                                {link.dropdownItems.map((item) => (
+                                                    <Link
+                                                        key={item.href}
+                                                        href={item.href}
+                                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors"
+                                                    >
+                                                        {item.label}
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
                         </ul>
-                        <div>
-                            <button className="bg-black rounded-full text-white px-4 py-1">Let&apos;s Talk</button>
-                        </div>
+
+                        {/* CTA Button */}
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <Link
+                                href="/contact"
+                                className="bg-primary hover:bg-primary-hover text-white px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg hover:shadow-primary/20"
+                            >
+                                Let's Talk
+                            </Link>
+                        </motion.div>
                     </div>
 
-                    {/* Mobile actions: hamburger */}
-                    <div className="md:hidden flex items-center">
+                    {/* Mobile Menu Button */}
+                    <div className="lg:hidden flex items-center">
                         <button
-                            onClick={() => setOpen((s) => !s)}
+                            onClick={() => setOpen(!open)}
                             aria-expanded={open}
                             aria-label={open ? "Close menu" : "Open menu"}
-                            className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="p-2 rounded-lg hover:bg-gray-200/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
                         >
                             {open ? (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M18 6L6 18" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M6 6L18 18" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <X className="w-6 h-6 text-gray-800" />
                             ) : (
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M3 6H21" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M3 12H21" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M3 18H21" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
+                                <Menu className="w-6 h-6 text-gray-800" />
                             )}
                         </button>
                     </div>
                 </div>
-                {/* Mobile menu panel */}
-                <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? "max-h-screen" : "max-h-0"}`}>
-                    <div className={`w-10/12 mx-auto bg-white py-4 ${open ? "opacity-100" : "opacity-0"}`}>
-                        <ul className="flex flex-col gap-3 uppercase text-black/80 font-semibold">
-                            <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primary-hover transition cursor-pointer ${isActive("/") ? "text-primary" : ""}`} href={""}>About Us</Link>
-                            <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primary-hover transition cursor-pointer ${isActive("/services") ? "text-primary" : ""}`} href={""}>Services</Link>
-                            <Link className={`py-2 px-4 border-b border-gray-100 hover:text-primary-hover transition cursor-pointer ${isActive("/portfolio") ? "text-primary" : ""}`} href={"/portfolio"}>Portfolio</Link>
-                            <Link className={`py-2 px-4 hover:text-primary-hover transition cursor-pointer ${isActive("/blog") ? "text-primary" : ""}`} href={"/blog"}>Blog/News</Link>
-                        </ul>
-                        <div className="mt-4 px-4">
-                            <button className="w-full bg-black rounded-full text-white px-4 py-2">Let&apos;s Talk</button>
-                        </div>
-                    </div>
-                </div>
-            </nav>
-        </Slide>
+
+                {/* Mobile Menu Panel */}
+                <AnimatePresence>
+                    {open && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                            className="lg:hidden overflow-hidden border-t border-gray-200"
+                        >
+                            <div className="py-4 space-y-2">
+                                {navLinks.map((link) => (
+                                    <div key={link.href} className="px-2">
+                                        {link.hasDropdown ? (
+                                            // Mobile Dropdown
+                                            <div>
+                                                <button
+                                                    onClick={() => toggleDropdown(link.label)}
+                                                    className="w-full flex items-center justify-between py-3 px-4 text-left text-gray-800 font-semibold uppercase text-sm hover:bg-primary/5 rounded-lg transition-colors"
+                                                >
+                                                    <span className={isActive(link.href) ? "text-primary" : ""}>
+                                                        {link.label}
+                                                    </span>
+                                                    <ChevronDown
+                                                        className={`w-4 h-4 transition-transform duration-200 ${dropdownOpen === link.label ? "rotate-180" : ""
+                                                            }`}
+                                                    />
+                                                </button>
+
+                                                <AnimatePresence>
+                                                    {dropdownOpen === link.label && link.dropdownItems && (
+                                                        <motion.div
+                                                            initial={{ height: 0, opacity: 0 }}
+                                                            animate={{ height: "auto", opacity: 1 }}
+                                                            exit={{ height: 0, opacity: 0 }}
+                                                            className="ml-4 space-y-1 overflow-hidden"
+                                                        >
+                                                            {link.dropdownItems.map((item) => (
+                                                                <Link
+                                                                    key={item.href}
+                                                                    href={item.href}
+                                                                    className="block py-2 px-4 text-sm text-gray-600 hover:text-primary transition-colors"
+                                                                >
+                                                                    {item.label}
+                                                                </Link>
+                                                            ))}
+                                                        </motion.div>
+                                                    )}
+                                                </AnimatePresence>
+                                            </div>
+                                        ) : (
+                                            // Regular Mobile Link
+                                            <Link
+                                                href={link.href}
+                                                className={`block py-3 px-4 text-sm font-semibold uppercase rounded-lg transition-colors ${isActive(link.href)
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "text-gray-800 hover:bg-primary/5 hover:text-primary"
+                                                    }`}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Mobile CTA */}
+                                <div className="px-2 pt-4">
+                                    <Link
+                                        href="/contact"
+                                        className="block w-full bg-primary hover:bg-primary-hover text-white text-center px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+                                    >
+                                        Let's Talk
+                                    </Link>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </motion.nav>
     );
 }

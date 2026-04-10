@@ -9,20 +9,20 @@ import Working_process from "@/components/sections/home/Working_process";
 
 export default function Home() {
   return (
-    <main className="mt-4">
+    <main className="">
       {/* Our Services Section */}
       <div className="">
         <TripleSlider />
       </div>
-      <div className="mt-8">
+      <div className="">
         <Offer_service />
       </div>
       {/* About Us Section */}
-      <div className="w-10/12 mx-auto">
+      <div className="">
         <Our_services />
       </div>
       {/* WorkFLow Section */}
-      <div className="w-10/12 mx-auto my-10">
+      <div className="">
         <Workflow />
       </div>
       {/* Working process */}

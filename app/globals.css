@@ -73,13 +73,13 @@ body {
 }
 
 /* Heading1 */
-@keyframes gradientMove {
+@keyframes gradient-x {
   0% {
     background-position: 0% 50%;
   }
 
   50% {
-    background-position: 100% 0%;
+    background-position: 100% 50%;
   }
 
   100% {
@@ -87,7 +87,7 @@ body {
   }
 }
 
-.animate-gradient {
+.animate-gradient-x {
   background-size: 200% 200%;
-  animation: gradientMove 10s ease infinite;
+  animation: gradient-x 8s ease infinite;
 }

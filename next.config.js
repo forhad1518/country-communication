@@ -1,5 +1,5 @@
 module.exports = {
-    allowedDevOrigins: ['172.25.202.146',"192.168.0.106", "https://country-communication.vercel.app", "10.190.19.146"],
+    allowedDevOrigins: ['172.25.202.146',"192.168.0.103", "https://country-communication.vercel.app", "10.190.19.146"],
     images: {
         remotePatterns: [
             {
@@ -8,6 +8,13 @@ module.exports = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'images.unsplash.com',
+                port: '',
+                pathname: '/**',
+            },
+
         ],
     },
 }

@@ -7,39 +7,41 @@ import axios from "axios";
 import uploadFiles from "@/helpers/upload.image";
 import SubmitLoading from "@/components/skeleton/SubmitLoading";
 import parseKeywords from "@/utils/parseKeyword";
+
 export default function AddPortfolio() {
-  // set skeleton preview state
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState<{ design: string | null; live: string | null; gallery: string[] }>({
+
+  const [preview, setPreview] = useState<any>({
     design: null,
     live: null,
-    gallery: []
+    gallery: [],
+    renders: [],
+    real: [],
+    mood: [],
+    client: null,
   });
 
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>, type: "design" | "live" | "gallery") => {
+  const handleImage = (e: any, type: string) => {
     const files = e.target.files;
-
     if (!files) return;
 
-    if (type === "gallery") {
-      const images = Array.from(files).map(file =>
-        URL.createObjectURL(file)
-      );
-
-      setPreview(prev => ({ ...prev, gallery: images }));
-
-    } else {
-      const file = files[0];
-
-      setPreview(prev => ({
-        ...prev,
-        [type]: URL.createObjectURL(file)
+    if (type === "design" || type === "live" || type === "client") {
+      setPreview((p: any) => ({
+        ...p,
+        [type]: URL.createObjectURL(files[0]),
       }));
+    } else {
+      const imgs = Array.from(files).map((f: any) =>
+        URL.createObjectURL(f)
+      );
+      setPreview((p: any) => ({ ...p, [type]: imgs }));
     }
-  }
-  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    setLoading(true);
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+
     const form = e.currentTarget;
     const formData = new FormData(form);
 
@@ -47,256 +49,266 @@ export default function AddPortfolio() {
       const slug = slugify(formData.get("title") as string);
       const keyword = parseKeywords(formData.get("keywords") as string);
 
-      // Design image upload
-      const designImageUrl = await uploadFiles({
+      // uploads
+      const designImage = await uploadFiles({
         type: "single",
         files: formData.get("designImage") as File,
         slug: `${slug}_design`,
-        api: "/api/upload/image"
+        api: "/api/upload/image",
       });
-      // live image upload
 
-      const liveImageUrl = await uploadFiles({
+      const liveImage = await uploadFiles({
         type: "single",
         files: formData.get("liveImage") as File,
         slug: `${slug}_live`,
-        api: "/api/upload/image"
+        api: "/api/upload/image",
       });
-      // gallery images upload
-      const galleryImageUrls = await uploadFiles({
+
+      const gallery = await uploadFiles({
         type: "multiple",
         files: formData.getAll("galleryImages") as File[],
         slug: `${slug}_gallery`,
-        api: "/api/upload/image"
+        api: "/api/upload/image",
       });
-      // make data 
+
+      const renders = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("renders") as File[],
+        slug: `${slug}_renders`,
+        api: "/api/upload/image",
+      });
+
+      const realImages = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("realImages") as File[],
+        slug: `${slug}_real`,
+        api: "/api/upload/image",
+      });
+
+      const moodboard = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("moodboard") as File[],
+        slug: `${slug}_mood`,
+        api: "/api/upload/image",
+      });
+
+      const clientImage = await uploadFiles({
+        type: "single",
+        files: formData.get("clientImage") as File,
+        slug: `${slug}_client`,
+        api: "/api/upload/image",
+      });
+
       const data = {
         title: formData.get("title"),
         exhibition_name: formData.get("exhibition"),
+
         projectInfo: {
           clientName: formData.get("clientName"),
           boothSize: formData.get("boothSize"),
-          projectOverview: formData.get("overview"),
+          location: formData.get("location"),
+          buildTime: formData.get("buildTime"),
+          overview: formData.get("overview"),
         },
+
+        objective: formData.get("objective"),
+        challenges: formData.get("challenges"),
+
+        process: {
+          renders,
+          realImages,
+          moodboard,
+          processText: formData.get("processText"),
+        },
+
+        materials: formData.getAll("materials"),
+        technologies: formData.getAll("technologies"),
+
+        execution: formData.get("execution"),
+
+        results: {
+          visitors: formData.get("visitors"),
+          engagement: formData.get("engagement"),
+          testimonial: formData.get("testimonial"),
+          clientName: formData.get("testimonialName"),
+          clientImage,
+        },
+
         keywords: keyword,
-        designImage: designImageUrl,
-        liveImage: liveImageUrl,
-        galleryImage: galleryImageUrls,
-        slug: slug,
+        designImage,
+        liveImage,
+        gallery,
+        slug,
       };
-      const res = await axios.post("/api/portfolio", data);
-      console.log("Response:", res.data);
+
+      await axios.post("/api/portfolio", data);
+
       form.reset();
-      setPreview({ design: null, live: null, gallery: [] });
+      setPreview({
+        design: null,
+        live: null,
+        gallery: [],
+        renders: [],
+        real: [],
+        mood: [],
+        client: null,
+      });
+
       setLoading(false);
     } catch (err) {
+      console.error(err);
       setLoading(false);
-      console.error("Error submitting form:", err);
     }
-  }
+  };
 
+  if (loading) return <SubmitLoading />;
 
   return (
-    <>
-      {
-        loading ? (<SubmitLoading />) : (<div className="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl border shadow-sm space-y-8">
+    <div className="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl border shadow-sm space-y-8">
 
-          {/* TITLE */}
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Add Portfolio
-            </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Fill all required information about the project
-            </p>
-          </div>
-          <form onSubmit={handleFormSubmit} action="" method="post">
+      <h1 className="text-2xl font-semibold text-gray-800">
+        Add Portfolio
+      </h1>
 
-            {/* BASIC INFO */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                Basic Information
-              </h2>
+      <form onSubmit={handleSubmit} className="space-y-10">
 
-              <div className="grid md:grid-cols-2 gap-5">
+        {/* BASIC INFO */}
+        <Section title="Basic Information">
+          <Grid>
+            <Input name="title" label="Title" required />
+            <Select name="exhibition" label="Exhibition" required>
+              <option value="">Select Exhibition</option>
+              <option>Dubai Expo 2024</option>
+              <option>CES 2024</option>
+            </Select>
 
-                {/* TITLE */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    required={true}
-                    placeholder="Enter portfolio title"
-                    className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
+            <Input name="clientName" label="Client Name" required />
+            <Input name="boothSize" label="Booth Size" required />
+            <Input name="location" label="Location" />
+            <Input name="buildTime" label="Build Time (Hours)" />
+          </Grid>
 
-                {/* EXHIBITION */}
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Exhibition Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="exhibition"
-                    required={true}
-                    placeholder="Ex: Dhaka Expo"
-                    className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                  />
-                </div>
+          <Textarea name="overview" label="Project Overview" />
+        </Section>
 
-              </div>
-            </div>
+        {/* BRIEF */}
+        <Section title="Brief & Challenge">
+          <Textarea name="objective" label="Client Objective" />
+          <Textarea name="challenges" label="Challenges" />
+        </Section>
 
-            {/* PROJECT INFO */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2 mt-2">
-                Project Information
-              </h2>
+        {/* PROCESS */}
+        <Section title="Design Process">
+          <File name="renders" label="3D Renders" multiple onChange={(e: any) => handleImage(e, "renders")} previewList={preview.renders} />
+          <File name="realImages" label="Real Images" multiple onChange={(e: any) => handleImage(e, "real")} previewList={preview.real} />
+          <File name="moodboard" label="Moodboard / Sketch" multiple onChange={(e: any) => handleImage(e, "mood")} previewList={preview.mood} />
+          <Textarea name="processText" label="Process Description" />
+        </Section>
 
-              <div className="grid md:grid-cols-2 gap-5">
+        {/* MATERIAL */}
+        <Section title="Materials & Technology">
+          <Select name="materials" label="Materials" multiple>
+            <option>Wood</option>
+            <option>Metal</option>
+            <option>Fabric</option>
+          </Select>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Client Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="clientName"
-                    required={true}
-                    placeholder="Client company name"
-                    className="mt-1 w-full border p-3 rounded-lg"
-                  />
-                </div>
+          <Select name="technologies" label="Technology" multiple>
+            <option>LED</option>
+            <option>VR</option>
+            <option>Lighting</option>
+          </Select>
+        </Section>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Booth Size <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="boothSize"
-                    required={true}
-                    placeholder="Ex: 36 sqm"
-                    className="mt-1 w-full border p-3 rounded-lg"
-                  />
-                </div>
+        {/* EXECUTION */}
+        <Section title="Execution">
+          <Textarea name="execution" label="On-site Execution Details" />
+        </Section>
 
-              </div>
+        {/* RESULTS */}
+        <Section title="Results & Testimonials">
+          <Input name="visitors" label="Visitors" type="number" />
+          <Input name="engagement" label="Engagement Data" />
+          <Textarea name="testimonial" label="Client Review" />
+          <Input name="testimonialName" label="Client Name" />
+          <File name="clientImage" label="Client Image" onChange={(e: any) => handleImage(e, "client")} preview={preview.client} />
+        </Section>
 
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Project Overview <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  rows={4}
-                  name="overview"
-                  required={true}
-                  placeholder="Describe the project..."
-                  className="mt-1 w-full border p-3 rounded-lg"
-                />
-              </div>
-            </div>
+        {/* IMAGES */}
+        <Section title="Images">
+          <File name="designImage" label="Design Image" required onChange={(e: any) => handleImage(e, "design")} preview={preview.design} />
+          <File name="liveImage" label="Live Image" required onChange={(e: any) => handleImage(e, "live")} preview={preview.live} />
+          <File name="galleryImages" label="Gallery Images" multiple onChange={(e: any) => handleImage(e, "gallery")} previewList={preview.gallery} />
+        </Section>
 
-            {/* KEYWORDS */}
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                SEO & Keywords
-              </h2>
+        {/* SEO */}
+        <Section title="SEO">
+          <Input name="keywords" label="Keywords" />
+        </Section>
 
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Keywords
-                </label>
-                <input
-                  type="text"
-                  name="keywords"
-                  required={true}
-                  placeholder="design, booth, exhibition"
-                  className="mt-1 w-full border p-3 rounded-lg"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Separate keywords with comma
-                </p>
-              </div>
-            </div>
+        {/* SUBMIT */}
+        <div className="flex justify-end">
+          <button className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover transition">
+            Submit Portfolio
+          </button>
+        </div>
 
-            {/* IMAGES */}
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
-                Images
-              </h2>
-
-              <div className="grid md:grid-cols-2 gap-5">
-
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Design Image <span className="text-red-500">*</span>
-                  </label>
-                  <input type="file" onChange={(e) => handleImage(e, "design")} required={true} name="designImage" className="mt-1 w-full border p-3 rounded-lg" />
-                  {preview.design && (
-                    <Image
-                      src={preview.design}
-                      alt="preview"
-                      width={100}
-                      height={80}
-                      className="rounded object-cover mt-1"
-                    />
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-gray-600">
-                    Live Image <span className="text-red-500">*</span>
-                  </label>
-                  <input type="file" onChange={(e) => handleImage(e, "live")} required={true} name="liveImage" className="mt-1 w-full border p-3 rounded-lg" />
-                  {preview.live && (
-                    <Image
-                      src={preview.live}
-                      alt="preview"
-                      width={100}
-                      height={80}
-                      className="rounded object-cover mt-1"
-                    />
-                  )}
-                </div>
-
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Gallery Images
-                </label>
-                <input type="file" onChange={(e) => handleImage(e, "gallery")} required={true} name="galleryImages" multiple className="mt-1 w-full border p-3 rounded-lg" />
-                <div className="flex flex-wrap">
-                  {
-                    preview.gallery.map((img, index) => (
-                      <Image
-                        key={index}
-                        src={img}
-                        alt={`gallery-${index}`}
-                        width={100}
-                        height={80}
-                        className="rounded object-cover mt-1 mr-2"
-                      />
-                    ))
-                  }
-                </div>
-              </div>
-            </div>
-
-            {/* SUBMIT */}
-            <div className="flex justify-end mt-4">
-              <button className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-hover transition cursor-pointer">
-                Submit Portfolio
-              </button>
-            </div>
-          </form>
-        </div>)
-      }
-    </>
+      </form>
+    </div>
   );
 }
+
+/* COMPONENTS */
+
+const Section = ({ title, children }: any) => (
+  <div className="space-y-4">
+    <h2 className="text-lg font-semibold text-gray-700 border-b pb-2">
+      {title}
+    </h2>
+    {children}
+  </div>
+);
+
+const Grid = ({ children }: any) => (
+  <div className="grid md:grid-cols-2 gap-5">{children}</div>
+);
+
+const Input = ({ label, ...props }: any) => (
+  <div>
+    <label className="text-sm font-medium text-gray-600">{label}</label>
+    <input {...props} className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none" />
+  </div>
+);
+
+const Textarea = ({ label, ...props }: any) => (
+  <div>
+    <label className="text-sm font-medium text-gray-600">{label}</label>
+    <textarea {...props} rows={4} className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none" />
+  </div>
+);
+
+const Select = ({ label, children, ...props }: any) => (
+  <div>
+    <label className="text-sm font-medium text-gray-600">{label}</label>
+    <select {...props} className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none">
+      {children}
+    </select>
+  </div>
+);
+
+const File = ({ label, preview, previewList, ...props }: any) => (
+  <div>
+    <label className="text-sm font-medium text-gray-600">{label}</label>
+    <input type="file" {...props} className="mt-1 w-full border p-3 rounded-lg" />
+
+    {preview && <Image src={preview} alt="" width={100} height={80} className="mt-2 rounded" />}
+
+    {previewList && (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {previewList.map((img: string, i: number) => (
+          <Image key={i} src={img} alt="" width={80} height={60} className="rounded" />
+        ))}
+      </div>
+    )}
+  </div>
+);
