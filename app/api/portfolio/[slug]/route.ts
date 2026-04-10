@@ -9,7 +9,7 @@ export async function GET(
     await connectDB();
 
     try {
-        const { slug } = await params;
+        const { slug } = params;
         const data = await getPortfolioBySlug(slug);
 
         return successResponse(data);
