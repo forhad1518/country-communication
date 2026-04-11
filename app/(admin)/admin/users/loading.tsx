@@ -69,7 +69,7 @@ export default function Loading({
       <div className={`${containerClasses} flex justify-center items-center ${fullscreen ? "" : "h-75"}`}>
         <div className="text-center">
           <motion.div
-            className={`${sizeClasses[size]} bg-gradient-to-r from-primary to-accent rounded-full`}
+            className={`${sizeClasses[size]} bg-linear-to-r from-primary to-accent rounded-full`}
             animate={{
               scale: [1, 1.2, 1],
               opacity: [1, 0.7, 1]
@@ -105,7 +105,7 @@ export default function Loading({
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                className={`w-3 h-3 md:w-4 md:h-4 rounded-full bg-gradient-to-r from-primary to-accent`}
+                className={`w-3 h-3 md:w-4 md:h-4 rounded-full bg-linear-to-r from-primary to-accent`}
                 animate={{
                   y: [0, -10, 0],
                   scale: [1, 0.8, 1]
@@ -154,10 +154,10 @@ export default function Loading({
               }}
             >
               {/* Booth walls */}
-              <div className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-primary to-accent rounded-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-2 bg-linear-to-r from-primary to-accent rounded-full" />
               <div className="absolute bottom-0 left-0 w-2 h-12 bg-primary/80 rounded-l-lg" />
               <div className="absolute bottom-0 right-0 w-2 h-12 bg-accent/80 rounded-r-lg" />
-              <div className="absolute top-0 left-2 right-2 h-2 bg-gradient-to-r from-primary to-accent" />
+              <div className="absolute top-0 left-2 right-2 h-2 bg-linear-to-r from-primary to-accent" />
 
               {/* Roof */}
               <motion.div

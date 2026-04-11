@@ -34,10 +34,10 @@ const WorkflowStep = ({
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay }}
             whileHover={{ y: -5 }}
-            className="group relative p-6 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-xl border border-white/10 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="group relative p-6 bg-linear-to-br from-gray-900/50 to-black/50 rounded-xl border border-white/10 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300"
         >
             {/* Step Number Badge */}
-            <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                <div className="absolute -top-3 -left-3 w-8 h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
                 {stepNumber}
             </div>
 
@@ -116,7 +116,7 @@ export default function Workflow() {
                 <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl" />
             </div>
 
-            <div className="relative w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+            <div className="relative w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
 
                 {/* Section Header */}
                 <motion.div
@@ -150,12 +150,12 @@ export default function Workflow() {
 
                 {/* Connecting Line (Desktop only) */}
                 <div className="hidden md:block relative">
-                    <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-gradient-to-r from-primary/50 via-accent/50 to-primary/50 -translate-y-1/2" />
+                    <div className="absolute left-0 right-0 top-1/2 h-0.5 bg-linear-to-r from-primary/50 via-accent/50 to-primary/50 -translate-y-1/2" />
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                         <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-                            className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center shadow-lg"
+                            className="w-12 h-12 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center shadow-lg"
                         >
                             <ArrowRight className="w-6 h-6 text-white" />
                         </motion.div>
@@ -163,15 +163,15 @@ export default function Workflow() {
                 </div>
 
                 {/* Process Description */}
-                <motion.div
+                    <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.3 }}
-                    className="my-12 p-6 md:p-8 bg-gradient-to-r from-primary/5 to-accent/5 rounded-2xl border border-white/10"
+                    className="my-12 p-6 md:p-8 bg-linear-to-r from-primary/5 to-accent/5 rounded-2xl border border-white/10"
                 >
                     <div className="flex items-start gap-4">
-                        <CheckCircle className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
+                        <CheckCircle className="w-6 h-6 text-accent shrink-0 mt-1" />
                         <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                             Being the leader in exhibition stand design & stand builder company in Germany, Europe,
                             we start the work only after understanding your company's vision and objective.
@@ -205,7 +205,7 @@ export default function Workflow() {
                 >
                     <a
                         href="/contact"
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
                     >
                         <span>Start Your Project</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />

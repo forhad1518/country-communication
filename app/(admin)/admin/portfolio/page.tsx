@@ -67,7 +67,7 @@ const DeleteModal = ({
             </div>
 
             <div className="flex items-start gap-3 mb-6">
-              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-gray-600">
                 Are you sure you want to delete <span className="font-semibold">"{itemTitle}"</span>?
                 This action cannot be undone.

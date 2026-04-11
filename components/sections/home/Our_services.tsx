@@ -63,7 +63,7 @@ const ServiceCard = ({ service, index }: { service: typeof servicesData[0]; inde
         >
             <Link href={service.link} className="block h-full">
                 <div className={`
-                    h-full bg-gradient-to-br ${service.color} 
+                    h-full bg-linear-to-br ${service.color} 
                     rounded-2xl p-6 md:p-8 
                     border border-white/10 
                     backdrop-blur-sm
@@ -82,7 +82,7 @@ const ServiceCard = ({ service, index }: { service: typeof servicesData[0]; inde
                     {/* Image Container */}
                     <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
                         {/* Glow Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-accent/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-linear-to-r from-primary/30 to-accent/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                         {/* Image */}
                         <Image
@@ -120,7 +120,7 @@ const ServiceCard = ({ service, index }: { service: typeof servicesData[0]; inde
                     </div>
 
                     {/* Hover Gradient Border */}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 via-primary/20 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                    <div className="absolute inset-0 rounded-2xl bg-linear-to-r from-primary/0 via-primary/20 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 </div>
             </Link>
         </motion.div>
@@ -130,8 +130,8 @@ const ServiceCard = ({ service, index }: { service: typeof servicesData[0]; inde
 // Main Component
 export default function OurServices() {
     return (
-        <section className="py-16 md:py-24 bg-gradient-to-b from-black via-gray-900 to-black overflow-hidden">
-            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+        <section className="py-16 md:py-24 bg-linear-to-b from-black via-gray-900 to-black overflow-hidden">
+            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
 
                 {/* Section Header */}
                 <div className="text-center mb-12 md:mb-16">
@@ -151,7 +151,7 @@ export default function OurServices() {
                         transition={{ delay: 0.1 }}
                         className="text-3xl md:text-4xl lg:text-5xl font-bold"
                     >
-                        <span className="bg-gradient-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
+                        <span className="bg-linear-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
                             Our Services
                         </span>
                     </motion.h2>
@@ -184,7 +184,7 @@ export default function OurServices() {
                 >
                     <Link
                         href="/services"
-                        className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
+                        className="inline-flex items-center gap-3 px-8 py-4 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
                     >
                         <span>View All Services</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />

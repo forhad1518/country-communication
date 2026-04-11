@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import logo from "@/public/logo_COCO.png";
 
 // Custom Social Icons Component
 const SocialIcon = ({ platform }: { platform: string }) => {
-    const icons: Record<string, JSX.Element> = {
+    const icons: Record<string, React.ReactNode> = {
         facebook: (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z" />
@@ -100,9 +101,9 @@ export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-gradient-to-br from-gray-900 to-black text-white">
+    <footer className="bg-linear-to-br from-gray-900 to-black text-white">
             {/* Main Footer */}
-            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto py-16 lg:py-20">
+            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto py-16 lg:py-20">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
 
                     {/* Company Info - 4 columns on large */}
@@ -225,7 +226,7 @@ export default function Footer() {
                             <address className="not-italic space-y-3">
                                 {/* Address */}
                                 <div className="flex items-start gap-3 text-gray-300 group">
-                                    <MapPin className="w-5 h-5 text-primary-light flex-shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
+                                    <MapPin className="w-5 h-5 text-primary-light shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
                                     <span className="text-sm">
                                         123 Main Street, Gulshan Avenue<br />
                                         Dhaka 1212, Bangladesh
@@ -234,7 +235,7 @@ export default function Footer() {
 
                                 {/* Email */}
                                 <div className="flex items-center gap-3 text-gray-300 group">
-                                    <Mail className="w-5 h-5 text-primary-light flex-shrink-0 group-hover:text-accent transition-colors" />
+                                    <Mail className="w-5 h-5 text-primary-light shrink-0 group-hover:text-accent transition-colors" />
                                     <a
                                         href="mailto:info@countrycomm.com"
                                         className="text-sm hover:text-accent transition-colors"
@@ -245,7 +246,7 @@ export default function Footer() {
 
                                 {/* Phone */}
                                 <div className="flex items-center gap-3 text-gray-300 group">
-                                    <Phone className="w-5 h-5 text-primary-light flex-shrink-0 group-hover:text-accent transition-colors" />
+                                    <Phone className="w-5 h-5 text-primary-light shrink-0 group-hover:text-accent transition-colors" />
                                     <a
                                         href="tel:+880123456789"
                                         className="text-sm hover:text-accent transition-colors"

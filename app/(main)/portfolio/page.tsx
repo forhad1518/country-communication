@@ -58,7 +58,7 @@ const PortfolioCard = ({ project, index }: { project: PortfolioType; index: numb
             className="group relative"
         >
             <Link href={`/portfolio/${project.slug}`} className="block h-full">
-                <div className="h-full bg-gradient-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-white/10 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group-hover:border-primary/30">
+                <div className="h-full bg-linear-to-br from-gray-900 to-black rounded-xl overflow-hidden border border-white/10 shadow-lg hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 group-hover:border-primary/30">
 
                     {/* Image Container */}
                     <div className="relative w-full h-56 md:h-64 overflow-hidden bg-gray-900">
@@ -70,10 +70,10 @@ const PortfolioCard = ({ project, index }: { project: PortfolioType; index: numb
                         />
 
                         {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                         {/* Overlay on Hover */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                             <span className="px-4 py-2 bg-primary text-white rounded-full text-sm font-medium transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 flex items-center gap-2 shadow-lg shadow-primary/30">
                                 <Eye className="w-4 h-4" />
                                 View Details
@@ -196,17 +196,17 @@ export default function Portfolio() {
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-accent/10 rounded-full blur-3xl" />
 
                 {/* Center subtle glow */}
-                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+                <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-150 h-150 bg-primary/5 rounded-full blur-3xl" />
 
                 {/* Bottom-left glow */}
                 <div className="absolute -bottom-40 -left-20 w-96 h-96 bg-accent/8 rounded-full blur-3xl" />
 
                 {/* Bottom-right glow */}
-                <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-primary/12 rounded-full blur-3xl" />
+                <div className="absolute -bottom-40 -right-40 w-125 h-125 bg-primary/12 rounded-full blur-3xl" />
             </div>
 
             {/* Content */}
-            <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto py-12 md:py-16">
+            <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto py-12 md:py-16">
 
                 {/* Header */}
                 <motion.div

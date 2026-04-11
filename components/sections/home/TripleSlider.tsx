@@ -79,7 +79,7 @@ export default function TripleSlider() {
                             />
 
                             {/* Gradient Overlay for better text visibility */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent"></div>
 
                             <div className="absolute bottom-10 left-10 text-white z-10">
                                 <h2 className="text-3xl font-bold">

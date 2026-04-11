@@ -76,7 +76,7 @@ export default function Navbar() {
                     : "bg-gray-100"
                 }`}
         >
-            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
                 <div className="flex items-center justify-between py-3 lg:py-4">
                     {/* Logo */}
                     <Link href="/" className="relative z-10">
@@ -119,7 +119,7 @@ export default function Navbar() {
                                     {/* Dropdown for Services */}
                                     {link.hasDropdown && link.dropdownItems && (
                                         <div className="absolute top-full left-0 mt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                                            <div className="bg-white rounded-lg shadow-xl border border-gray-100 py-2 min-w-[200px]">
+                                            <div className="bg-white rounded-lg shadow-xl border border-gray-100 py-2 min-w-50">
                                                 {link.dropdownItems.map((item) => (
                                                     <Link
                                                         key={item.href}

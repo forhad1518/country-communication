@@ -40,7 +40,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: { beforeImage: string; a
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-[400px] sm:h-[500px] md:h-[600px] overflow-hidden rounded-xl sm:rounded-2xl cursor-ew-resize select-none"
+            className="relative w-full h-100 sm:h-125 md:h-150 overflow-hidden rounded-xl sm:rounded-2xl cursor-ew-resize select-none"
             onMouseMove={handleMouseMove}
             onMouseDown={() => setIsDragging(true)}
             onMouseUp={() => setIsDragging(false)}
@@ -86,7 +86,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }: { beforeImage: string; a
                 style={{ left: `${sliderPosition}%` }}
             >
                 <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
-                    <div className="w-5 h-5 sm:w-8 sm:h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                    <div className="w-5 h-5 sm:w-8 sm:h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
                         <div className="flex gap-0.5 sm:gap-1">
                             <div className="w-0.5 sm:w-1 h-3 sm:h-4 bg-white rounded-full" />
                             <div className="w-0.5 sm:w-1 h-3 sm:h-4 bg-white rounded-full" />
@@ -111,7 +111,7 @@ const StatCard = ({ icon: Icon, label, value }: { icon: any; label: string; valu
         viewport={{ once: true }}
         className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10"
     >
-        <div className="p-2 sm:p-3 bg-gradient-to-br from-primary/20 to-accent/20 rounded-lg">
+    <div className="p-2 sm:p-3 bg-linear-to-br from-primary/20 to-accent/20 rounded-lg">
             <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary-light" />
         </div>
         <div>
@@ -139,14 +139,14 @@ const VideoShowcase = ({ videoUrl, thumbnail }: { videoUrl?: string; thumbnail: 
 
     if (!videoUrl) {
         return (
-            <div className="relative h-[300px] sm:h-[400px] rounded-xl sm:rounded-2xl overflow-hidden">
+            <div className="relative h-75 sm:h-100 rounded-xl sm:rounded-2xl overflow-hidden">
                 <Image src={thumbnail} alt="Showcase" fill className="object-cover" />
             </div>
         );
     }
 
     return (
-        <div className="relative h-[300px] sm:h-[400px] rounded-xl sm:rounded-2xl overflow-hidden group">
+        <div className="relative h-75 sm:h-100 rounded-xl sm:rounded-2xl overflow-hidden group">
             <video
                 ref={videoRef}
                 src={videoUrl}
@@ -231,11 +231,11 @@ export default function SinglePortfolio({
     const backgroundOpacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
 
     return (
-        <div ref={containerRef} className="bg-gradient-to-b from-black via-gray-900 to-black text-white">
+    <div ref={containerRef} className="bg-linear-to-b from-black via-gray-900 to-black text-white">
 
             {/* PROGRESS BAR */}
             <motion.div
-                className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-accent origin-left z-50"
+                className="fixed top-0 left-0 right-0 h-1 bg-linear-to-r from-primary to-accent origin-left z-50"
                 style={{ scaleX: scrollYProgress }}
             />
 
@@ -253,11 +253,11 @@ export default function SinglePortfolio({
                         className="object-cover"
                         priority
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black via-black/70 to-black/30" />
                 </motion.div>
 
                 {/* Hero Content - 80% Width Container */}
-                <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-20">
+                <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-16 sm:pb-20">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -310,14 +310,14 @@ export default function SinglePortfolio({
             </section>
 
             {/* OVERVIEW SECTION - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1200px] mx-auto px-4 sm:px-6 py-20 sm:py-32">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-300 mx-auto px-4 sm:px-6 py-20 sm:py-32">
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-100px" }}
                     className="text-center"
                 >
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-6 sm:mb-8 bg-gradient-to-r from-primary-light to-accent bg-clip-text text-transparent">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-6 sm:mb-8 bg-linear-to-r from-primary-light to-accent bg-clip-text text-transparent">
                         Project Overview
                     </h2>
                     <p className="text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed">
@@ -334,7 +334,7 @@ export default function SinglePortfolio({
             </section>
 
             {/* BEFORE/AFTER COMPARISON SLIDER - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-16 sm:py-20">
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -357,7 +357,7 @@ export default function SinglePortfolio({
             </section>
 
             {/* PROCESS & TIMELINE - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-20 sm:py-32">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-20 sm:py-32">
                 <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
                     {/* Left - Renders */}
                     <motion.div
@@ -384,7 +384,7 @@ export default function SinglePortfolio({
                                         fill
                                         className="object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </motion.div>
                             ))}
                         </div>
@@ -425,7 +425,7 @@ export default function SinglePortfolio({
 
             {/* VIDEO SHOWCASE - 80% Width */}
             {data.videoUrl && (
-                <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1200px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+                <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-300 mx-auto px-4 sm:px-6 py-16 sm:py-20">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -438,8 +438,8 @@ export default function SinglePortfolio({
             )}
 
             {/* MATERIALS & TECHNOLOGIES - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
-                <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-white/10">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-16 sm:py-20">
+                <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl sm:rounded-3xl p-8 sm:p-12 border border-white/10">
                     <h2 className="text-2xl sm:text-3xl font-semibold mb-6 sm:mb-8 text-center">Materials & Technologies</h2>
 
                     <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
@@ -461,7 +461,7 @@ export default function SinglePortfolio({
             </section>
 
             {/* RESULTS & TESTIMONIAL - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-20 sm:py-32">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-20 sm:py-32">
                 <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                     {/* Left - Stats */}
                     <motion.div
@@ -488,7 +488,7 @@ export default function SinglePortfolio({
 
                             {data.results.leads && (
                                 <div className="bg-white/5 rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-white/10 text-center">
-                                    <p className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-primary-light to-accent bg-clip-text text-transparent">
+                                    <p className="text-3xl sm:text-5xl font-bold bg-linear-to-r from-primary-light to-accent bg-clip-text text-transparent">
                                         {data.results.leads}+
                                     </p>
                                     <p className="text-gray-400 mt-2 text-sm sm:text-base">Qualified Leads</p>
@@ -497,7 +497,7 @@ export default function SinglePortfolio({
 
                             {data.results.roi && (
                                 <div className="bg-white/5 rounded-xl sm:rounded-2xl p-6 sm:p-8 border border-white/10 text-center">
-                                    <p className="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-primary-light to-accent bg-clip-text text-transparent">
+                                    <p className="text-3xl sm:text-5xl font-bold bg-linear-to-r from-primary-light to-accent bg-clip-text text-transparent">
                                         {data.results.roi}
                                     </p>
                                     <p className="text-gray-400 mt-2 text-sm sm:text-base">ROI</p>
@@ -515,13 +515,13 @@ export default function SinglePortfolio({
                     >
                         <div className="absolute -top-6 sm:-top-10 -left-6 sm:-left-10 text-6xl sm:text-8xl text-primary/20">"</div>
 
-                        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl sm:rounded-3xl p-8 sm:p-10 border border-white/10">
+                        <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl sm:rounded-3xl p-8 sm:p-10 border border-white/10">
                             <p className="text-lg sm:text-xl md:text-2xl text-gray-200 leading-relaxed italic">
                                 "{data.results.testimonial}"
                             </p>
 
                             <div className="mt-6 sm:mt-8 flex items-center gap-3 sm:gap-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
                                     <span className="text-white font-bold text-base sm:text-lg">
                                         {data.results.clientName.charAt(0)}
                                     </span>
@@ -539,7 +539,7 @@ export default function SinglePortfolio({
             </section>
 
             {/* GALLERY - 80% Width */}
-            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+            <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-16 sm:py-20">
                 <h2 className="text-2xl sm:text-3xl font-semibold mb-6 sm:mb-8">Gallery</h2>
 
                 {/* Main Gallery Image */}
@@ -547,7 +547,7 @@ export default function SinglePortfolio({
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="relative h-[300px] sm:h-[400px] md:h-[500px] rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-4"
+                    className="relative h-75 sm:h-100 md:h-125 rounded-xl sm:rounded-2xl overflow-hidden mb-3 sm:mb-4"
                 >
                     <Image
                         src={data.galleryImage[activeGalleryIndex]}
@@ -585,7 +585,7 @@ export default function SinglePortfolio({
 
             {/* TEAM SECTION - 80% Width */}
             {data.team && (
-                <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+                <section className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-16 sm:py-20">
                     <h2 className="text-2xl sm:text-3xl font-semibold mb-6 sm:mb-8 text-center">Project Team</h2>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -617,7 +617,7 @@ export default function SinglePortfolio({
             {/* NEXT PROJECT - 80% Width */}
             {next && (
                 <section className="border-t border-white/10">
-                    <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto px-4 sm:px-6 py-16 sm:py-20">
+                    <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto px-4 sm:px-6 py-16 sm:py-20">
                         <p className="text-gray-500 mb-2 text-sm sm:text-base">Next Project</p>
 
                         <motion.div
@@ -630,7 +630,7 @@ export default function SinglePortfolio({
                                 {next.title}
                             </h3>
 
-                            <div className="relative h-[250px] sm:h-[350px] md:h-[400px] rounded-xl sm:rounded-2xl overflow-hidden">
+                            <div className="relative h-62.5 sm:h-87.5 md:h-100 rounded-xl sm:rounded-2xl overflow-hidden">
                                 <Image
                                     src={next.liveImage}
                                     alt={next.title}
@@ -652,7 +652,7 @@ export default function SinglePortfolio({
 
             {/* CTA SECTION - 80% Width */}
             <section className="border-t border-white/10">
-                <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1000px] mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
+                <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-250 mx-auto px-4 sm:px-6 py-20 sm:py-24 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -660,7 +660,7 @@ export default function SinglePortfolio({
                     >
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">
                             Ready to build your <br />
-                            <span className="bg-gradient-to-r from-primary-light to-accent bg-clip-text text-transparent">
+                            <span className="bg-linear-to-r from-primary-light to-accent bg-clip-text text-transparent">
                                 next exhibition booth?
                             </span>
                         </h2>

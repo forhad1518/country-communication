@@ -4,12 +4,12 @@ import { successResponse, errorResponse } from "@/utils/response";
 
 export async function GET(
     request: Request,
-    { params }: { params: { slug: string } }
+    context: any
 ) {
     await connectDB();
 
     try {
-        const { slug } = params;
+        const { slug } = context.params;
         const data = await getPortfolioBySlug(slug);
 
         return successResponse(data);

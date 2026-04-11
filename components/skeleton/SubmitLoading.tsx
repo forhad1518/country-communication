@@ -26,7 +26,7 @@ export default function SubmitLoading({
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center gap-5 max-w-sm w-full mx-4"
+          className="bg-linear-to-br from-gray-900 to-black p-8 rounded-2xl shadow-2xl border border-white/10 flex flex-col items-center gap-5 max-w-sm w-full mx-4"
         >
           {/* Animated Spinner */}
           <div className="relative">
@@ -110,7 +110,7 @@ export default function SubmitLoading({
           {/* Exhibition Booth Animation */}
           <div className="relative w-24 h-24">
             <motion.div
-              className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-primary to-accent rounded-full"
+              className="absolute bottom-0 left-0 right-0 h-2 bg-linear-to-r from-primary to-accent rounded-full"
               animate={{ scaleX: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
@@ -125,7 +125,7 @@ export default function SubmitLoading({
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.5 }}
             />
             <motion.div
-              className="absolute top-4 left-3 right-3 h-1 bg-gradient-to-r from-primary to-accent"
+              className="absolute top-4 left-3 right-3 h-1 bg-linear-to-r from-primary to-accent"
               animate={{ opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1, repeat: Infinity }}
             />
@@ -137,7 +137,7 @@ export default function SubmitLoading({
           {progress > 0 && (
             <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-primary to-accent"
+                className="h-full bg-linear-to-r from-primary to-accent"
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.3 }}
@@ -191,7 +191,7 @@ export default function SubmitLoading({
           {/* Progress Bar */}
           <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
             <motion.div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-accent"
+              className="absolute inset-y-0 left-0 bg-linear-to-r from-primary to-accent"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.5 }}
@@ -228,7 +228,7 @@ export function SubmitLoadingSimple() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-2xl shadow-2xl border border-primary/20 flex flex-col items-center gap-4"
+  className="bg-linear-to-br from-gray-900 to-black p-8 rounded-2xl shadow-2xl border border-primary/20 flex flex-col items-center gap-4"
       >
         {/* Glow Effect */}
         <div className="absolute inset-0 bg-primary/5 rounded-2xl blur-xl" />

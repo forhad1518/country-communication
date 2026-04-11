@@ -44,26 +44,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const currentPage = controllMenu.find(menu => isActive(menu.link))?.button || "Dashboard";
 
     return (
-        <div className="h-screen flex overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="h-screen flex overflow-hidden bg-linear-to-br from-gray-50 to-gray-100">
 
             {/* Desktop Sidebar */}
             <motion.aside
                 initial={false}
                 animate={{ width: sidebarCollapsed ? "80px" : "280px" }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="hidden md:flex flex-col bg-gradient-to-b from-gray-900 to-black border-r border-white/10 relative"
+                className="hidden md:flex flex-col bg-linear-to-b from-gray-900 to-black border-r border-white/10 relative"
             >
                 {/* Sidebar Header */}
                 <div className={`h-16 flex items-center ${sidebarCollapsed ? "justify-center px-2" : "px-6"} border-b border-white/10`}>
                     {!sidebarCollapsed ? (
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">C</span>
                             </div>
                             <span className="text-white font-bold text-lg">CountryComm</span>
                         </div>
                     ) : (
-                        <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                            <div className="w-8 h-8 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">C</span>
                         </div>
                     )}
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         : "text-gray-400 hover:bg-white/5 hover:text-white"
                                     }`}
                             >
-                                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive(menu.link) ? "text-white" : "group-hover:text-primary-light"}`} />
+                                <Icon className={`w-5 h-5 shrink-0 ${isActive(menu.link) ? "text-white" : "group-hover:text-primary-light"}`} />
 
                                 {!sidebarCollapsed && (
                                     <span className="text-sm font-medium">{menu.button}</span>
@@ -112,7 +112,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className={`p-4 border-t border-white/10 ${sidebarCollapsed ? "text-center" : ""}`}>
                     <button className={`flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-red-400 transition-all duration-200 w-full ${sidebarCollapsed ? "justify-center" : ""
                         }`}>
-                        <LogOut className="w-5 h-5 flex-shrink-0" />
+                        <LogOut className="w-5 h-5 shrink-0" />
                         {!sidebarCollapsed && <span className="text-sm font-medium">Logout</span>}
                     </button>
                 </div>
@@ -164,7 +164,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                         {/* Admin Profile */}
                         <div className="flex items-center gap-2 pl-2 border-l border-gray-200">
-                            <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
                                 <span className="text-white font-semibold text-sm">A</span>
                             </div>
                             <span className="hidden sm:block text-sm font-medium text-gray-700">Admin</span>
@@ -199,12 +199,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             animate={{ x: 0 }}
                             exit={{ x: "-100%" }}
                             transition={{ type: "spring", damping: 30 }}
-                            className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-gray-900 to-black z-50 md:hidden"
+                            className="fixed left-0 top-0 bottom-0 w-72 bg-linear-to-b from-gray-900 to-black z-50 md:hidden"
                         >
                             {/* Mobile Header */}
                             <div className="h-16 flex items-center justify-between px-6 border-b border-white/10">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
+                                    <div className="w-8 h-8 bg-linear-to-r from-primary to-accent rounded-lg flex items-center justify-center">
                                         <span className="text-white font-bold text-lg">C</span>
                                     </div>
                                     <span className="text-white font-bold text-lg">CountryComm</span>

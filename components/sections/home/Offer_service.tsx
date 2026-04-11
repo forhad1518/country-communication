@@ -33,11 +33,11 @@ export default function Offer_service() {
             <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
             
             {/* Brand Color Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
+            <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
 
             {/* Content */}
             <div className="relative z-10">
-                <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+                <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
                     
                     {/* Section Header */}
                     <motion.div
@@ -67,7 +67,7 @@ export default function Offer_service() {
                                 <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 h-full border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-300">
                                     
                                     {/* Logo Container */}
-                                    <div className="relative w-full aspect-[4/3] mb-3 md:mb-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 group-hover:from-primary/5 group-hover:to-accent/5 transition-colors">
+                                    <div className="relative w-full aspect-4/3 mb-3 md:mb-4 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg p-3 group-hover:from-primary/5 group-hover:to-accent/5 transition-colors">
                                         <Image
                                             src={service.logo}
                                             alt={service.title}
@@ -84,7 +84,7 @@ export default function Offer_service() {
                                     </div>
 
                                     {/* Hover Indicator */}
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-3/4 transition-all duration-300 rounded-full" />
+                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-linear-to-r from-primary to-accent group-hover:w-3/4 transition-all duration-300 rounded-full" />
                                 </div>
                             </motion.div>
                         ))}
