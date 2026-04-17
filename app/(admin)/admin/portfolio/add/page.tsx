@@ -187,7 +187,6 @@ export default function AddPortfolio() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [collapsedSections, setCollapsedSections] = useState<string[]>([]);
-  const [formProgress, setFormProgress] = useState(0);
 
   const [preview, setPreview] = useState<PreviewState>({
     design: null,
@@ -361,7 +360,7 @@ export default function AddPortfolio() {
         designImage,
         liveImage,
         gallery,
-        slug,
+        slug
       };
 
       await axios.post("/api/portfolio", data);
@@ -419,10 +418,10 @@ export default function AddPortfolio() {
               />
               <Select name="exhibition" label="Exhibition" required error={errors.exhibition}>
                 <option value="">Select Exhibition</option>
-                <option>Dubai Expo 2024</option>
-                <option>CES 2024</option>
-                <option>MWC Barcelona 2024</option>
-                <option>IFA Berlin 2024</option>
+                <option value="dubai-expo-2024">Dubai Expo 2024</option>
+                <option value="ces-2024">CES 2024</option>
+                <option value="mwc-barcelona-2024">MWC Barcelona 2024</option>
+                <option value="ifa-berlin-2024">IFA Berlin 2024</option>
               </Select>
               <Input name="clientName" label="Client Name" required error={errors.clientName} />
               <Input name="boothSize" label="Booth Size (sqm)" required error={errors.boothSize} />

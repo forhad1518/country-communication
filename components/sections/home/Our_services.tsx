@@ -80,7 +80,7 @@ const ServiceCard = ({ service, index }: { service: typeof servicesData[0]; inde
                     </div>
 
                     {/* Image Container */}
-                    <div className="relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-6">
+                    <div className="relative w-32 h-32 md:w-40 md:h-40  mx-auto mb-6">
                         {/* Glow Effect */}
                         <div className="absolute inset-0 bg-linear-to-r from-primary/30 to-accent/30 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 

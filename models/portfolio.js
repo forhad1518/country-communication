@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 
 const portfolioSchema = new mongoose.Schema({
     title: { type: String, required: true },
-
     exhibition_name: { type: String, required: true },
 
     // PROJECT INFO
@@ -11,14 +10,14 @@ const portfolioSchema = new mongoose.Schema({
         boothSize: { type: String, required: true },
         location: { type: String },
         buildTime: { type: String },
-        projectOverview: { type: String },
+        overview: { type: String },  // Changed from projectOverview to match form
     },
 
-    //  BRIEF
+    // BRIEF
     objective: { type: String },
     challenges: { type: String },
 
-    //  DESIGN PROCESS
+    // DESIGN PROCESS
     process: {
         renders: [{ type: String }],
         realImages: [{ type: String }],
@@ -26,7 +25,7 @@ const portfolioSchema = new mongoose.Schema({
         processText: { type: String },
     },
 
-    //  MATERIAL & TECH
+    // MATERIAL & TECH
     materials: [{ type: String }],
     technologies: [{ type: String }],
 
@@ -35,9 +34,8 @@ const portfolioSchema = new mongoose.Schema({
 
     // RESULTS
     results: {
-        visitors: { type: Number },
+        visitors: { type: String },  // Changed from Number to String to match form input
         engagement: { type: String },
-
         testimonial: { type: String },
         clientName: { type: String },
         clientImage: { type: String },
@@ -49,7 +47,7 @@ const portfolioSchema = new mongoose.Schema({
     // IMAGES
     designImage: { type: String, required: true },
     liveImage: { type: String, required: true },
-    galleryImage: [{ type: String, required: true }],
+    gallery: [{ type: String }],  // Changed from galleryImage to gallery to match form
 
     slug: {
         type: String,

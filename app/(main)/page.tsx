@@ -5,6 +5,7 @@ import Offer_service from "@/components/sections/home/Offer_service";
 import Our_services from "@/components/sections/home/Our_services";
 import Workflow from "@/components/sections/home/Workflow";
 import Working_process from "@/components/sections/home/Working_process";
+import ExhibitionCampaign from "@/components/sections/home/ExhibitionCampaign";
 
 
 export default function Home() {
@@ -26,6 +27,10 @@ export default function Home() {
         <Workflow />
       </div>
       {/* Working process */}
+      {/* next exhibition */}
+      <div className="">
+        <ExhibitionCampaign />
+      </div>
       <div>
         <Working_process/>
       </div>
