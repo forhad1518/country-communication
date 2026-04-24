@@ -853,7 +853,7 @@ export default function BlogDetailPage() {
                                     <button
                                         onClick={handleLike}
                                         className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isLiked
-                                                ? "bg-primary/20 text-primary-light border border-primary/30"
+                                                ? "bg-primary/20 text-red-500 border border-primary/30"
                                                 : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50"
                                             }`}
                                     >

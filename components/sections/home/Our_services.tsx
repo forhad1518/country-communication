@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import Heading1  from "@/components/Heading1"; // Updated heading component
+import Heading1 from "@/components/Heading1"; // Updated heading component
 import exibition from "@/public/images/service_vector/stole.png";
 import logistics from "@/public/images/service_vector/logistics.webp";
 import interior from "@/public/images/service_vector/interior.png";
@@ -135,14 +135,6 @@ export default function OurServices() {
 
                 {/* Section Header */}
                 <div className="text-center mb-12 md:mb-16">
-                    <motion.span
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="inline-block px-4 py-1.5 bg-primary/10 text-amber-50 text-primary-light text-sm font-medium rounded-full mb-4 border border-primary/20"
-                    >
-                        What We Offer
-                    </motion.span>
 
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -151,9 +143,7 @@ export default function OurServices() {
                         transition={{ delay: 0.1 }}
                         className="text-3xl md:text-4xl lg:text-5xl font-bold"
                     >
-                        <span className="bg-linear-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
-                            Our Services
-                        </span>
+                        <Heading1 text="Our Services" />
                     </motion.h2>
 
                     <motion.p

@@ -7,6 +7,6 @@ export default function robots() {
         disallow: ["/admin", "/admin/blog", "/api", "/admin/portfolio", "/admin/settings", "/admin/users"],
       },
     ],
-    sitemap: "https://yourdomain.com/sitemap.xml",
+    sitemap: "https://countrycommu.com/sitemap.xml",
   };
 };

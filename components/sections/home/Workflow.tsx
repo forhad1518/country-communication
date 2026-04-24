@@ -37,7 +37,7 @@ const WorkflowStep = ({
             className="group relative p-6 bg-linear-to-br from-gray-900/50 to-black/50 rounded-xl border border-white/10 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300"
         >
             {/* Step Number Badge */}
-                <div className="absolute -top-3 -left-3 w-8 h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+            <div className="absolute -top-3 -left-3 w-8 h-8 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
                 {stepNumber}
             </div>
 
@@ -109,7 +109,7 @@ export default function Workflow() {
     ];
 
     return (
-        <section className="py-16 md:py-24 bg-black relative overflow-hidden">
+        <section className="py-8 md:py-10 bg-black relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
@@ -117,22 +117,6 @@ export default function Workflow() {
             </div>
 
             <div className="relative w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
-
-                {/* Section Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-center mb-12"
-                >
-                    <span className="inline-block px-4 py-1.5 text-amber-50 bg-primary/10 text-primary-light text-sm font-medium rounded-full mb-4 border border-primary/20">
-                        Our Process
-                    </span>
-
-                    <h3 className="text-xl md:text-2xl lg:text-3xl font-bold max-w-4xl mx-auto leading-tight">
-                        <Heading1 text="Our Workflow of Exhibition Stand Builder And Booth Construction" />
-                    </h3>
-                </motion.div>
 
                 {/* Workflow Steps - Row 1 */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -163,7 +147,7 @@ export default function Workflow() {
                 </div>
 
                 {/* Process Description */}
-                    <motion.div
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}

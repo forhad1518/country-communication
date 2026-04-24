@@ -17,7 +17,7 @@ interface NavLink {
 }
 
 const navLinks: NavLink[] = [
-    { href: "/", label: "About Us" },
+    { href: "/about", label: "About Us" },
     {
         href: "/services",
         label: "Services",
@@ -30,6 +30,7 @@ const navLinks: NavLink[] = [
     },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
+    {href: "/contact", label: "Contact"}
 ];
 
 export default function Navbar() {

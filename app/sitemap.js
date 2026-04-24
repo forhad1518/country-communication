@@ -1,11 +1,11 @@
 export default function sitemap() {
   return [
     {
-      url: "https://yourdomain.com",
+      url: "https://countrycommu.com",
       lastModified: new Date(),
     },
     {
-      url: "https://yourdomain.com/blog",
+      url: "https://countrycommu.com/blog",
       lastModified: new Date(),
     },
   ];
