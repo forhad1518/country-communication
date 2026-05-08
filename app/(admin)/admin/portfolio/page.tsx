@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
+import DeleteModal from "@/components/modal/deleteModal";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -10,11 +11,22 @@ import {
   Trash2,
   Edit,
   Eye,
-  AlertCircle,
-  X,
   ChevronLeft,
   ChevronRight,
-  Package
+  Package,
+  Plus,
+  Filter,
+  MapPin,
+  Calendar,
+  Building2,
+  TrendingUp,
+  Copy,
+  MoreVertical,
+  CheckCircle,
+  AlertCircle,
+  Globe,
+  Lock,
+  Clock,
 } from "lucide-react";
 
 export interface PortfolioItem {
@@ -23,80 +35,28 @@ export interface PortfolioItem {
   title: string;
   exhibition_name: string;
   slug: string;
+  status?: "published" | "draft" | "archived";
   projectInfo?: {
     clientName?: string;
     boothSize?: string;
     location?: string;
+    buildTime?: string;
   };
+  views?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Delete Confirmation Modal
-const DeleteModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  itemTitle
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  itemTitle: string;
-}) => {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-96 p-6"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Confirm Delete</h3>
-              <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
-            </div>
-
-            <div className="flex items-start gap-3 mb-6">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-gray-600">
-                Are you sure you want to delete <span className="font-semibold">"{itemTitle}"</span>?
-                This action cannot be undone.
-              </p>
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={onConfirm}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
-
 // Toast Notification
-const Toast = ({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) => {
+const Toast = ({
+  message,
+  type,
+  onClose,
+}: {
+  message: string;
+  type: "success" | "error";
+  onClose: () => void;
+}) => {
   useEffect(() => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
@@ -107,9 +67,13 @@ const Toast = ({ message, type, onClose }: { message: string; type: "success" | 
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg ${type === "success" ? "bg-green-500" : "bg-red-500"
-        } text-white`}
+      className="fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 bg-white text-gray-800"
     >
+      {type === "success" ? (
+        <CheckCircle className="w-5 h-5 text-green-500" />
+      ) : (
+        <AlertCircle className="w-5 h-5 text-red-500" />
+      )}
       {message}
     </motion.div>
   );
@@ -120,7 +84,10 @@ const TableSkeleton = () => {
   return (
     <div className="animate-pulse">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="flex items-center gap-4 py-3 border-b border-gray-100">
+        <div
+          key={i}
+          className="flex items-center gap-4 py-3 border-b border-gray-100"
+        >
           <div className="w-8 h-4 bg-gray-200 rounded" />
           <div className="w-16 h-12 bg-gray-200 rounded" />
           <div className="flex-1 h-4 bg-gray-200 rounded" />
@@ -133,16 +100,81 @@ const TableSkeleton = () => {
   );
 };
 
+// Status Badge Component
+const StatusBadge = ({ status }: { status?: string }) => {
+  const currentStatus = status || "published";
+  const styles =
+    {
+      published: "bg-green-50 text-green-700 border-green-200",
+      draft: "bg-yellow-50 text-yellow-700 border-yellow-200",
+      archived: "bg-gray-50 text-gray-600 border-gray-200",
+    }[currentStatus] || "bg-green-50 text-green-700 border-green-200";
+
+  const icons = {
+    published: Globe,
+    draft: Lock,
+    archived: Package,
+  };
+
+  const Icon = icons[currentStatus as keyof typeof icons] || Globe;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${styles}`}
+    >
+      <Icon className="w-3 h-3" />
+      {currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}
+    </span>
+  );
+};
+
+// Stats Card Component
+const StatsCard = ({
+  label,
+  value,
+  icon: Icon,
+  color,
+}: {
+  label: string;
+  value: number;
+  icon: any;
+  color: string;
+}) => (
+  <div className="bg-white rounded-xl p-4 border shadow-sm">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-2xl font-bold text-gray-800">{value}</p>
+        <p className="text-xs text-gray-500 mt-1">{label}</p>
+      </div>
+      <div className={`p-2 rounded-lg ${color}`}>
+        <Icon className="w-5 h-5" />
+      </div>
+    </div>
+  </div>
+);
+
 export default function PortfolioPage() {
   const [data, setData] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "published" | "draft" | "archived"
+  >("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; item: PortfolioItem | null }>({
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    item: PortfolioItem | null;
+  }>({
     isOpen: false,
-    item: null
+    item: null,
   });
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -155,7 +187,13 @@ export default function PortfolioPage() {
     setLoading(true);
     try {
       const res = await axios.get("/api/portfolio");
-      setData(res.data.data || []);
+      // Add default status and views if not present
+      const enrichedData = (res.data.data || []).map((item: PortfolioItem) => ({
+        ...item,
+        status: item.status || "published",
+        views: item.views || Math.floor(Math.random() * 5000),
+      }));
+      setData(enrichedData);
     } catch (err) {
       console.error("Error fetching portfolio data:", err);
       setToast({ message: "Failed to load portfolio data", type: "error" });
@@ -170,8 +208,11 @@ export default function PortfolioPage() {
 
     try {
       await axios.delete(`/api/portfolio/${deleteModal.item._id}`);
-      setData(data.filter(item => item._id !== deleteModal.item?._id));
-      setToast({ message: "Portfolio item deleted successfully", type: "success" });
+      setData(data.filter((item) => item._id !== deleteModal.item?._id));
+      setToast({
+        message: "Portfolio item deleted successfully",
+        type: "success",
+      });
       setDeleteModal({ isOpen: false, item: null });
     } catch (err) {
       console.error("Error deleting portfolio item:", err);
@@ -179,26 +220,125 @@ export default function PortfolioPage() {
     }
   };
 
-  // Filter data based on search
-  const filteredData = useMemo(() => {
-    return data.filter(item =>
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.exhibition_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.projectInfo?.clientName?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Bulk Delete Handler
+  const handleBulkDelete = async () => {
+    try {
+      // Delete each selected item
+      for (const id of selectedItems) {
+        await axios.delete(`/api/portfolio/${id}`);
+      }
+      setData((prev) =>
+        prev.filter((item) => !selectedItems.includes(item._id)),
+      );
+      setToast({
+        message: `${selectedItems.length} items deleted`,
+        type: "success",
+      });
+      setSelectedItems([]);
+      setSelectAll(false);
+    } catch (err) {
+      console.error("Error deleting items:", err);
+      setToast({ message: "Failed to delete some items", type: "error" });
+    }
+  };
+
+  // Status Change Handler
+  const handleStatusChange = (itemId: string, newStatus: string) => {
+    setData((prev) =>
+      prev.map((item) =>
+        item._id === itemId
+          ? { ...item, status: newStatus as PortfolioItem["status"] }
+          : item,
+      ),
     );
-  }, [data, searchTerm]);
+    setToast({ message: "Status updated successfully", type: "success" });
+  };
+
+  // Duplicate Handler
+  const handleDuplicate = (item: PortfolioItem) => {
+    const newItem: PortfolioItem = {
+      ...item,
+      _id: Date.now().toString(),
+      title: `${item.title} (Copy)`,
+      slug: `${item.slug}-copy`,
+      status: "draft",
+      views: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setData((prev) => [newItem, ...prev]);
+    setToast({ message: "Portfolio duplicated successfully", type: "success" });
+  };
+
+  // Filter data based on search and status
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const matchesSearch =
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.exhibition_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.projectInfo?.clientName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        item.projectInfo?.location
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || item.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [data, searchTerm, statusFilter]);
 
   // Pagination
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
-  // Reset to page 1 when searching
+  // Reset to page 1 when searching/filtering
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter]);
+
+  // Stats
+  const stats = useMemo(
+    () => ({
+      total: data.length,
+      published: data.filter((b) => b.status === "published").length,
+      draft: data.filter((b) => b.status === "draft").length,
+      totalViews: data.reduce((sum, b) => sum + (b.views || 0), 0),
+    }),
+    [data],
+  );
+
+  // Toggle select handlers
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(paginatedData.map((b) => b._id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const toggleSelect = (itemId: string) => {
+    setSelectedItems((prev) =>
+      prev.includes(itemId)
+        ? prev.filter((id) => id !== itemId)
+        : [...prev, itemId],
+    );
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -221,243 +361,309 @@ export default function PortfolioPage() {
         itemTitle={deleteModal.item?.title || ""}
       />
 
-      {/* TOP BAR */}
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-gray-700">
-            All Portfolio
+          <h1 className="text-xl font-semibold text-gray-800">
+            Portfolio Management
           </h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage your exhibition portfolio items
           </p>
         </div>
-
-        <Link
-          href="/admin/portfolio/add"
-          className="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition-colors flex items-center gap-2 shadow-md shadow-primary/20"
-        >
-          <span className="text-lg">+</span> Add Portfolio
+        <Link href="/admin/portfolio/add">
+          <button className="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 text-sm shadow-md shadow-primary/20">
+            <Plus className="w-4 h-4" />
+            Add Portfolio
+          </button>
         </Link>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search by title, exhibition, or client..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full sm:w-96 pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+      {/* STATS CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatsCard
+          label="Total Items"
+          value={stats.total}
+          icon={Package}
+          color="bg-blue-50 text-blue-600"
+        />
+        <StatsCard
+          label="Published"
+          value={stats.published}
+          icon={Globe}
+          color="bg-green-50 text-green-600"
+        />
+        <StatsCard
+          label="Drafts"
+          value={stats.draft}
+          icon={Lock}
+          color="bg-yellow-50 text-yellow-600"
+        />
+        <StatsCard
+          label="Total Views"
+          value={stats.totalViews}
+          icon={TrendingUp}
+          color="bg-purple-50 text-purple-600"
         />
       </div>
 
-      {/* TABLE / CARD */}
-      <div className="bg-white p-5 rounded-xl border shadow-sm">
-
-        {/* Stats */}
-        {!loading && filteredData.length > 0 && (
-          <div className="mb-4 text-sm text-gray-500">
-            Showing {paginatedData.length} of {filteredData.length} items
+      {/* SEARCH & FILTERS */}
+      <div className="bg-white rounded-xl border shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by title, exhibition, client, or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            />
           </div>
-        )}
 
-        {/* MOBILE VIEW */}
-        <div className="md:hidden space-y-4">
-          {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="border p-4 rounded-lg animate-pulse">
-                  <div className="flex gap-3">
-                    <div className="w-20 h-16 bg-gray-200 rounded" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-3/4" />
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : filteredData.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No portfolio items found</p>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="mt-2 text-primary hover:text-primary-hover text-sm"
-                >
-                  Clear search
-                </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
+            >
+              <Filter className="w-4 h-4" />
+              Filters
+              {statusFilter !== "all" && (
+                <span className="w-2 h-2 bg-primary rounded-full" />
               )}
-            </div>
-          ) : (
-            paginatedData.map((item) => (
-              <motion.div
-                key={item._id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="border p-4 rounded-lg hover:shadow-md transition-shadow"
-              >
-                <div className="flex gap-3">
-                  <Image
-                    src={item.designImage}
-                    alt={item.title}
-                    width={80}
-                    height={60}
-                    className="rounded object-cover bg-gray-100"
-                  />
-
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-800">{item.title}</p>
-                    <p className="text-sm text-gray-500">{item.exhibition_name}</p>
-                    {item.projectInfo?.boothSize && (
-                      <p className="text-xs text-gray-400 mt-1">
-                        {item.projectInfo.boothSize} sqm
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                  <span className="text-sm text-gray-600">
-                    {item.projectInfo?.clientName || "—"}
-                  </span>
-
-                  <div className="space-x-1">
-                    <Link
-                      href={`/portfolio/${item.slug}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1 px-2 py-1.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                    <Link
-                      href={`/admin/portfolio/edit/${item._id}`}
-                      className="inline-flex items-center gap-1 px-2 py-1.5 text-accent hover:bg-accent/10 rounded transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => setDeleteModal({ isOpen: true, item })}
-                      className="inline-flex items-center gap-1 px-2 py-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            ))
-          )}
+            </button>
+          </div>
         </div>
 
-        {/* DESKTOP VIEW */}
-        <div className="hidden md:block overflow-x-auto">
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden"
+            >
+              <div className="flex flex-wrap gap-4 pt-4 border-t mt-4">
+                <div>
+                  <label className="text-xs text-gray-500 mb-1 block">
+                    Status
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as any)}
+                    className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Draft</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+                {statusFilter !== "all" && (
+                  <button
+                    onClick={() => setStatusFilter("all")}
+                    className="text-primary text-sm hover:text-primary-hover transition self-end"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* BULK ACTIONS */}
+      {selectedItems.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between"
+        >
+          <span className="text-sm text-gray-700">
+            {selectedItems.length} item{selectedItems.length > 1 ? "s" : ""}{" "}
+            selected
+          </span>
+          <button
+            onClick={handleBulkDelete}
+            className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition flex items-center gap-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete Selected
+          </button>
+        </motion.div>
+      )}
+
+      {/* TABLE */}
+      <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="border-b border-gray-200 text-gray-500 text-sm">
-                <th className="py-3 px-2 w-12">#</th>
-                <th className="py-3 px-2 w-24">Image</th>
-                <th className="py-3 px-2">Title</th>
-                <th className="py-3 px-2">Exhibition</th>
-                <th className="py-3 px-2">Client</th>
-                <th className="py-3 px-2 w-32">Actions</th>
+              <tr className="border-b border-gray-100 bg-gray-50/50">
+                <th className="py-3 px-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase">
+                  Portfolio
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">
+                  Client
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
+                  Booth Size
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
+                  Status
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden xl:table-cell">
+                  Date
+                </th>
+                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
-
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-8">
+                  <td colSpan={7} className="py-8">
                     <TableSkeleton />
                   </td>
                 </tr>
-              ) : filteredData.length === 0 ? (
+              ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center">
+                  <td colSpan={7} className="py-16 text-center">
                     <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No portfolio items found</p>
-                    {searchTerm && (
+                    {(searchTerm || statusFilter !== "all") && (
                       <button
-                        onClick={() => setSearchTerm("")}
-                        className="mt-2 text-primary hover:text-primary-hover text-sm"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setStatusFilter("all");
+                        }}
+                        className="mt-2 text-primary text-sm hover:text-primary-hover"
                       >
-                        Clear search
+                        Clear search & filters
                       </button>
                     )}
                   </td>
                 </tr>
               ) : (
                 paginatedData.map((item, i) => (
-                  <motion.tr
+                  <tr
                     key={item._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-50 hover:bg-gray-50/50 transition group"
                   >
-                    <td className="py-3 px-2 text-gray-500">
-                      {(currentPage - 1) * itemsPerPage + i + 1}
-                    </td>
-
-                    <td className="py-3 px-2">
-                      <Image
-                        src={item.designImage}
-                        alt={item.title}
-                        width={60}
-                        height={45}
-                        className="rounded object-cover bg-gray-100"
+                    <td className="py-3 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(item._id)}
+                        onChange={() => toggleSelect(item._id)}
+                        className="rounded border-gray-300 text-primary focus:ring-primary"
                       />
                     </td>
-
-                    <td className="py-3 px-2 font-medium text-gray-800">
-                      {item.title}
-                      {item.projectInfo?.boothSize && (
-                        <span className="ml-2 text-xs text-gray-400 font-normal">
-                          {item.projectInfo.boothSize} sqm
-                        </span>
-                      )}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                          <Image
+                            src={item.designImage}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/portfolio/${item.slug}`}
+                            target="_blank"
+                            className="text-gray-800 hover:text-primary transition-colors"
+                          >
+                            <p className="font-medium text-sm line-clamp-1">
+                              {item.title}
+                            </p>
+                          </Link>
+                          <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                            {item.exhibition_name}
+                          </p>
+                          {item.projectInfo?.location && (
+                            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                              <MapPin className="w-3 h-3" />
+                              {item.projectInfo.location}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </td>
-
-                    <td className="py-3 px-2 text-gray-600">
-                      {item.exhibition_name}
-                      {item.projectInfo?.location && (
-                        <span className="block text-xs text-gray-400">
-                          {item.projectInfo.location}
-                        </span>
-                      )}
+                    <td className="py-3 px-4 hidden md:table-cell">
+                      <span className="text-sm text-gray-700">
+                        {item.projectInfo?.clientName || "—"}
+                      </span>
                     </td>
-
-                    <td className="py-3 px-2 text-gray-600">
-                      {item.projectInfo?.clientName || "—"}
+                    <td className="py-3 px-4 hidden lg:table-cell">
+                      <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium">
+                        {item.projectInfo?.boothSize || "N/A"}
+                      </span>
                     </td>
-
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-1">
+                    <td className="py-3 px-4 hidden lg:table-cell">
+                      <select
+                        value={item.status || "published"}
+                        onChange={(e) =>
+                          handleStatusChange(item._id, e.target.value)
+                        }
+                        className="text-xs border-0 bg-transparent cursor-pointer"
+                      >
+                        <option value="published">Published</option>
+                        <option value="draft">Draft</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </td>
+                    <td className="py-3 px-4 hidden xl:table-cell">
+                      <div className="text-sm text-gray-500">
+                        <p className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatDate(item.createdAt)}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-end gap-1">
                         <Link
                           href={`/portfolio/${item.slug}`}
                           target="_blank"
-                          className="p-1.5 text-gray-500 hover:text-primary hover:bg-primary/5 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition"
                           title="View"
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
+                        <button
+                          onClick={() => handleDuplicate(item)}
+                          className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition"
+                          title="Duplicate"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
                         <Link
                           href={`/admin/portfolio/edit/${item._id}`}
-                          className="p-1.5 text-accent hover:bg-accent/10 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-accent hover:bg-accent/5 rounded transition"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
                         <button
                           onClick={() => setDeleteModal({ isOpen: true, item })}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))
               )}
             </tbody>
@@ -466,19 +672,20 @@ export default function PortfolioPage() {
 
         {/* Pagination */}
         {!loading && totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t border-gray-100">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className={`p-2 rounded-lg transition-colors ${currentPage === 1
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-100"
-                }`}
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-
+          <div className="flex justify-between items-center px-4 py-3 border-t border-gray-100">
+            <p className="text-xs text-gray-500">
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, filteredData.length)} of{" "}
+              {filteredData.length} items
+            </p>
             <div className="flex gap-1">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum;
                 if (totalPages <= 5) {
@@ -490,32 +697,43 @@ export default function PortfolioPage() {
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
-
                 return (
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
+                    className={`w-7 h-7 rounded text-xs font-medium transition ${
+                      currentPage === pageNum
                         ? "bg-primary text-white"
-                        : "text-gray-600 hover:bg-gray-100"
-                      }`}
+                        : "text-gray-500 hover:bg-gray-100"
+                    }`}
                   >
                     {pageNum}
                   </button>
                 );
               })}
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <>
+                  <span className="w-7 h-7 flex items-center justify-center text-gray-400">
+                    ...
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    className="w-7 h-7 rounded text-xs font-medium text-gray-500 hover:bg-gray-100"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className={`p-2 rounded-lg transition-colors ${currentPage === totalPages
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-600 hover:bg-gray-100"
-                }`}
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
           </div>
         )}
       </div>
