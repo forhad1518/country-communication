@@ -1,4 +1,8 @@
 import mongoose from "mongoose";
+import { seedAdmin } from "@/lib/seedAdmin";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -22,9 +26,11 @@ const connectDB = async () => {
     });
   }
 
+  
   cached.conn = await cached.promise;
   console.log("MongoDB Connected");
-
+  
+  await seedAdmin();
   return cached.conn;
 };
 

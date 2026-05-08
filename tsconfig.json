@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "lib/jwt.js"  ],
+, "lib/jwt.js", "models/auth/users.ts"  ],
   "exclude": ["node_modules"]
 }
