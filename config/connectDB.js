@@ -30,7 +30,7 @@ const connectDB = async () => {
   cached.conn = await cached.promise;
   console.log("MongoDB Connected");
   
-  await seedAdmin();
+  // await seedAdmin();
   return cached.conn;
 };
 
