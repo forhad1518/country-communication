@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       try {
         jwt.verify(token, JWT_SECRET);
 
-        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+        return NextResponse.redirect(new URL("/admin", request.url));
       } catch (err) {
         return NextResponse.next();
       }
@@ -37,7 +37,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   try {
     jwt.verify(token, JWT_SECRET);
-
     return NextResponse.next();
   } catch (err) {
     return NextResponse.redirect(new URL("/login", request.url));

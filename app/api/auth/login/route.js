@@ -47,21 +47,21 @@ export async function POST(request) {
       role: user.role,
       email: user.email,
     });
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Login successful",
-        token,
-      },
-      { status: 200 },
-    );
+    // console.log("Generated token:", token);
+    const response = NextResponse.json({
+      success: true,
+      message: "Login successful",
+      status: 200,
+    });
+
     response.cookies.set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "development" ? false : true,
       sameSite: "strict",
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24, // 1 day
       path: "/",
     });
+    return response;
   } catch (error) {
     console.log("Login error:", error);
     return NextResponse.json(
@@ -72,4 +72,4 @@ export async function POST(request) {
       { status: 500 },
     );
   }
-};
+}

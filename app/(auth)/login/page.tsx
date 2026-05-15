@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail, LogIn, Sparkles, Shield } from "lucide-react";
-import Image from "next/image";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function UserAuth() {
   const [form, setForm] = useState({
@@ -14,6 +15,11 @@ export default function UserAuth() {
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const validate = () => {
     let err = { email: "", password: "" };
@@ -47,24 +53,34 @@ export default function UserAuth() {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
-
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!validate()) return;
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+      const res = await axios.post("/api/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      if (res.data.success) {
+        setIsSuccess(true);
+
+        setTimeout(() => {
+          router.push("/admin");
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.log(error);
+
+      alert(error?.response?.data?.message || "Login failed");
+    } finally {
       setLoading(false);
-      setIsSuccess(true);
-
-      // Reset after showing success
-      setTimeout(() => {
-        setIsSuccess(false);
-        setForm({ email: "", password: "" });
-      }, 2000);
-    }, 1500);
+    }
   };
 
   return (
@@ -78,30 +94,36 @@ export default function UserAuth() {
 
       {/* Animated Particles */}
       <div className="absolute inset-0 pointer-events-none">
-        {[...Array(10)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full"
-            initial={{
-              x:
-                Math.random() *
-                (typeof window !== "undefined" ? window.innerWidth : 1000),
-              y:
-                Math.random() *
-                (typeof window !== "undefined" ? window.innerHeight : 800),
-              opacity: 0,
-            }}
-            animate={{
-              y: [null, -100],
-              opacity: [0, 0.8, 0],
-            }}
-            transition={{
-              duration: Math.random() * 5 + 5,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-            }}
-          />
-        ))}
+        {mounted && (
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(10)].map((_, i) => {
+              const randomX = Math.random() * window.innerWidth;
+
+              const randomY = Math.random() * window.innerHeight;
+
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                  initial={{
+                    x: randomX,
+                    y: randomY,
+                    opacity: 0,
+                  }}
+                  animate={{
+                    y: [randomY, randomY - 100],
+                    opacity: [0, 0.8, 0],
+                  }}
+                  transition={{
+                    duration: Math.random() * 5 + 5,
+                    repeat: Infinity,
+                    delay: Math.random() * 5,
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Main Card */}
@@ -117,7 +139,6 @@ export default function UserAuth() {
         {/* Card Content */}
         <div className="relative bg-linear-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
           {/* Lock Icon */}
-          
 
           {/* Header */}
           <div className="text-center mb-8">

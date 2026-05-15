@@ -12,12 +12,7 @@ import {
   Clock,
   ArrowRight,
   Globe,
-  Monitor,
-  Smartphone,
-  Tablet,
   Activity,
-  MessageCircle,
-  MoreHorizontal,
   Download,
   CheckCircle,
 } from "lucide-react";
@@ -195,13 +190,13 @@ const StatCard = ({
           {link && (
             <Link
               href={link}
-              className="mt-3 text-xs text-primary hover:text-primary-hover transition flex items-center gap-1 inline-flex"
+              className="mt-3 text-xs text-primary hover:text-primary-hover transition flex items-center gap-1"
             >
               View Details <ArrowRight className="w-3 h-3" />
             </Link>
           )}
         </div>
-        <div className="p-3 rounded-xl bg-gray-50 flex-shrink-0">
+        <div className="p-3 rounded-xl bg-gray-50 shrink-0">
           <Icon className="w-6 h-6 text-primary" />
         </div>
       </div>
@@ -426,7 +421,7 @@ const SimpleDonutChart = ({
         {data.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
+              className="w-3 h-3 rounded-full shrink-0"
               style={{ backgroundColor: item.color }}
             />
             <span className="text-sm text-gray-600">{item.device}</span>
@@ -620,7 +615,7 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {topPages.map((page, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600 flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-600 shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -660,7 +655,7 @@ export default function DashboardPage() {
             {recentActivities.map((activity, i) => (
               <div key={i} className="flex gap-3">
                 <div
-                  className={`p-2 rounded-lg ${activity.bgColor} flex-shrink-0`}
+                  className={`p-2 rounded-lg ${activity.bgColor} shrink-0`}
                 >
                   <activity.icon className={`w-4 h-4 ${activity.textColor}`} />
                 </div>
@@ -672,7 +667,7 @@ export default function DashboardPage() {
                     {activity.description}
                   </p>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0">
+                <span className="text-xs text-gray-400 shrink-0">
                   {activity.time}
                 </span>
               </div>
