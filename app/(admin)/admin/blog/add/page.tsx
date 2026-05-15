@@ -4,39 +4,32 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+import uploadFiles from "@/helpers/upload.image";
+import slugify from "@/utils/slugify";
 import {
   X,
   Plus,
   Trash2,
   Upload,
   Image as ImageIcon,
-  Type,
   Quote,
   List,
   Heading1,
-  Heading2,
   AlignLeft,
   Save,
-  Eye,
   Send,
-  Clock,
-  Calendar,
   Tag,
   User,
   Globe,
-  Lock,
   AlertCircle,
   CheckCircle,
-  ChevronDown,
   ArrowLeft,
   FileText,
   Link,
-  Bold,
-  Italic,
-  Underline,
 } from "lucide-react";
 
-// Types (Same as blog detail page)
+// Types
 type ContentBlock = {
   id: string;
   type: "paragraph" | "heading" | "image" | "quote" | "list";
@@ -88,7 +81,187 @@ const Toast = ({
   );
 };
 
-// Content Block Editor
+// Drag & Drop Image Upload Component
+const ImageUpload = ({
+  label,
+  value,
+  onChange,
+  required = false,
+  error,
+}: {
+  label: string;
+  value: string;
+  onChange: (url: string) => void;
+  required?: boolean;
+  error?: string;
+}) => {
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(value || null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (file: File) => {
+    if (!file) return;
+
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
+
+    // Upload to server
+    setUploading(true);
+    try {
+      const slug = slugify(label + "_" + Date.now());
+      const uploadedUrl = await uploadFiles({
+        type: "single",
+        files: file,
+        slug: slug,
+        api: "/api/upload/image",
+      });
+
+      if (uploadedUrl) {
+        onChange(uploadedUrl);
+        setToastMessage?.({
+          message: "Image uploaded successfully!",
+          type: "success",
+        });
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setToastMessage?.({ message: "Failed to upload image", type: "error" });
+      setPreview(value || null);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
+
+  const removeImage = () => {
+    setPreview(null);
+    onChange("");
+  };
+
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+
+      {preview ? (
+        <div className="relative h-64 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200 group">
+          <Image src={preview} alt="Preview" fill className="object-cover" />
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-4 py-2 bg-white text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+            >
+              Change Image
+            </button>
+            <button
+              type="button"
+              onClick={removeImage}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition"
+            >
+              Remove
+            </button>
+          </div>
+          {uploading && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-gray-700">Uploading...</span>
+              </div>
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="hidden"
+          />
+        </div>
+      ) : (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => inputRef.current?.click()}
+          className={`h-64 rounded-xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : error
+                ? "border-red-300 bg-red-50"
+                : "border-gray-300 hover:border-primary hover:bg-gray-50"
+          }`}
+        >
+          {uploading ? (
+            <>
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-gray-500">Uploading image...</p>
+            </>
+          ) : (
+            <>
+              <Upload
+                className={`w-10 h-10 ${error ? "text-red-400" : "text-gray-400"}`}
+              />
+              <p
+                className={`text-sm ${error ? "text-red-600" : "text-gray-600"}`}
+              >
+                {isDragging
+                  ? "Drop image here"
+                  : "Click or drag image to upload"}
+              </p>
+              <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 10MB</p>
+            </>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="hidden"
+          />
+        </div>
+      )}
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+};
+
+// Toast message setter (shared across components)
+let setToastMessage:
+  | ((toast: { message: string; type: "success" | "error" }) => void)
+  | null = null;
+
+// Content Block Editor (Same as before - unchanged)
 const ContentBlockEditor = ({
   block,
   onChange,
@@ -104,7 +277,6 @@ const ContentBlockEditor = ({
 
   return (
     <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-primary/30 transition-colors group">
-      {/* Block Type Selector & Actions */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <select
@@ -133,7 +305,6 @@ const ContentBlockEditor = ({
         </button>
       </div>
 
-      {/* Block Content */}
       {block.type === "paragraph" && (
         <textarea
           value={block.content as string}
@@ -342,8 +513,10 @@ export default function AddBlogPage() {
     type: "success" | "error";
   } | null>(null);
   const [activeSection, setActiveSection] = useState("content");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [previewAvatar, setPreviewAvatar] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Set global toast
+  setToastMessage = setToast;
 
   const [formData, setFormData] = useState<BlogFormData>({
     title: "",
@@ -374,6 +547,11 @@ export default function AddBlogPage() {
     // Auto-generate slug from title
     if (field === "title") {
       setFormData((prev) => ({ ...prev, slug: generateSlug(value) }));
+    }
+
+    // Clear error when user types
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -416,28 +594,25 @@ export default function AddBlogPage() {
 
   // Validate form
   const validateForm = (): boolean => {
-    if (!formData.title.trim()) {
-      setToast({ message: "Blog title is required", type: "error" });
-      return false;
-    }
-    if (!formData.image.trim()) {
-      setToast({ message: "Featured image URL is required", type: "error" });
-      return false;
-    }
-    if (!formData.authorName.trim()) {
-      setToast({ message: "Author name is required", type: "error" });
-      return false;
-    }
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) newErrors.title = "Blog title is required";
+    if (!formData.image.trim()) newErrors.image = "Featured image is required";
+    if (!formData.authorName.trim())
+      newErrors.authorName = "Author name is required";
     if (
       formData.content.some(
         (b) =>
           !b.content || (typeof b.content === "string" && !b.content.trim()),
       )
     ) {
-      setToast({
-        message: "All content blocks must have content",
-        type: "error",
-      });
+      newErrors.content = "All content blocks must have content";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      setToast({ message: "Please fill all required fields", type: "error" });
       return false;
     }
     return true;
@@ -449,28 +624,44 @@ export default function AddBlogPage() {
 
     setLoading(true);
 
-    const finalData = {
-      ...formData,
-      status,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt:
-        status === "published" ? new Date().toISOString() : undefined,
-    };
+    try {
+      // Prepare data for API
+      const blogData = {
+        title: formData.title,
+        subtitle: formData.subtitle,
+        category: formData.category,
+        image: formData.image,
+        authorName: formData.authorName,
+        authorRole: formData.authorRole,
+        authorBio: formData.authorBio,
+        authorAvatar: formData.authorAvatar,
+        readTime: formData.readTime,
+        tags: formData.tags,
+        content: formData.content,
+        status: status,
+        slug: formData.slug || generateSlug(formData.title),
+      };
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Blog data:", finalData);
-      setLoading(false);
+      // Call API
+      const response = await axios.post("/api/blog", blogData);
+
       setToast({
         message: `Blog ${status === "published" ? "published" : "saved as draft"} successfully!`,
         type: "success",
       });
 
+      // Redirect to blog list after short delay
       setTimeout(() => {
         router.push("/admin/blog");
       }, 1500);
-    }, 1500);
+    } catch (error: any) {
+      console.error("Error creating blog:", error);
+      const errorMessage =
+        error.response?.data?.error || "Failed to create blog";
+      setToast({ message: errorMessage, type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sections = [
@@ -579,8 +770,15 @@ export default function AddBlogPage() {
                 value={formData.title}
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="Enter blog title..."
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className={`w-full px-4 py-2.5 border rounded-lg text-lg font-semibold focus:outline-none focus:ring-2 transition-all ${
+                  errors.title
+                    ? "border-red-300 bg-red-50 focus:ring-red-500/20"
+                    : "border-gray-300 focus:ring-primary/20 focus:border-primary"
+                }`}
               />
+              {errors.title && (
+                <p className="text-red-500 text-xs mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Slug */}
@@ -707,6 +905,9 @@ export default function AddBlogPage() {
                   />
                 ))}
               </div>
+              {errors.content && (
+                <p className="text-red-500 text-xs mt-1">{errors.content}</p>
+              )}
             </div>
           </motion.div>
         )}
@@ -722,41 +923,13 @@ export default function AddBlogPage() {
               Featured Image
             </h3>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                Featured Image URL <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.image}
-                onChange={(e) => {
-                  handleChange("image", e.target.value);
-                  setPreviewImage(e.target.value);
-                }}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-
-            {/* Image Preview */}
-            {formData.image && (
-              <div className="relative h-64 rounded-xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300">
-                <Image
-                  src={formData.image}
-                  alt="Featured preview"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
-
-            {!formData.image && (
-              <div className="h-64 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center text-gray-400">
-                <ImageIcon className="w-12 h-12 mb-2" />
-                <p className="text-sm">Image preview will appear here</p>
-                <p className="text-xs mt-1">Enter an image URL above</p>
-              </div>
-            )}
+            <ImageUpload
+              label="Featured Image"
+              value={formData.image}
+              onChange={(url) => handleChange("image", url)}
+              required
+              error={errors.image}
+            />
           </motion.div>
         )}
 
@@ -781,8 +954,17 @@ export default function AddBlogPage() {
                   value={formData.authorName}
                   onChange={(e) => handleChange("authorName", e.target.value)}
                   placeholder="Iqbal Mahmud"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
+                    errors.authorName
+                      ? "border-red-300 bg-red-50 focus:ring-red-500/20"
+                      : "border-gray-300 focus:ring-primary/20 focus:border-primary"
+                  }`}
                 />
+                {errors.authorName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.authorName}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
@@ -811,34 +993,11 @@ export default function AddBlogPage() {
               />
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                Author Avatar URL
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="text"
-                  value={formData.authorAvatar}
-                  onChange={(e) => {
-                    handleChange("authorAvatar", e.target.value);
-                    setPreviewAvatar(e.target.value);
-                  }}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                />
-                {formData.authorAvatar && (
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 shrink-0">
-                    <Image
-                      src={formData.authorAvatar}
-                      alt="Avatar"
-                      width={48}
-                      height={48}
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
+            <ImageUpload
+              label="Author Avatar"
+              value={formData.authorAvatar}
+              onChange={(url) => handleChange("authorAvatar", url)}
+            />
           </motion.div>
         )}
 
