@@ -216,7 +216,7 @@ BlogSchema.virtual("excerpt").get(function () {
 });
 
 // Pre-save middleware to auto-generate slug if empty
-BlogSchema.pre("save", function (next) {
+BlogSchema.pre("save", function () {
   if (!this.slug && this.title) {
     this.slug = this.title
       .toLowerCase()
@@ -234,12 +234,10 @@ BlogSchema.pre("save", function (next) {
   ) {
     this.publishedAt = new Date();
   }
-
-  next();
 });
 
 // Pre-save middleware to calculate read time if not provided
-BlogSchema.pre("save", function (next) {
+BlogSchema.pre("save", function () {
   if (!this.readTime || this.readTime === "5 min read") {
     let wordCount = 0;
     this.content.forEach((block: any) => {
@@ -254,7 +252,7 @@ BlogSchema.pre("save", function (next) {
     const minutes = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
     this.readTime = `${minutes} min read`;
   }
-  next();
+
 });
 
 // Export the model

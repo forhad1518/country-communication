@@ -5,13 +5,15 @@ import Blog from "@/models/blog";
 // GET - Fetch single blog by ID or slug
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     await dbConnect();
 
+    const { id } = await params;
+
     const blog = await Blog.findOne({
-      $or: [{ _id: params.id }, { slug: params.id }],
+      $or: [{ _id: id }, { slug: id }],
     });
 
     if (!blog) {
@@ -34,14 +36,15 @@ export async function GET(
 // PUT - Update blog
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     await dbConnect();
 
     const body = await req.json();
 
-    const blog = await Blog.findByIdAndUpdate(params.id, body, {
+    const blog = await Blog.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });
@@ -75,12 +78,13 @@ export async function PUT(
 // DELETE - Delete blog
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     await dbConnect();
 
-    const blog = await Blog.findByIdAndDelete(params.id);
+    const blog = await Blog.findByIdAndDelete(id);
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });

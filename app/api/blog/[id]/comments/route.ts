@@ -5,8 +5,9 @@ import Blog from "@/models/blog";
 // POST - Add comment
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     await dbConnect();
 
@@ -20,7 +21,7 @@ export async function POST(
       );
     }
 
-    const blog = await Blog.findById(params.id);
+    const blog = await Blog.findById(id);
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
@@ -52,8 +53,9 @@ export async function POST(
 // DELETE - Remove comment
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   try {
     await dbConnect();
 
@@ -67,7 +69,7 @@ export async function DELETE(
       );
     }
 
-    const blog = await Blog.findById(params.id);
+    const blog = await Blog.findById(id);
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });

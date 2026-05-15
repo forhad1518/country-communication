@@ -3,11 +3,9 @@ import type { NextRequest } from "next/server";
 
 import jwt from "jsonwebtoken";
 
-export const runtime = "nodejs";
-
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
   const token = request.cookies.get("token")?.value;
 
   const { pathname } = request.nextUrl;
@@ -37,6 +35,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   try {
     jwt.verify(token, JWT_SECRET);
+
     return NextResponse.next();
   } catch (err) {
     return NextResponse.redirect(new URL("/login", request.url));
