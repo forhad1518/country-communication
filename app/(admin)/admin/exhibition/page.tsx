@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useState, useMemo } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+} from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import DeleteModal from "@/components/modal/deleteModal";
@@ -10,712 +17,1007 @@ import { TableSkeleton } from "@/components/skeleton/TableSkeleton";
 import slugify from "@/utils/slugify";
 import uploadFiles from "@/helpers/upload.image";
 import {
-    Search,
-    Trash2,
-    Edit,
-    X,
-    AlertCircle,
-    CheckCircle,
-    MapPin,
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    Package,
-    Upload,
-    Plus
+  Search,
+  Trash2,
+  Edit,
+  X,
+  AlertCircle,
+  CheckCircle,
+  MapPin,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Package,
+  Upload,
+  Plus,
 } from "lucide-react";
 
 // Types
 type Exhibition = {
-    _id: string;
-    exhibitionName: string;
-    location: string;
-    description: string;
-    logo: string;
-    createdAt?: string;
+  _id: string;
+  exhibitionName: string;
+  location: string;
+  description: string;
+  logo: {
+    url: string;
+    publicId: string;
+  };
+  createdAt?: string;
 };
 
 // Toast Notification
-const Toast = ({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) => {
-    useEffect(() => {
-        const timer = setTimeout(onClose, 3000);
-        return () => clearTimeout(timer);
-    }, [onClose]);
+const Toast = ({
+  message,
+  type,
+  onClose,
+}: {
+  message: string;
+  type: "success" | "error";
+  onClose: () => void;
+}) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
 
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 ${type === "success" ? "bg-green-500" : "bg-red-500"
-                } text-white`}
-        >
-            {type === "success" ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-            {message}
-        </motion.div>
-    );
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 ${
+        type === "success" ? "bg-green-500" : "bg-red-500"
+      } text-white`}
+    >
+      {type === "success" ? (
+        <CheckCircle className="w-5 h-5" />
+      ) : (
+        <AlertCircle className="w-5 h-5" />
+      )}
+      {message}
+    </motion.div>
+  );
 };
 
-// Edit Modal
-const EditModal = ({
-    isOpen,
-    onClose,
-    onSave,
-    item
+// ===== DRAG & DROP IMAGE UPLOAD COMPONENT =====
+const ImageUpload = ({
+  label,
+  value,
+  onChange,
+  required = false,
+  error,
 }: {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (data: any) => Promise<void>;
-    item: Exhibition | null;
+  label: string;
+  value: { url: string; publicId: string } | null;
+  onChange: (file: File | null) => void;
+  required?: boolean;
+  error?: string;
 }) => {
-    const [preview, setPreview] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(value?.url || null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (item) {
-            setPreview(item.logo);
-        }
-    }, [item]);
+  useEffect(() => {
+    if (value?.url) {
+      setPreview(value.url);
+    }
+  }, [value]);
 
-    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setPreview(URL.createObjectURL(file));
-        }
-    };
+  const handleFile = async (file: File) => {
+    if (!file) return;
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
+    // Show preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
 
-        const form = e.currentTarget;
-        const formData = new FormData(form);
+    // Notify parent component
+    onChange(file);
+  };
 
-        try {
-            await onSave(formData);
-            onClose();
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleFile(file);
+    }
+  };
 
-    if (!item) return null;
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-                        onClick={onClose}
-                    />
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto"
-                    >
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-semibold text-gray-800">Edit Exhibition</h3>
-                            <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
-                                <X className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Exhibition Name</label>
-                                <input
-                                    type="text"
-                                    name="exhibiton_name"
-                                    defaultValue={item.exhibitionName}
-                                    required
-                                    className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFile(file);
+    }
+  };
 
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Location</label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    defaultValue={item.location}
-                                    required
-                                    className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
+  const removeImage = () => {
+    setPreview(null);
+    onChange(null); // Signal to delete
+  };
 
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Description</label>
-                                <textarea
-                                    name="description"
-                                    defaultValue={item.description}
-                                    required
-                                    rows={3}
-                                    className="mt-1 w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary"
-                                />
-                            </div>
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
 
-                            <div>
-                                <label className="text-sm font-medium text-gray-700">Logo</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    name="logo"
-                                    onChange={handleImageChange}
-                                    className="mt-1 w-full border p-2 rounded-lg"
-                                />
-                                {preview && (
-                                    <Image
-                                        src={preview}
-                                        alt="Preview"
-                                        width={100}
-                                        height={80}
-                                        className="mt-2 rounded object-cover"
-                                    />
-                                )}
-                            </div>
+      {preview ? (
+        <div className="relative h-40 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200 group">
+          <Image
+            src={preview}
+            alt="Preview"
+            fill
+            className="object-contain p-2"
+          />
+          {/* Overlay on hover */}
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className="px-4 py-2 bg-white text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-100 transition"
+            >
+              Change
+            </button>
+            <button
+              type="button"
+              onClick={removeImage}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition"
+            >
+              Remove
+            </button>
+          </div>
+          {uploading && (
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-gray-700">Uploading...</span>
+              </div>
+            </div>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="hidden"
+          />
+        </div>
+      ) : (
+        <div
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onClick={() => inputRef.current?.click()}
+          className={`h-40 rounded-xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : error
+                ? "border-red-300 bg-red-50"
+                : "border-gray-300 hover:border-primary hover:bg-gray-50"
+          }`}
+        >
+          {uploading ? (
+            <>
+              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm text-gray-500">Uploading...</p>
+            </>
+          ) : (
+            <>
+              <Upload
+                className={`w-8 h-8 ${error ? "text-red-400" : "text-gray-400"}`}
+              />
+              <p
+                className={`text-sm ${error ? "text-red-600" : "text-gray-600"}`}
+              >
+                {isDragging ? "Drop image here" : "Click or drag to upload"}
+              </p>
+              <p className="text-xs text-gray-400">PNG, JPG, WEBP</p>
+            </>
+          )}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            className="hidden"
+          />
+        </div>
+      )}
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+};
 
-                            <div className="flex gap-3 justify-end pt-4">
-                                <button
-                                    type="button"
-                                    onClick={onClose}
-                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
-                                >
-                                    {loading ? "Saving..." : "Save Changes"}
-                                </button>
-                            </div>
-                        </form>
-                    </motion.div>
-                </>
-            )}
-        </AnimatePresence>
-    );
+// ===== EDIT MODAL WITH DRAG & DROP =====
+const EditModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  item,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: any) => Promise<void>;
+  item: Exhibition | null;
+}) => {
+  const [formData, setFormData] = useState({
+    exhibitionName: "",
+    location: "",
+    description: "",
+  });
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [removeImage, setRemoveImage] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        exhibitionName: item.exhibitionName,
+        location: item.location,
+        description: item.description,
+      });
+      setNewImageFile(null);
+      setRemoveImage(false);
+    }
+  }, [item]);
+
+  const handleImageChange = (file: File | null) => {
+    if (file) {
+      setNewImageFile(file);
+      setRemoveImage(false);
+    } else {
+      // User wants to remove image
+      setNewImageFile(null);
+      setRemoveImage(true);
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const data = {
+        ...formData,
+        newImageFile,
+        removeImage,
+        oldPublicId: item?.logo.publicId,
+      };
+      await onSave(data);
+      onClose();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!item) return null;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Edit Exhibition
+              </h3>
+              <button
+                onClick={onClose}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Exhibition Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.exhibitionName}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      exhibitionName: e.target.value,
+                    }))
+                  }
+                  required
+                  className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
+                  required
+                  className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  required
+                  rows={3}
+                  className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none"
+                />
+              </div>
+
+              {/* Image Upload in Edit Modal */}
+              <ImageUpload
+                label="Logo"
+                value={removeImage ? null : item.logo}
+                onChange={handleImageChange}
+              />
+
+              <div className="flex gap-3 justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
 };
 
 // Main Component
 export default function ExhibitionPage() {
-    const [loading, setLoading] = useState(true);
-    const [skeletonLoading, setSkeletonLoading] = useState(false);
-    const [preview, setPreview] = useState<string | null>(null);
-    const [data, setData] = useState<Exhibition[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; item: Exhibition | null }>({
-        isOpen: false,
-        item: null
-    });
-    const [editModal, setEditModal] = useState<{ isOpen: boolean; item: Exhibition | null }>({
-        isOpen: false,
-        item: null
-    });
-    const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-    const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [skeletonLoading, setSkeletonLoading] = useState(false);
+  const [data, setData] = useState<Exhibition[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    item: Exhibition | null;
+  }>({
+    isOpen: false,
+    item: null,
+  });
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    item: Exhibition | null;
+  }>({
+    isOpen: false,
+    item: null,
+  });
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
-    const itemsPerPage = 5;
+  // Add form state
+  const [addFormData, setAddFormData] = useState({
+    exhibitionName: "",
+    location: "",
+    description: "",
+  });
+  const [addImageFile, setAddImageFile] = useState<File | null>(null);
+  const [addImagePreview, setAddImagePreview] = useState<string | null>(null);
 
-    // Fetch exhibitions
-    useEffect(() => {
-        fetchExhibitions();
-    }, []);
+  const itemsPerPage = 5;
 
-    const fetchExhibitions = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.get("/api/exhibition");
-            setData(res.data.data);
-        } catch (error) {
-            console.error(error);
-            setToast({ message: "Error fetching exhibitions", type: "error" });
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Fetch exhibitions
+  useEffect(() => {
+    fetchExhibitions();
+  }, []);
 
-    // Filter data
-    const filteredData = useMemo(() => {
-        return data.filter(item =>
-            item.exhibitionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.description.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [data, searchTerm]);
+  const fetchExhibitions = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/api/exhibition");
+      setData(res.data.data);
+    } catch (error) {
+      console.error(error);
+      setToast({ message: "Error fetching exhibitions", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Pagination
-    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-    const paginatedData = filteredData.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+  // Filter data
+  const filteredData = useMemo(() => {
+    return data.filter(
+      (item) =>
+        item.exhibitionName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+  }, [data, searchTerm]);
 
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
-    // Delete handler
-    const handleDelete = async () => {
-        if (!deleteModal.item) return;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
-        setSkeletonLoading(true);
-        try {
-            await axios.delete("/api/exhibition", { data: { id: deleteModal.item._id } });
-            setData(prev => prev.filter(item => item._id !== deleteModal.item?._id));
-            setToast({ message: "Exhibition deleted successfully", type: "success" });
-            setDeleteModal({ isOpen: false, item: null });
-        } catch (error) {
-            console.error(error);
-            setToast({ message: "Error deleting exhibition", type: "error" });
-        } finally {
-            setSkeletonLoading(false);
-        }
-    };
+  // ===== DELETE HANDLER =====
+  const handleDelete = async () => {
+    if (!deleteModal.item) return;
 
-    // Edit handler
-    const handleEdit = async (formData: FormData) => {
-        if (!editModal.item) return;
+    setSkeletonLoading(true);
+    try {
+      // Delete exhibition from database
+      await axios.delete("/api/exhibition", {
+        data: { id: deleteModal.item._id },
+      });
 
-        const exhibitionName = formData.get("exhibiton_name")?.toString() ?? "";
-        const location = formData.get("location")?.toString() ?? "";
-        const description = formData.get("description")?.toString() ?? "";
-        const file = formData.get("logo") as File | null;
+      // Delete image from server
+      if (deleteModal.item.logo.publicId) {
+        await axios.delete("/api/upload/image", {
+          data: { publicId: deleteModal.item.logo.publicId },
+        });
+      }
 
-        let logoUrl = editModal.item.logo;
+      setData((prev) =>
+        prev.filter((item) => item._id !== deleteModal.item?._id),
+      );
+      setToast({ message: "Exhibition deleted successfully", type: "success" });
+      setDeleteModal({ isOpen: false, item: null });
+    } catch (error) {
+      console.error(error);
+      setToast({ message: "Error deleting exhibition", type: "error" });
+    } finally {
+      setSkeletonLoading(false);
+    }
+  };
 
-        if (file && file.size > 0) {
-            logoUrl = await uploadFiles({
-                type: "single",
-                files: file,
-                slug: slugify(exhibitionName),
-                api: "/api/upload/image",
-            });
-        }
+  // ===== EDIT HANDLER (with image delete + upload logic) =====
+  const handleEdit = async (editData: any) => {
+    if (!editModal.item) return;
 
-        const updatedData = {
-            id: editModal.item._id,
-            exhibitionName,
-            location,
-            description,
-            logo: logoUrl,
-        };
+    const {
+      exhibitionName,
+      location,
+      description,
+      newImageFile,
+      removeImage,
+      oldPublicId,
+    } = editData;
 
-        await axios.put("/api/exhibition", updatedData);
-        setData(prev => prev.map(item =>
-            item._id === editModal.item?._id ? { ...item, ...updatedData } : item
-        ));
-        setToast({ message: "Exhibition updated successfully", type: "success" });
-    };
+    let logoData = editModal.item.logo; // Keep existing by default
 
-    // Preview image
-    const handleImage = (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setPreview(URL.createObjectURL(file));
-        }
-    };
+    try {
+      // Case 1: User removed the image
+      if (removeImage && oldPublicId) {
+        await axios.delete("/api/upload/image", {
+          data: { publicId: oldPublicId },
+        });
+        logoData = { url: "", publicId: "" };
+      }
 
-    // Submit handler
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setSkeletonLoading(true);
-
-        const form = e.currentTarget;
-        const formData = new FormData(form);
-
-        const exhibitionName = formData.get("exhibiton_name")?.toString() ?? "";
-        const location = formData.get("location")?.toString() ?? "";
-        const description = formData.get("description")?.toString() ?? "";
-        const file = formData.get("logo") as File | null;
-
-        if (!file) {
-            setToast({ message: "Please upload an image", type: "error" });
-            setSkeletonLoading(false);
-            return;
+      // Case 2: User uploaded a new image
+      if (newImageFile) {
+        // First delete old image if exists
+        if (oldPublicId) {
+          await axios.delete("/api/upload/image", {
+            data: { publicId: oldPublicId },
+          });
         }
 
-        try {
-            const imageUrl = await uploadFiles({
-                type: "single",
-                files: file,
-                slug: slugify(exhibitionName),
-                api: "/api/upload/image",
-            });
+        // Upload new image
+        const uploadedLogo = await uploadFiles({
+          type: "single",
+          files: newImageFile,
+          slug: slugify(exhibitionName),
+          api: "/api/upload/image",
+        });
 
-            const newData = {
-                exhibitionName,
-                location,
-                description,
-                logo: imageUrl,
-            };
+        logoData = uploadedLogo;
+      }
 
-            const response = await axios.post("/api/exhibition", newData);
-            setData(prev => [...prev, response.data.data]);
-            setPreview(null);
-            form.reset();
-            setShowForm(false);
-            setToast({ message: "Exhibition added successfully", type: "success" });
-        } catch (error) {
-            console.error(error);
-            setToast({ message: "Error adding exhibition", type: "error" });
-        } finally {
-            setSkeletonLoading(false);
-        }
-    };
+      const updatedData = {
+        id: editModal.item._id,
+        exhibitionName,
+        location,
+        description,
+        logo: logoData,
+      };
 
-    return (
-        <div className="space-y-6">
-            {/* Toast */}
-            <AnimatePresence>
-                {toast && (
-                    <Toast
-                        message={toast.message}
-                        type={toast.type}
-                        onClose={() => setToast(null)}
-                    />
-                )}
-            </AnimatePresence>
+      await axios.put("/api/exhibition", updatedData);
+      setData((prev) =>
+        prev.map((item) =>
+          item._id === editModal.item?._id ? { ...item, ...updatedData } : item,
+        ),
+      );
+      setToast({ message: "Exhibition updated successfully", type: "success" });
+    } catch (error) {
+      console.error(error);
+      setToast({ message: "Error updating exhibition", type: "error" });
+      throw error;
+    }
+  };
 
-            {/* Modals */}
-            <DeleteModal
-                isOpen={deleteModal.isOpen}
-                onClose={() => setDeleteModal({ isOpen: false, item: null })}
-                onConfirm={handleDelete}
-                itemTitle={deleteModal.item?.exhibitionName || ""}
-            />
+  // ===== ADD HANDLER =====
+  const handleAddImageChange = (file: File | null) => {
+    if (file) {
+      setAddImageFile(file);
+      setAddImagePreview(URL.createObjectURL(file));
+    } else {
+      setAddImageFile(null);
+      setAddImagePreview(null);
+    }
+  };
 
-            <EditModal
-                isOpen={editModal.isOpen}
-                onClose={() => setEditModal({ isOpen: false, item: null })}
-                onSave={handleEdit}
-                item={editModal.item}
-            />
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSkeletonLoading(true);
 
-            {/* Header */}
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-xl font-semibold text-gray-700">Exhibitions</h1>
-                    <p className="text-sm text-gray-500 mt-1">Manage exhibition events</p>
-                </div>
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 shadow-md shadow-primary/20"
-                >
-                    {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                    {showForm ? "Cancel" : "Add Exhibition"}
-                </button>
-            </div>
+    if (!addImageFile) {
+      setToast({ message: "Please upload a logo image", type: "error" });
+      setSkeletonLoading(false);
+      return;
+    }
 
-            {/* Add Form */}
-            <AnimatePresence>
-                {showForm && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden"
-                    >
-                        <div className="bg-white p-5 md:p-6 rounded-xl shadow-sm border">
-                            <h2 className="text-lg font-semibold mb-5 text-gray-700 flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-primary" />
-                                Add New Exhibition
-                            </h2>
+    try {
+      // Upload image first
+      const uploadedLogo = await uploadFiles({
+        type: "single",
+        files: addImageFile,
+        slug: slugify(addFormData.exhibitionName),
+        api: "/api/upload/image",
+      });
 
-                            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <input
-                                    type="text"
-                                    placeholder="Exhibition Name"
-                                    required
-                                    name="exhibiton_name"
-                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                />
+      const newData = {
+        exhibitionName: addFormData.exhibitionName,
+        location: addFormData.location,
+        description: addFormData.description,
+        logo: uploadedLogo,
+      };
 
-                                <input
-                                    type="text"
-                                    placeholder="Location"
-                                    required
-                                    name="location"
-                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                />
+      const response = await axios.post("/api/exhibition", newData);
+      setData((prev) => [...prev, response.data.data]);
 
-                                <input
-                                    type="text"
-                                    placeholder="Description"
-                                    required
-                                    name="description"
-                                    className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
-                                />
+      // Reset form
+      setAddFormData({ exhibitionName: "", location: "", description: "" });
+      setAddImageFile(null);
+      setAddImagePreview(null);
+      setShowForm(false);
+      setToast({ message: "Exhibition added successfully", type: "success" });
+    } catch (error) {
+      console.error(error);
+      setToast({ message: "Error adding exhibition", type: "error" });
+    } finally {
+      setSkeletonLoading(false);
+    }
+  };
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm text-gray-600">Upload Logo</label>
-                                    <div className="relative">
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            required
-                                            name="logo"
-                                            onChange={handleImage}
-                                            className="hidden"
-                                            id="logo-upload"
-                                        />
-                                        <label
-                                            htmlFor="logo-upload"
-                                            className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 p-3 rounded-lg cursor-pointer hover:border-primary transition-colors"
-                                        >
-                                            <Upload className="w-5 h-5 text-gray-400" />
-                                            <span className="text-sm text-gray-600">Choose file</span>
-                                        </label>
-                                    </div>
-                                    {preview && (
-                                        <Image
-                                            src={preview}
-                                            alt="Preview"
-                                            width={100}
-                                            height={80}
-                                            className="rounded object-cover"
-                                        />
-                                    )}
-                                </div>
+  return (
+    <div className="space-y-6">
+      {/* Toast */}
+      <AnimatePresence>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+      </AnimatePresence>
 
-                                <button
-                                    type="submit"
-                                    className="md:col-span-2 bg-primary text-white py-3 rounded-lg hover:bg-primary-hover transition"
-                                >
-                                    Add Exhibition
-                                </button>
-                            </form>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+      {/* Modals */}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, item: null })}
+        onConfirm={handleDelete}
+        itemTitle={deleteModal.item?.exhibitionName || ""}
+      />
 
-            {/* Loading State for Form Submission */}
-            {skeletonLoading && <SubmitLoading />}
+      <EditModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, item: null })}
+        onSave={handleEdit}
+        item={editModal.item}
+      />
 
-            {/* Table */}
-            <div className="bg-white p-5 md:p-6 rounded-xl shadow-sm border">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-                    <h2 className="text-lg font-semibold text-gray-700">All Exhibitions</h2>
-
-                    {/* Search */}
-                    <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search exhibitions..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary text-sm"
-                        />
-                    </div>
-                </div>
-
-                {/* Mobile View */}
-                <div className="md:hidden space-y-4">
-                    {loading ? (
-                        <div className="space-y-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="border p-4 rounded-lg animate-pulse">
-                                    <div className="flex gap-3">
-                                        <div className="w-16 h-16 bg-gray-200 rounded" />
-                                        <div className="flex-1 space-y-2">
-                                            <div className="h-4 bg-gray-200 rounded w-3/4" />
-                                            <div className="h-3 bg-gray-200 rounded w-1/2" />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : filteredData.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <p className="text-gray-500">No exhibitions found</p>
-                            {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm("")}
-                                    className="mt-2 text-primary hover:text-primary-hover text-sm"
-                                >
-                                    Clear search
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        paginatedData.map((item) => (
-                            <motion.div
-                                key={item._id}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="border p-4 rounded-lg"
-                            >
-                                <div className="flex gap-3 items-center">
-                                    <Image
-                                        src={item.logo}
-                                        alt={item.exhibitionName}
-                                        width={60}
-                                        height={60}
-                                        className="rounded object-cover bg-gray-100"
-                                    />
-                                    <div className="flex-1">
-                                        <p className="font-semibold">{item.exhibitionName}</p>
-                                        <p className="text-sm text-gray-500 flex items-center gap-1">
-                                            <MapPin className="w-3 h-3" />
-                                            {item.location}
-                                        </p>
-                                    </div>
-                                </div>
-                                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{item.description}</p>
-                                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
-                                    <button
-                                        onClick={() => setEditModal({ isOpen: true, item })}
-                                        className="px-3 py-1.5 bg-accent text-white rounded text-sm hover:bg-accent/90 transition"
-                                    >
-                                        <Edit className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setDeleteModal({ isOpen: true, item })}
-                                        className="px-3 py-1.5 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        ))
-                    )}
-                </div>
-
-                {/* Desktop View */}
-                <div className="hidden md:block overflow-x-auto">
-                    {loading ? (
-                        <TableSkeleton />
-                    ) : (
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="text-gray-500 border-b text-sm">
-                                    <th className="py-3 w-12">#</th>
-                                    <th className="w-24">Image</th>
-                                    <th>Name</th>
-                                    <th>Location</th>
-                                    <th>Description</th>
-                                    <th className="text-center w-32">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredData.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={6} className="py-12 text-center">
-                                            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                            <p className="text-gray-500">No exhibitions found</p>
-                                            {searchTerm && (
-                                                <button
-                                                    onClick={() => setSearchTerm("")}
-                                                    className="mt-2 text-primary hover:text-primary-hover text-sm"
-                                                >
-                                                    Clear search
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    paginatedData.map((item, i) => (
-                                        <tr key={item._id} className="border-b hover:bg-gray-50 transition">
-                                            <td className="py-3 text-gray-500">
-                                                {(currentPage - 1) * itemsPerPage + i + 1}
-                                            </td>
-                                            <td>
-                                                <Image
-                                                    src={item.logo}
-                                                    alt={item.exhibitionName}
-                                                    width={60}
-                                                    height={40}
-                                                    className="rounded object-cover bg-gray-100"
-                                                />
-                                            </td>
-                                            <td className="font-medium">{item.exhibitionName}</td>
-                                            <td className="text-gray-600">
-                                                <span className="flex items-center gap-1">
-                                                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                                                    {item.location}
-                                                </span>
-                                            </td>
-                                            <td className="text-gray-600 max-w-xs truncate">{item.description}</td>
-                                            <td>
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <button
-                                                        onClick={() => setEditModal({ isOpen: true, item })}
-                                                        className="p-1.5 text-accent hover:bg-accent/10 rounded transition"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setDeleteModal({ isOpen: true, item })}
-                                                        className="p-1.5 text-red-500 hover:bg-red-50 rounded transition"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-
-                {/* Pagination */}
-                {!loading && totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className={`p-2 rounded-lg transition-colors ${currentPage === 1
-                                ? "text-gray-300 cursor-not-allowed"
-                                : "text-gray-600 hover:bg-gray-100"
-                                }`}
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-
-                        <div className="flex gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => setCurrentPage(pageNum)}
-                                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${currentPage === pageNum
-                                        ? "bg-primary text-white"
-                                        : "text-gray-600 hover:bg-gray-100"
-                                        }`}
-                                >
-                                    {pageNum}
-                                </button>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className={`p-2 rounded-lg transition-colors ${currentPage === totalPages
-                                ? "text-gray-300 cursor-not-allowed"
-                                : "text-gray-600 hover:bg-gray-100"
-                                }`}
-                        >
-                            <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                )}
-            </div>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-700">Exhibitions</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage exhibition events</p>
         </div>
-    );
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 shadow-md shadow-primary/20"
+        >
+          {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+          {showForm ? "Cancel" : "Add Exhibition"}
+        </button>
+      </div>
+
+      {/* Add Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-white p-5 md:p-6 rounded-xl shadow-sm border">
+              <h2 className="text-lg font-semibold mb-5 text-gray-700 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                Add New Exhibition
+              </h2>
+
+              <form
+                onSubmit={handleSubmit}
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              >
+                <input
+                  type="text"
+                  placeholder="Exhibition Name"
+                  required
+                  value={addFormData.exhibitionName}
+                  onChange={(e) =>
+                    setAddFormData((prev) => ({
+                      ...prev,
+                      exhibitionName: e.target.value,
+                    }))
+                  }
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Location"
+                  required
+                  value={addFormData.location}
+                  onChange={(e) =>
+                    setAddFormData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }))
+                  }
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Description"
+                  required
+                  value={addFormData.description}
+                  onChange={(e) =>
+                    setAddFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+
+                {/* Image Upload in Add Form */}
+                <div>
+                  <ImageUpload
+                    label="Upload Logo"
+                    value={
+                      addImagePreview
+                        ? { url: addImagePreview, publicId: "" }
+                        : null
+                    }
+                    onChange={handleAddImageChange}
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  className="md:col-span-2 bg-primary text-white py-3 rounded-lg hover:bg-primary-hover transition"
+                >
+                  Add Exhibition
+                </button>
+              </form>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Loading State for Form Submission */}
+      {skeletonLoading && <SubmitLoading />}
+
+      {/* Table (Same as before) */}
+      <div className="bg-white p-5 md:p-6 rounded-xl shadow-sm border">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+          <h2 className="text-lg font-semibold text-gray-700">
+            All Exhibitions
+          </h2>
+
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search exhibitions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-primary text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden space-y-4">
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="border p-4 rounded-lg animate-pulse">
+                  <div className="flex gap-3">
+                    <div className="w-16 h-16 bg-gray-200 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredData.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No exhibitions found</p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm("")}
+                  className="mt-2 text-primary hover:text-primary-hover text-sm"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            paginatedData.map((item) => (
+              <motion.div
+                key={item._id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border p-4 rounded-lg"
+              >
+                <div className="flex gap-3 items-center">
+                  <Image
+                    src={item.logo.url}
+                    alt={item.exhibitionName}
+                    width={60}
+                    height={60}
+                    className="rounded object-cover bg-gray-100"
+                  />
+                  <div className="flex-1">
+                    <p className="font-semibold">{item.exhibitionName}</p>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {item.location}
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                  {item.description}
+                </p>
+                <div className="flex justify-end gap-2 mt-3 pt-3 border-t">
+                  <button
+                    onClick={() => setEditModal({ isOpen: true, item })}
+                    className="px-3 py-1.5 bg-accent text-white rounded text-sm hover:bg-accent/90 transition"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setDeleteModal({ isOpen: true, item })}
+                    className="px-3 py-1.5 bg-red-500 text-white rounded text-sm hover:bg-red-600 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-auto">
+          {loading ? (
+            <TableSkeleton />
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-500 border-b text-sm">
+                  <th className="py-3 w-12">#</th>
+                  <th className="w-24">Image</th>
+                  <th>Name</th>
+                  <th>Location</th>
+                  <th>Description</th>
+                  <th className="text-center w-32">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredData.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center">
+                      <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                      <p className="text-gray-500">No exhibitions found</p>
+                      {searchTerm && (
+                        <button
+                          onClick={() => setSearchTerm("")}
+                          className="mt-2 text-primary hover:text-primary-hover text-sm"
+                        >
+                          Clear search
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedData.map((item, i) => (
+                    <tr
+                      key={item._id}
+                      className="border-b hover:bg-gray-50 transition"
+                    >
+                      <td className="py-3 text-gray-500">
+                        {(currentPage - 1) * itemsPerPage + i + 1}
+                      </td>
+                      <td>
+                        <Image
+                          src={item.logo.url}
+                          alt={item.exhibitionName}
+                          width={60}
+                          height={40}
+                          className="rounded object-cover bg-gray-100"
+                        />
+                      </td>
+                      <td className="font-medium">{item.exhibitionName}</td>
+                      <td className="text-gray-600">
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                          {item.location}
+                        </span>
+                      </td>
+                      <td className="text-gray-600 max-w-xs truncate">
+                        {item.description}
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => setEditModal({ isOpen: true, item })}
+                            className="p-1.5 text-accent hover:bg-accent/10 rounded transition"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setDeleteModal({ isOpen: true, item })
+                            }
+                            className="p-1.5 text-red-500 hover:bg-red-50 rounded transition"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6 pt-4 border-t">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className={`p-2 rounded-lg transition-colors ${
+                currentPage === 1
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div className="flex gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? "bg-primary text-white"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ),
+              )}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className={`p-2 rounded-lg transition-colors ${
+                currentPage === totalPages
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

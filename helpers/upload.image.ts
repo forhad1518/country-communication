@@ -19,7 +19,7 @@ const uploadFiles = async ({type, files, slug, api} : {type: uploadType, files: 
             "Content-Type": "multipart/form-data",
         },
     });
-    if(type === "single") return response.data.url;
+    if(type === "single") return { url: response.data.url , publicId: response.data.publicId };
     else return response.data.urls;
 };
 
