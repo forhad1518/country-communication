@@ -50,9 +50,14 @@ const BlogSchema = new Schema(
       ],
     },
     image: {
-      type: String,
-      required: [true, "Featured image is required"],
-      trim: true,
+      url: {
+        type: String,
+        default: "",
+      },
+      publicId: {
+        type: String,
+        default: "",
+      },
     },
     authorName: {
       type: String,
@@ -70,9 +75,14 @@ const BlogSchema = new Schema(
       default: "",
     },
     authorAvatar: {
-      type: String,
-      trim: true,
-      default: "",
+      url: {
+        type: String,
+        default: "",
+      },
+      publicId: {
+        type: String,
+        default: "",
+      },
     },
     readTime: {
       type: String,
@@ -182,7 +192,6 @@ const BlogSchema = new Schema(
 );
 
 // Indexes for better query performance
-BlogSchema.index({ slug: 1 });
 BlogSchema.index({ status: 1 });
 BlogSchema.index({ category: 1 });
 BlogSchema.index({ authorName: 1 });
@@ -190,69 +199,48 @@ BlogSchema.index({ tags: 1 });
 BlogSchema.index({ createdAt: -1 });
 BlogSchema.index({ title: "text", subtitle: "text", tags: "text" }); // Full-text search
 
-// Virtual for comment count
+// Virtual for comment count (FIXED - with safety checks)
 BlogSchema.virtual("commentCount").get(function () {
-  const countReplies = (replies: any[]): number => {
+  const comments = this.comments || [];
+
+  const countReplies = (replies: any[] = []): number => {
     return replies.reduce(
       (sum, reply) => sum + 1 + countReplies(reply.replies || []),
       0,
     );
   };
-  return this.comments.length + countReplies(this.comments);
+
+  return comments.length + countReplies(comments);
 });
 
 // Virtual for excerpt (first 150 characters of first paragraph)
 BlogSchema.virtual("excerpt").get(function () {
+  if (!this.content || this.content.length === 0) {
+    return "";
+  }
+
+  // Find first paragraph block
   const firstParagraph = this.content.find(
     (block: any) => block.type === "paragraph",
   );
+
   if (firstParagraph && typeof firstParagraph.content === "string") {
-    return (
-      firstParagraph.content.substring(0, 150) +
-      (firstParagraph.content.length > 150 ? "..." : "")
-    );
+    const text = firstParagraph.content;
+    return text.length > 150 ? text.substring(0, 150) + "..." : text;
   }
+
   return "";
 });
 
-// Pre-save middleware to auto-generate slug if empty
-BlogSchema.pre("save", function () {
-  if (!this.slug && this.title) {
-    this.slug = this.title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .substring(0, 100);
-  }
-
-  // Set publishedAt when status changes to published
-  if (
-    this.isModified("status") &&
-    this.status === "published" &&
-    !this.publishedAt
-  ) {
-    this.publishedAt = new Date();
-  }
-});
-
-// Pre-save middleware to calculate read time if not provided
-BlogSchema.pre("save", function () {
-  if (!this.readTime || this.readTime === "5 min read") {
-    let wordCount = 0;
-    this.content.forEach((block: any) => {
-      if (typeof block.content === "string") {
-        wordCount += block.content.split(/\s+/).length;
-      } else if (Array.isArray(block.content)) {
-        block.content.forEach((item: string) => {
-          wordCount += item.split(/\s+/).length;
-        });
-      }
-    });
-    const minutes = Math.max(1, Math.ceil(wordCount / 200)); // 200 words per minute
-    this.readTime = `${minutes} min read`;
-  }
-
+// Virtual for formatted date
+BlogSchema.virtual("formattedDate").get(function () {
+  const date = this.publishedAt || this.createdAt;
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 });
 
 // Export the model
@@ -261,47 +249,60 @@ const Blog = mongoose.models.Blog || mongoose.model("Blog", BlogSchema);
 export default Blog;
 
 // Type for TypeScript
+export interface IComment {
+  userId?: string;
+  userName: string;
+  userAvatar?: string;
+  content: string;
+  likes: number;
+  isAdmin: boolean;
+  replies: IReply[];
+  createdAt: Date;
+}
+
+export interface IReply {
+  userId?: string;
+  userName: string;
+  userAvatar?: string;
+  content: string;
+  likes: number;
+  isAdmin: boolean;
+  createdAt: Date;
+}
+
+export interface IContentBlock {
+  type: "paragraph" | "heading" | "image" | "quote" | "list";
+  content: string | string[];
+  caption?: string;
+}
+
 export interface IBlog extends Document {
   title: string;
   subtitle: string;
   category: string;
-  image: string;
+  image: {
+    url: string;
+    publicId: string;
+  };
   authorName: string;
   authorRole: string;
   authorBio: string;
-  authorAvatar: string;
+  authorAvatar: {
+    url: string;
+    publicId: string;
+  };
   readTime: string;
   tags: string[];
-  content: {
-    type: "paragraph" | "heading" | "image" | "quote" | "list";
-    content: string | string[];
-    caption?: string;
-  }[];
+  content: IContentBlock[];
   status: "draft" | "published" | "archived";
   slug: string;
   views: number;
   likes: number;
-  comments: {
-    userId?: string;
-    userName: string;
-    userAvatar?: string;
-    content: string;
-    likes: number;
-    isAdmin: boolean;
-    replies: {
-      userId?: string;
-      userName: string;
-      userAvatar?: string;
-      content: string;
-      likes: number;
-      isAdmin: boolean;
-      createdAt: Date;
-    }[];
-    createdAt: Date;
-  }[];
+  comments: IComment[];
   publishedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   commentCount: number;
   excerpt: string;
+  formattedDate: string;
 }

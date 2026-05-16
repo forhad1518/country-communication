@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 import {
   Search,
   Plus,
@@ -13,14 +14,10 @@ import {
   CheckCircle,
   AlertCircle,
   Eye,
-  Calendar,
   Clock,
-  User,
-  Tag,
   Filter,
   ChevronLeft,
   ChevronRight,
-  MoreVertical,
   Copy,
   TrendingUp,
   MessageCircle,
@@ -33,153 +30,57 @@ import {
 // Types
 type BlogStatus = "published" | "draft" | "archived";
 
+type ImageData = {
+  url: string;
+  publicId: string;
+};
+
 type BlogPost = {
   _id: string;
   title: string;
   slug: string;
-  excerpt: string;
-  content: string;
+  excerpt?: string;
   category: string;
   tags: string[];
-  image: string;
+  image: ImageData | string;
   status: BlogStatus;
-  author: {
-    _id: string;
-    name: string;
-    avatar?: string;
-  };
+  authorName: string;
+  authorAvatar?: ImageData | string;
   views: number;
   likes: number;
-  comments: number;
+  comments: any[];
   readTime: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
 };
 
-// Sample Blog Data
-const sampleBlogs: BlogPost[] = [
-  {
-    _id: "1",
-    title:
-      "How to Design an Attractive Exhibition Booth That Drives Engagement",
-    slug: "how-to-design-attractive-exhibition-booth",
-    excerpt:
-      "Learn the essential design principles that make exhibition booths stand out and attract more visitors.",
-    content: "Full content here...",
-    category: "Booth Design",
-    tags: ["Exhibition", "Design", "Booth"],
-    image: "https://picsum.photos/800/400?booth1",
-    status: "published",
-    author: {
-      _id: "user1",
-      name: "Iqbal Mahmud",
-      avatar: "https://picsum.photos/50/50?author1",
-    },
-    views: 2547,
-    likes: 342,
-    comments: 28,
-    readTime: "8 min read",
-    createdAt: "2025-01-15T10:30:00Z",
-    updatedAt: "2025-01-20T14:00:00Z",
-    publishedAt: "2025-01-15T10:30:00Z",
-  },
-  {
-    _id: "2",
-    title: "Top Exhibition Trends in 2025 That You Need to Know",
-    slug: "top-exhibition-trends-2025",
-    excerpt:
-      "Explore the latest global exhibition trends that are shaping event marketing strategies.",
-    content: "Full content here...",
-    category: "Industry Trends",
-    tags: ["Trends", "2025", "Marketing"],
-    image: "https://picsum.photos/800/400?trends",
-    status: "published",
-    author: {
-      _id: "user2",
-      name: "Fatima Ahmed",
-      avatar: "https://picsum.photos/50/50?author2",
-    },
-    views: 1823,
-    likes: 256,
-    comments: 15,
-    readTime: "6 min read",
-    createdAt: "2025-01-10T08:00:00Z",
-    updatedAt: "2025-01-12T11:00:00Z",
-    publishedAt: "2025-01-10T08:00:00Z",
-  },
-  {
-    _id: "3",
-    title: "Modular Booth vs Custom Booth: Which is Right for You?",
-    slug: "modular-vs-custom-booth",
-    excerpt:
-      "Understand the difference between modular and custom exhibition booths and make the right choice.",
-    content: "Full content here...",
-    category: "Booth Strategy",
-    tags: ["Modular", "Custom", "Comparison"],
-    image: "https://picsum.photos/800/400?modular",
-    status: "draft",
-    author: {
-      _id: "user3",
-      name: "Tanvir Hasan",
-      avatar: "https://picsum.photos/50/50?author3",
-    },
-    views: 0,
-    likes: 0,
-    comments: 0,
-    readTime: "5 min read",
-    createdAt: "2025-01-18T15:00:00Z",
-    updatedAt: "2025-01-19T09:00:00Z",
-  },
-  {
-    _id: "4",
-    title: "Sustainable Exhibition Practices for Eco-Friendly Brands",
-    slug: "sustainable-exhibition-practices",
-    excerpt:
-      "Discover how to make your exhibition booth sustainable and environmentally friendly.",
-    content: "Full content here...",
-    category: "Sustainability",
-    tags: ["Sustainable", "Green", "Eco-Friendly"],
-    image: "https://picsum.photos/800/400?sustainable",
-    status: "published",
-    author: {
-      _id: "user1",
-      name: "Iqbal Mahmud",
-      avatar: "https://picsum.photos/50/50?author1",
-    },
-    views: 956,
-    likes: 178,
-    comments: 12,
-    readTime: "7 min read",
-    createdAt: "2025-01-05T12:00:00Z",
-    updatedAt: "2025-01-08T16:00:00Z",
-    publishedAt: "2025-01-05T12:00:00Z",
-  },
-  {
-    _id: "5",
-    title: "Pre-Show Marketing Strategies to Maximize Booth Traffic",
-    slug: "pre-show-marketing-strategies",
-    excerpt:
-      "Effective marketing tactics to drive visitors to your exhibition booth before the event begins.",
-    content: "Full content here...",
-    category: "Marketing",
-    tags: ["Marketing", "Strategy", "Traffic"],
-    image: "https://picsum.photos/800/400?marketing",
-    status: "archived",
-    author: {
-      _id: "user2",
-      name: "Fatima Ahmed",
-      avatar: "https://picsum.photos/50/50?author2",
-    },
-    views: 3210,
-    likes: 489,
-    comments: 35,
-    readTime: "10 min read",
-    createdAt: "2024-12-20T09:00:00Z",
-    updatedAt: "2025-01-02T10:00:00Z",
-    publishedAt: "2024-12-20T09:00:00Z",
-  },
-];
+// Helper function to get image URL from ImageData or string
+const getImageUrl = (image: ImageData | string | undefined): string => {
+  if (!image) return "";
+  if (typeof image === "string") return image;
+  return image.url || "";
+};
+
+// Helper function to get Cloudinary optimized URL
+const getOptimizedImageUrl = (
+  url: string,
+  width: number = 100,
+  height: number = 75,
+): string => {
+  if (!url) return "";
+
+  // For Cloudinary URLs, add transformation
+  if (url.includes("cloudinary.com")) {
+    return url.replace(
+      "/upload/",
+      `/upload/w_${width},h_${height},c_fill,q_auto,f_auto/`,
+    );
+  }
+
+  // For other URLs, return as is
+  return url;
+};
 
 // Toast Component
 const Toast = ({
@@ -213,7 +114,7 @@ const Toast = ({
   );
 };
 
-// Delete Confirmation Modal
+// Delete Confirmation Modal (Same)
 const DeleteModal = ({
   isOpen,
   onClose,
@@ -290,7 +191,7 @@ const DeleteModal = ({
   );
 };
 
-// Status Badge Component
+// Status Badge Component (Same)
 const StatusBadge = ({ status }: { status: BlogStatus }) => {
   const styles = {
     published: "bg-green-100 text-green-700 border-green-200",
@@ -316,7 +217,7 @@ const StatusBadge = ({ status }: { status: BlogStatus }) => {
   );
 };
 
-// Stats Card Component
+// Stats Card Component (Same)
 const StatsCard = ({
   label,
   value,
@@ -341,9 +242,103 @@ const StatsCard = ({
   </div>
 );
 
+// Loading Skeleton (Same)
+const TableSkeleton = () => (
+  <div className="animate-pulse">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <div
+        key={i}
+        className="flex items-center gap-4 py-3 border-b border-gray-100"
+      >
+        <div className="w-8 h-4 bg-gray-200 rounded" />
+        <div className="w-16 h-12 bg-gray-200 rounded" />
+        <div className="flex-1 h-4 bg-gray-200 rounded" />
+        <div className="flex-1 h-4 bg-gray-200 rounded" />
+        <div className="flex-1 h-4 bg-gray-200 rounded" />
+        <div className="w-24 h-8 bg-gray-200 rounded" />
+      </div>
+    ))}
+  </div>
+);
+
+// Blog Image Component with Error Handling
+const BlogImage = ({
+  image,
+  alt,
+  className,
+}: {
+  image: ImageData | string | undefined;
+  alt: string;
+  className?: string;
+}) => {
+  const [imgError, setImgError] = useState(false);
+  const imageUrl = getImageUrl(image);
+  const optimizedUrl = getOptimizedImageUrl(imageUrl, 100, 75);
+
+  if (!imageUrl || imgError) {
+    return (
+      <div
+        className={`bg-gray-200 flex items-center justify-center ${className}`}
+      >
+        <ImageIcon className="w-5 h-5 text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={optimizedUrl}
+      alt={alt}
+      width={64}
+      height={48}
+      className={`object-cover ${className}`}
+      onError={() => setImgError(true)}
+      unoptimized={!imageUrl.includes("cloudinary.com")}
+    />
+  );
+};
+
+// Author Avatar Component
+const AuthorAvatar = ({
+  avatar,
+  name,
+}: {
+  avatar: ImageData | string | undefined;
+  name: string;
+}) => {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = getImageUrl(avatar);
+
+  if (!avatarUrl || imgError) {
+    return (
+      <div className="w-7 h-7 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
+        <span className="text-white text-xs font-semibold">
+          {name.charAt(0)}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={getOptimizedImageUrl(avatarUrl, 50, 50)}
+      alt={name}
+      width={28}
+      height={28}
+      className="rounded-full object-cover shrink-0"
+      onError={() => setImgError(true)}
+      unoptimized={!avatarUrl.includes("cloudinary.com")}
+    />
+  );
+};
+
+// Missing ImageIcon import add korte hobe
+import { ImageIcon } from "lucide-react";
+
 // Main Component
 export default function BlogManagementPage() {
-  const [blogs, setBlogs] = useState<BlogPost[]>(sampleBlogs);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<BlogStatus | "all">("all");
@@ -362,19 +357,36 @@ export default function BlogManagementPage() {
 
   const itemsPerPage = 10;
 
-  // Get unique categories
+  // Fetch blogs
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  const fetchBlogs = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/api/blog");
+      const blogData = res.data.data || [];
+      setBlogs(blogData);
+    } catch (error: any) {
+      console.error("Error fetching blogs:", error);
+      setToast({ message: "Failed to load blogs", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const categories = useMemo(() => {
     const cats = blogs.map((b) => b.category);
     return ["all", ...Array.from(new Set(cats))];
   }, [blogs]);
 
-  // Filter blogs
   const filteredBlogs = useMemo(() => {
     return blogs.filter((blog) => {
       const matchesSearch =
         blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        blog.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        blog.author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (blog.excerpt || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        blog.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         blog.tags.some((tag) =>
           tag.toLowerCase().includes(searchTerm.toLowerCase()),
         );
@@ -388,7 +400,6 @@ export default function BlogManagementPage() {
     });
   }, [blogs, searchTerm, categoryFilter, statusFilter]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredBlogs.length / itemsPerPage);
   const paginatedBlogs = filteredBlogs.slice(
     (currentPage - 1) * itemsPerPage,
@@ -399,69 +410,107 @@ export default function BlogManagementPage() {
     setCurrentPage(1);
   }, [searchTerm, categoryFilter, statusFilter]);
 
-  // Stats
   const stats = useMemo(
     () => ({
       total: blogs.length,
       published: blogs.filter((b) => b.status === "published").length,
       draft: blogs.filter((b) => b.status === "draft").length,
-      totalViews: blogs.reduce((sum, b) => sum + b.views, 0),
+      totalViews: blogs.reduce((sum, b) => sum + (b.views || 0), 0),
     }),
     [blogs],
   );
 
-  // Handlers
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteModal.blog) return;
-    setBlogs((prev) => prev.filter((b) => b._id !== deleteModal.blog?._id));
-    setToast({ message: "Blog deleted successfully", type: "success" });
-    setDeleteModal({ isOpen: false, blog: null });
+    try {
+      await axios.delete(`/api/blog/${deleteModal.blog._id}`);
+      setBlogs((prev) => prev.filter((b) => b._id !== deleteModal.blog?._id));
+      setToast({ message: "Blog deleted successfully", type: "success" });
+      setDeleteModal({ isOpen: false, blog: null });
+    } catch (error: any) {
+      console.error("Error deleting blog:", error);
+      setToast({
+        message: error.response?.data?.error || "Failed to delete blog",
+        type: "error",
+      });
+    }
   };
 
-  const handleBulkDelete = () => {
-    setBlogs((prev) => prev.filter((b) => !selectedBlogs.includes(b._id)));
-    setToast({
-      message: `${selectedBlogs.length} blogs deleted`,
-      type: "success",
-    });
-    setSelectedBlogs([]);
-    setSelectAll(false);
+  const handleBulkDelete = async () => {
+    try {
+      for (const id of selectedBlogs) {
+        await axios.delete(`/api/blog/${id}`);
+      }
+      setBlogs((prev) => prev.filter((b) => !selectedBlogs.includes(b._id)));
+      setToast({
+        message: `${selectedBlogs.length} blogs deleted`,
+        type: "success",
+      });
+      setSelectedBlogs([]);
+      setSelectAll(false);
+    } catch (error: any) {
+      console.error("Error bulk deleting:", error);
+      setToast({ message: "Failed to delete some blogs", type: "error" });
+    }
   };
 
-  const handleDuplicate = (blog: BlogPost) => {
-    const newBlog: BlogPost = {
-      ...blog,
-      _id: Date.now().toString(),
-      title: `${blog.title} (Copy)`,
-      slug: `${blog.slug}-copy`,
-      status: "draft",
-      views: 0,
-      likes: 0,
-      comments: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      publishedAt: undefined,
-    };
-    setBlogs((prev) => [newBlog, ...prev]);
-    setToast({ message: "Blog duplicated successfully", type: "success" });
+  const handleDuplicate = async (blog: BlogPost) => {
+    try {
+      const newBlogData = {
+        title: `${blog.title} (Copy)`,
+        subtitle: "",
+        category: blog.category,
+        image: blog.image,
+        authorName: blog.authorName,
+        authorRole: "",
+        authorBio: "",
+        authorAvatar: blog.authorAvatar || { url: "", publicId: "" },
+        readTime: blog.readTime,
+        tags: blog.tags,
+        content: [{ id: "1", type: "paragraph", content: "Content here..." }],
+        status: "draft" as BlogStatus,
+        slug: `${blog.slug}-copy-${Date.now()}`,
+      };
+
+      const res = await axios.post("/api/blog", newBlogData);
+      setBlogs((prev) => [res.data.data, ...prev]);
+      setToast({ message: "Blog duplicated successfully", type: "success" });
+    } catch (error: any) {
+      console.error("Error duplicating blog:", error);
+      setToast({
+        message: error.response?.data?.error || "Failed to duplicate blog",
+        type: "error",
+      });
+    }
   };
 
-  const handleStatusChange = (blogId: string, newStatus: BlogStatus) => {
-    setBlogs((prev) =>
-      prev.map((b) =>
-        b._id === blogId
-          ? {
-              ...b,
-              status: newStatus,
-              publishedAt:
-                newStatus === "published"
-                  ? new Date().toISOString()
-                  : b.publishedAt,
-            }
-          : b,
-      ),
-    );
-    setToast({ message: "Blog status updated", type: "success" });
+  const handleStatusChange = async (blogId: string, newStatus: BlogStatus) => {
+    try {
+      await axios.put(`/api/blog/${blogId}`, {
+        status: newStatus,
+        publishedAt:
+          newStatus === "published" ? new Date().toISOString() : undefined,
+      });
+
+      setBlogs((prev) =>
+        prev.map((b) =>
+          b._id === blogId
+            ? {
+                ...b,
+                status: newStatus,
+                publishedAt:
+                  newStatus === "published"
+                    ? new Date().toISOString()
+                    : b.publishedAt,
+              }
+            : b,
+        ),
+      );
+      setToast({ message: "Blog status updated", type: "success" });
+    } catch (error: any) {
+      console.error("Error updating status:", error);
+      setToast({ message: "Failed to update status", type: "error" });
+    }
   };
 
   const toggleSelectAll = () => {
@@ -482,6 +531,7 @@ export default function BlogManagementPage() {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "—";
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -489,9 +539,17 @@ export default function BlogManagementPage() {
     });
   };
 
+  const getCommentCount = (comments: any[]): number => {
+    if (!comments) return 0;
+    let count = comments.length;
+    comments.forEach((c: any) => {
+      if (c.replies) count += c.replies.length;
+    });
+    return count;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <Toast
@@ -502,7 +560,6 @@ export default function BlogManagementPage() {
         )}
       </AnimatePresence>
 
-      {/* Delete Modal */}
       <DeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, blog: null })}
@@ -702,23 +759,35 @@ export default function BlogManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedBlogs.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-8">
+                    <TableSkeleton />
+                  </td>
+                </tr>
+              ) : paginatedBlogs.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-16 text-center">
                     <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No blog posts found</p>
-                    {searchTerm && (
+                    {(searchTerm ||
+                      categoryFilter !== "all" ||
+                      statusFilter !== "all") && (
                       <button
-                        onClick={() => setSearchTerm("")}
+                        onClick={() => {
+                          setSearchTerm("");
+                          setCategoryFilter("all");
+                          setStatusFilter("all");
+                        }}
                         className="mt-2 text-primary text-sm hover:text-primary-hover"
                       >
-                        Clear search
+                        Clear search & filters
                       </button>
                     )}
                   </td>
                 </tr>
               ) : (
-                paginatedBlogs.map((blog) => (
+                paginatedBlogs.map((blog, i) => (
                   <tr
                     key={blog._id}
                     className="border-b border-gray-50 hover:bg-gray-50/50 transition group"
@@ -733,26 +802,20 @@ export default function BlogManagementPage() {
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
+                        {/* Fixed: Blog Image with proper width/height */}
                         <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                          <Image
-                            src={blog.image}
+                          <BlogImage
+                            image={blog.image}
                             alt={blog.title}
-                            fill
-                            className="object-cover"
+                            className="w-16 h-12"
                           />
                         </div>
                         <div className="min-w-0">
-                          <Link
-                            href={`/blog/${blog.slug}`}
-                            target="_blank"
-                            className="text-gray-800 hover:text-primary transition-colors"
-                          >
-                            <p className="font-medium text-sm line-clamp-1">
-                              {blog.title}
-                            </p>
-                          </Link>
+                          <p className="font-medium text-sm line-clamp-1 text-gray-800">
+                            {blog.title}
+                          </p>
                           <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
-                            {blog.excerpt}
+                            {blog.excerpt || "No excerpt"}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -769,23 +832,13 @@ export default function BlogManagementPage() {
                     </td>
                     <td className="py-3 px-4 hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        {blog.author.avatar ? (
-                          <Image
-                            src={blog.author.avatar}
-                            alt={blog.author.name}
-                            width={28}
-                            height={28}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="w-7 h-7 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs font-semibold">
-                              {blog.author.name.charAt(0)}
-                            </span>
-                          </div>
-                        )}
+                        {/* Fixed: Author Avatar with proper width/height */}
+                        <AuthorAvatar
+                          avatar={blog.authorAvatar}
+                          name={blog.authorName}
+                        />
                         <span className="text-sm text-gray-700">
-                          {blog.author.name}
+                          {blog.authorName}
                         </span>
                       </div>
                     </td>
@@ -803,7 +856,7 @@ export default function BlogManagementPage() {
                             e.target.value as BlogStatus,
                           )
                         }
-                        className="text-xs border-0 bg-transparent cursor-pointer"
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white cursor-pointer focus:outline-none focus:border-primary"
                       >
                         <option value="published">Published</option>
                         <option value="draft">Draft</option>
@@ -825,7 +878,7 @@ export default function BlogManagementPage() {
                           title="Comments"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          {blog.comments}
+                          {getCommentCount(blog.comments)}
                         </span>
                       </div>
                     </td>
@@ -880,7 +933,7 @@ export default function BlogManagementPage() {
         </div>
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!loading && totalPages > 1 && (
           <div className="flex justify-between items-center px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}

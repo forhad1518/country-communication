@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -37,15 +37,22 @@ type ContentBlock = {
   caption?: string;
 };
 
+type ImageData = {
+  url: string;
+  publicId: string;
+};
+
 type BlogFormData = {
   title: string;
   subtitle: string;
   category: string;
-  image: string;
+  image: ImageData;
+  imageFile: File | null;
   authorName: string;
   authorRole: string;
   authorBio: string;
-  authorAvatar: string;
+  authorAvatar: ImageData;
+  authorAvatarFile: File | null;
   readTime: string;
   tags: string[];
   content: ContentBlock[];
@@ -81,57 +88,39 @@ const Toast = ({
   );
 };
 
-// Drag & Drop Image Upload Component
-const ImageUpload = ({
+// Image Upload Component
+const LazyImageUpload = ({
   label,
-  value,
+  previewUrl,
   onChange,
   required = false,
   error,
 }: {
   label: string;
-  value: string;
-  onChange: (url: string) => void;
+  previewUrl: string;
+  onChange: (file: File | null) => void;
   required?: boolean;
   error?: string;
 }) => {
   const [isDragging, setIsDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<string | null>(value || null);
+  const [localPreview, setLocalPreview] = useState<string | null>(
+    previewUrl || null,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = async (file: File) => {
+  useEffect(() => {
+    setLocalPreview(previewUrl || null);
+  }, [previewUrl]);
+
+  const handleFile = (file: File) => {
     if (!file) return;
 
     // Show preview immediately
-    const previewUrl = URL.createObjectURL(file);
-    setPreview(previewUrl);
+    const objectUrl = URL.createObjectURL(file);
+    setLocalPreview(objectUrl);
 
-    // Upload to server
-    setUploading(true);
-    try {
-      const slug = slugify(label + "_" + Date.now());
-      const uploadedUrl = await uploadFiles({
-        type: "single",
-        files: file,
-        slug: slug,
-        api: "/api/upload/image",
-      });
-
-      if (uploadedUrl) {
-        onChange(uploadedUrl);
-        setToastMessage?.({
-          message: "Image uploaded successfully!",
-          type: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      setToastMessage?.({ message: "Failed to upload image", type: "error" });
-      setPreview(value || null);
-    } finally {
-      setUploading(false);
-    }
+    // Notify parent component with the file
+    onChange(file);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -153,7 +142,7 @@ const ImageUpload = ({
     setIsDragging(false);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       handleFile(file);
@@ -161,8 +150,8 @@ const ImageUpload = ({
   };
 
   const removeImage = () => {
-    setPreview(null);
-    onChange("");
+    setLocalPreview(null);
+    onChange(null);
   };
 
   return (
@@ -172,9 +161,14 @@ const ImageUpload = ({
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
 
-      {preview ? (
+      {localPreview ? (
         <div className="relative h-64 rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200 group">
-          <Image src={preview} alt="Preview" fill className="object-cover" />
+          <Image
+            src={localPreview}
+            alt="Preview"
+            fill
+            className="object-cover"
+          />
           {/* Overlay on hover */}
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button
@@ -192,19 +186,11 @@ const ImageUpload = ({
               Remove
             </button>
           </div>
-          {uploading && (
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="bg-white rounded-xl px-4 py-2 flex items-center gap-2 shadow-lg">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-gray-700">Uploading...</span>
-              </div>
-            </div>
-          )}
           <input
             ref={inputRef}
             type="file"
             accept="image/*"
-            onChange={handleChange}
+            onChange={handleInputChange}
             className="hidden"
           />
         </div>
@@ -222,31 +208,18 @@ const ImageUpload = ({
                 : "border-gray-300 hover:border-primary hover:bg-gray-50"
           }`}
         >
-          {uploading ? (
-            <>
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-gray-500">Uploading image...</p>
-            </>
-          ) : (
-            <>
-              <Upload
-                className={`w-10 h-10 ${error ? "text-red-400" : "text-gray-400"}`}
-              />
-              <p
-                className={`text-sm ${error ? "text-red-600" : "text-gray-600"}`}
-              >
-                {isDragging
-                  ? "Drop image here"
-                  : "Click or drag image to upload"}
-              </p>
-              <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 10MB</p>
-            </>
-          )}
+          <Upload
+            className={`w-10 h-10 ${error ? "text-red-400" : "text-gray-400"}`}
+          />
+          <p className={`text-sm ${error ? "text-red-600" : "text-gray-600"}`}>
+            {isDragging ? "Drop image here" : "Click or drag image to upload"}
+          </p>
+          <p className="text-xs text-gray-400">PNG, JPG, WEBP up to 10MB</p>
           <input
             ref={inputRef}
             type="file"
             accept="image/*"
-            onChange={handleChange}
+            onChange={handleInputChange}
             className="hidden"
           />
         </div>
@@ -255,11 +228,6 @@ const ImageUpload = ({
     </div>
   );
 };
-
-// Toast message setter (shared across components)
-let setToastMessage:
-  | ((toast: { message: string; type: "success" | "error" }) => void)
-  | null = null;
 
 // Content Block Editor (Same as before - unchanged)
 const ContentBlockEditor = ({
@@ -515,18 +483,19 @@ export default function AddBlogPage() {
   const [activeSection, setActiveSection] = useState("content");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Set global toast
-  setToastMessage = setToast;
+  const emptyImage: ImageData = { url: "", publicId: "" };
 
   const [formData, setFormData] = useState<BlogFormData>({
     title: "",
     subtitle: "",
     category: "Booth Design",
-    image: "",
+    image: emptyImage,
+    imageFile: null,
     authorName: "",
     authorRole: "",
     authorBio: "",
-    authorAvatar: "",
+    authorAvatar: emptyImage,
+    authorAvatarFile: null,
     readTime: "5 min read",
     tags: [],
     content: [
@@ -552,6 +521,42 @@ export default function AddBlogPage() {
     // Clear error when user types
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  // Handle image file change (lazy - no upload yet)
+  const handleImageFile = (file: File | null) => {
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        imageFile: file,
+        image: { url: URL.createObjectURL(file), publicId: "" }, // Preview URL
+      }));
+      if (errors.image) setErrors((prev) => ({ ...prev, image: "" }));
+    } else {
+      // Remove image
+      setFormData((prev) => ({
+        ...prev,
+        imageFile: null,
+        image: emptyImage,
+      }));
+    }
+  };
+
+  // Handle author avatar file change (lazy - no upload yet)
+  const handleAvatarFile = (file: File | null) => {
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        authorAvatarFile: file,
+        authorAvatar: { url: URL.createObjectURL(file), publicId: "" }, // Preview URL
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        authorAvatarFile: null,
+        authorAvatar: emptyImage,
+      }));
     }
   };
 
@@ -597,7 +602,8 @@ export default function AddBlogPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.title.trim()) newErrors.title = "Blog title is required";
-    if (!formData.image.trim()) newErrors.image = "Featured image is required";
+    if (!formData.imageFile && !formData.image.url)
+      newErrors.image = "Featured image is required";
     if (!formData.authorName.trim())
       newErrors.authorName = "Author name is required";
     if (
@@ -618,6 +624,65 @@ export default function AddBlogPage() {
     return true;
   };
 
+  // ===== FIXED: Upload images when submitting =====
+  const uploadImagesOnSubmit = async (): Promise<{
+    imageData: ImageData;
+    avatarData: ImageData;
+  }> => {
+    let imageData: ImageData = formData.image;
+    let avatarData: ImageData = formData.authorAvatar;
+
+    const slug = formData.slug || generateSlug(formData.title);
+
+    // Upload featured image if new file selected
+    if (formData.imageFile) {
+      try {
+        const uploadedImage = await uploadFiles({
+          type: "single",
+          files: formData.imageFile,
+          slug: `${slug}_featured`,
+          api: "/api/upload/image",
+        });
+
+        // uploadFiles returns { url: string, publicId: string }
+        if (uploadedImage && typeof uploadedImage === "object") {
+          imageData = {
+            url: uploadedImage.url || "",
+            publicId: uploadedImage.publicId || "",
+          };
+        }
+      } catch (error) {
+        console.error("Error uploading featured image:", error);
+        throw new Error("Failed to upload featured image");
+      }
+    }
+
+    // Upload author avatar if new file selected
+    if (formData.authorAvatarFile) {
+      try {
+        const uploadedAvatar = await uploadFiles({
+          type: "single",
+          files: formData.authorAvatarFile,
+          slug: `${slug}_author`,
+          api: "/api/upload/image",
+        });
+
+        // uploadFiles returns { url: string, publicId: string }
+        if (uploadedAvatar && typeof uploadedAvatar === "object") {
+          avatarData = {
+            url: uploadedAvatar.url || "",
+            publicId: uploadedAvatar.publicId || "",
+          };
+        }
+      } catch (error) {
+        console.error("Error uploading avatar:", error);
+        throw new Error("Failed to upload author avatar");
+      }
+    }
+
+    return { imageData, avatarData };
+  };
+
   // Handle submit
   const handleSubmit = async (status: "draft" | "published") => {
     if (!validateForm()) return;
@@ -625,22 +690,27 @@ export default function AddBlogPage() {
     setLoading(true);
 
     try {
-      // Prepare data for API
+      // Upload images first (only if new files exist)
+      const { imageData, avatarData } = await uploadImagesOnSubmit();
+
+      // Prepare data for API - send only url and publicId
       const blogData = {
         title: formData.title,
         subtitle: formData.subtitle,
         category: formData.category,
-        image: formData.image,
+        image: imageData, // { url: "https://...", publicId: "..." }
         authorName: formData.authorName,
         authorRole: formData.authorRole,
         authorBio: formData.authorBio,
-        authorAvatar: formData.authorAvatar,
+        authorAvatar: avatarData, // { url: "https://...", publicId: "..." }
         readTime: formData.readTime,
         tags: formData.tags,
         content: formData.content,
         status: status,
         slug: formData.slug || generateSlug(formData.title),
       };
+
+      console.log("Sending blog data:", blogData); // Debug log
 
       // Call API
       const response = await axios.post("/api/blog", blogData);
@@ -657,7 +727,7 @@ export default function AddBlogPage() {
     } catch (error: any) {
       console.error("Error creating blog:", error);
       const errorMessage =
-        error.response?.data?.error || "Failed to create blog";
+        error.response?.data?.error || error.message || "Failed to create blog";
       setToast({ message: errorMessage, type: "error" });
     } finally {
       setLoading(false);
@@ -922,11 +992,10 @@ export default function AddBlogPage() {
             <h3 className="text-lg font-semibold text-gray-800">
               Featured Image
             </h3>
-
-            <ImageUpload
+            <LazyImageUpload
               label="Featured Image"
-              value={formData.image}
-              onChange={(url) => handleChange("image", url)}
+              previewUrl={formData.image.url}
+              onChange={handleImageFile}
               required
               error={errors.image}
             />
@@ -993,10 +1062,10 @@ export default function AddBlogPage() {
               />
             </div>
 
-            <ImageUpload
+            <LazyImageUpload
               label="Author Avatar"
-              value={formData.authorAvatar}
-              onChange={(url) => handleChange("authorAvatar", url)}
+              previewUrl={formData.authorAvatar.url}
+              onChange={handleAvatarFile}
             />
           </motion.div>
         )}
