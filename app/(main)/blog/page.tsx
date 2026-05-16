@@ -175,7 +175,7 @@ const BlogCard = ({ blog, index }: { blog: BlogPost; index: number }) => {
           )}
 
           {/* Read More Link */}
-          <div className="flex items-center text-primary-light font-medium text-sm group/link">
+          <div className="flex items-center text-primary font-medium text-sm group/link">
             <span className="group-hover/link:mr-1 transition-all">
               Read Article
             </span>

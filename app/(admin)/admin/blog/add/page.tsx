@@ -36,7 +36,7 @@ import ImageUpload, {
 type ContentBlock = {
   id: string;
   type: "paragraph" | "heading" | "image" | "quote" | "list";
-  content: string | string[];
+  content: any | string[];
   caption?: string;
 };
 
@@ -307,9 +307,12 @@ const ContentBlockEditor = ({
               console.log("Images", images);
               setFeaturedImage(images);
               if (images.length > 0) {
-                onChange({ ...block, content: images[0].url });
+                onChange({
+                  ...block,
+                  content: { url: images[0].url, publicId: images[0].publicId },
+                });
               } else {
-                onChange({ ...block, content: "" });
+                onChange({ ...block, content: { url: "", publicId: "" } });
               }
             }}
             onUploadComplete={(images) => {
