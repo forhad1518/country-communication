@@ -28,6 +28,9 @@ import {
   FileText,
   Link,
 } from "lucide-react";
+import ImageUpload, {
+  UploadedImage,
+} from "@/components/imageUpload/uploadImage";
 
 // Types
 type ContentBlock = {
@@ -241,7 +244,7 @@ const ContentBlockEditor = ({
   onDelete: () => void;
   index: number;
 }) => {
-  const [showImageUrl, setShowImageUrl] = useState(false);
+  const [featuredImage, setFeaturedImage] = useState<UploadedImage[]>([]);
 
   return (
     <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-primary/30 transition-colors group">
@@ -294,44 +297,34 @@ const ContentBlockEditor = ({
       )}
 
       {block.type === "image" && (
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowImageUrl(!showImageUrl)}
-              className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs hover:bg-gray-50 transition flex items-center gap-1"
-            >
-              <Link className="w-3 h-3" />
-              {showImageUrl ? "Hide URL" : "Add Image URL"}
-            </button>
-          </div>
-
-          {showImageUrl && (
-            <input
-              type="text"
-              value={block.content as string}
-              onChange={(e) => onChange({ ...block, content: e.target.value })}
-              placeholder="Enter image URL..."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white"
-            />
-          )}
-
-          {block.content && (
-            <div className="relative h-48 rounded-lg overflow-hidden bg-gray-200">
-              <Image
-                src={block.content as string}
-                alt="Preview"
-                fill
-                className="object-cover"
-              />
-            </div>
-          )}
-
-          <input
-            type="text"
-            value={block.caption || ""}
-            onChange={(e) => onChange({ ...block, caption: e.target.value })}
-            placeholder="Image caption (optional)"
-            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary bg-white"
+        <div>
+          <ImageUpload
+            mode="single"
+            label={`Image Block #${index + 1}`}
+            required={true}
+            existingImages={featuredImage}
+            onChange={(images) => {
+              console.log("Images", images);
+              setFeaturedImage(images);
+              if (images.length > 0) {
+                onChange({ ...block, content: images[0].url });
+              } else {
+                onChange({ ...block, content: "" });
+              }
+            }}
+            onUploadComplete={(images) => {
+              console.log(
+                "Upload complete:",
+                images[0]?.url,
+                images[0]?.publicId,
+              );
+            }}
+            onRemove={(publicId) => {
+              console.log("Removed:", publicId);
+            }}
+            onError={(error) => {
+              console.error("Error:", error);
+            }}
           />
         </div>
       )}
@@ -462,16 +455,6 @@ const TagInput = ({
   );
 };
 
-// Generate slug from title
-const generateSlug = (title: string): string => {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .substring(0, 100);
-};
-
 // Main Component
 export default function AddBlogPage() {
   const router = useRouter();
@@ -515,7 +498,7 @@ export default function AddBlogPage() {
 
     // Auto-generate slug from title
     if (field === "title") {
-      setFormData((prev) => ({ ...prev, slug: generateSlug(value) }));
+      setFormData((prev) => ({ ...prev, slug: slugify(value) }));
     }
 
     // Clear error when user types
@@ -632,7 +615,7 @@ export default function AddBlogPage() {
     let imageData: ImageData = formData.image;
     let avatarData: ImageData = formData.authorAvatar;
 
-    const slug = formData.slug || generateSlug(formData.title);
+    const slug = formData.slug || slugify(formData.title);
 
     // Upload featured image if new file selected
     if (formData.imageFile) {
@@ -707,7 +690,7 @@ export default function AddBlogPage() {
         tags: formData.tags,
         content: formData.content,
         status: status,
-        slug: formData.slug || generateSlug(formData.title),
+        slug: formData.slug || slugify(formData.title),
       };
 
       console.log("Sending blog data:", blogData); // Debug log
