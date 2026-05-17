@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import axios from "axios";
 import {
   Calendar,
   Clock,
@@ -26,7 +27,7 @@ import {
   ArrowUp,
 } from "lucide-react";
 
-// Custom Social Icons
+// ===== CUSTOM SOCIAL ICONS =====
 const FacebookIcon = () => (
   <svg
     width="18"
@@ -79,170 +80,101 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-// Types (same as before)
+// ===== TYPES =====
+type ImageData = {
+  url: string;
+  publicId: string;
+};
+
+type ContentBlock = {
+  _id?: string;
+  type: "paragraph" | "heading" | "image" | "quote" | "list";
+  content: string | string[] | ImageData;
+  caption?: string;
+};
+
 type CommentType = {
-  id: string;
-  userId: string;
+  _id: string;
+  userId?: string;
   userName: string;
   userAvatar?: string;
   content: string;
-  date: string;
   likes: number;
-  isLiked?: boolean;
-  replies?: CommentType[];
   isAdmin?: boolean;
+  replies?: CommentType[];
+  createdAt: string;
 };
 
 type BlogPostType = {
-  id: string;
+  _id: string;
   title: string;
   subtitle?: string;
   category: string;
-  image: string;
-  date: string;
-  readTime: string;
+  image: ImageData;
+  authorName: string;
+  authorRole?: string;
+  authorBio?: string;
+  authorAvatar?: ImageData;
+  readTime?: string;
+  tags: string[];
+  content: ContentBlock[];
+  status: string;
+  slug: string;
   views: number;
   likes: number;
-  author: {
-    name: string;
-    avatar: string;
-    bio: string;
-    role: string;
-  };
-  content: {
-    type: "paragraph" | "heading" | "image" | "quote" | "list";
-    content: string | string[];
-    caption?: string;
-  }[];
-  tags: string[];
-  relatedPosts: {
-    id: string;
-    title: string;
-    image: string;
-    date: string;
-  }[];
+  comments: CommentType[];
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
 };
 
-// Sample Blog Data (same as before)
-const sampleBlog: BlogPostType = {
-  id: "1",
-  title: "How to Design an Attractive Exhibition Booth That Drives Engagement",
-  subtitle:
-    "Learn the essential design principles that make exhibition booths stand out and attract more visitors.",
-  category: "Booth Design",
-  image: "https://picsum.photos/1200/600?1",
-  date: "March 15, 2025",
-  readTime: "8 min read",
-  views: 2547,
-  likes: 342,
-  author: {
-    name: "Iqbal Mahmud",
-    avatar: "https://picsum.photos/100/100?author",
-    bio: "Exhibition strategist with 10+ years experience in designing award-winning booths for global brands.",
-    role: "Senior Exhibition Designer",
-  },
-  content: [
-    {
-      type: "paragraph",
-      content:
-        "In today's competitive exhibition landscape, having an attractive booth is no longer optional—it's essential. Your booth is often the first impression potential clients have of your brand, and making it count can mean the difference between a successful show and a missed opportunity.",
-    },
-    {
-      type: "heading",
-      content: "Understanding Your Audience",
-    },
-    {
-      type: "paragraph",
-      content:
-        "Before diving into design elements, it's crucial to understand who you're designing for. Different industries and demographics respond to different visual cues and layouts. Take time to research your target audience's preferences and expectations.",
-    },
-    {
-      type: "image",
-      content: "https://picsum.photos/800/400?booth1",
-      caption: "Modern exhibition booth with interactive elements",
-    },
-    {
-      type: "heading",
-      content: "Key Design Principles for Exhibition Booths",
-    },
-    {
-      type: "list",
-      content: [
-        "Open Layout: Create an inviting space that encourages visitors to enter",
-        "Strategic Lighting: Use lighting to highlight key products and create ambiance",
-        "Brand Consistency: Ensure your booth reflects your brand identity",
-        "Interactive Elements: Incorporate touch screens, demos, or VR experiences",
-        "Comfortable Seating: Provide areas for meaningful conversations",
-      ],
-    },
-    {
-      type: "quote",
-      content:
-        "The best exhibition booths don't just display products—they tell a story and create an experience.",
-    },
-  ],
-  tags: [
-    "Exhibition Design",
-    "Booth Strategy",
-    "Event Marketing",
-    "Trade Shows",
-  ],
-  relatedPosts: [
-    {
-      id: "2",
-      title: "Top Exhibition Trends in 2025",
-      image: "https://picsum.photos/400/300?trends",
-      date: "February 28, 2025",
-    },
-    {
-      id: "3",
-      title: "Modular Booth vs Custom Booth",
-      image: "https://picsum.photos/400/300?modular",
-      date: "January 10, 2025",
-    },
-  ],
+// ===== HELPERS =====
+const getImageUrl = (image: ImageData | string | undefined): string => {
+  if (!image) return "";
+  if (typeof image === "string") return image;
+  return image.url || "";
 };
 
-// Sample Comments Data
-const sampleComments: CommentType[] = [
-  {
-    id: "1",
-    userId: "user1",
-    userName: "Sarah Johnson",
-    userAvatar: "https://picsum.photos/50/50?user1",
-    content:
-      "This is incredibly helpful! We're planning our first major exhibition booth and these tips are exactly what we needed.",
-    date: "March 16, 2025",
-    likes: 24,
-    isLiked: false,
-    replies: [
-      {
-        id: "1-1",
-        userId: "admin",
-        userName: "Iqbal Mahmud",
-        userAvatar: "https://picsum.photos/50/50?author",
-        content:
-          "Thank you Sarah! Best of luck with your exhibition. Feel free to reach out if you need any specific advice.",
-        date: "March 16, 2025",
-        likes: 8,
-        isAdmin: true,
-      },
-    ],
-  },
-  {
-    id: "2",
-    userId: "user2",
-    userName: "Michael Chen",
-    userAvatar: "https://picsum.photos/50/50?user2",
-    content:
-      "Great article! The section on lighting strategies was particularly insightful.",
-    date: "March 17, 2025",
-    likes: 18,
-    isLiked: true,
-  },
-];
+const getContentImageUrl = (
+  content: string | string[] | ImageData | undefined,
+): string => {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) return "";
+  // It's ImageData object
+  if (typeof content === "object" && "url" in content) {
+    return content.url || "";
+  }
+  return "";
+};
 
-// Share Button Component (Updated with custom icons)
+const getOptimizedUrl = (
+  url: string,
+  width: number = 800,
+  height: number = 600,
+): string => {
+  if (!url) return "";
+  if (url.includes("cloudinary.com")) {
+    return url.replace(
+      "/upload/",
+      `/upload/w_${width},h_${height},c_fill,q_auto,f_auto/`,
+    );
+  }
+  return url;
+};
+
+const formatDate = (dateString: string): string => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
+// ===== COMPONENTS =====
+
+// Share Button
 const ShareButton = ({ title, url }: { title: string; url: string }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -266,10 +198,8 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
         onClick={() => setShowOptions(!showOptions)}
         className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 transition-colors"
       >
-        <Share2 className="w-4 h-4" />
-        Share
+        <Share2 className="w-4 h-4" /> Share
       </button>
-
       <AnimatePresence>
         {showOptions && (
           <motion.div
@@ -284,8 +214,7 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
-              <FacebookIcon />
-              Facebook
+              <FacebookIcon /> Facebook
             </a>
             <a
               href={shareLinks.twitter}
@@ -293,8 +222,7 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
-              <TwitterIcon />
-              Twitter
+              <TwitterIcon /> Twitter
             </a>
             <a
               href={shareLinks.linkedin}
@@ -302,8 +230,7 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
-              <LinkedinIcon />
-              LinkedIn
+              <LinkedinIcon /> LinkedIn
             </a>
             <a
               href={shareLinks.whatsapp}
@@ -311,8 +238,7 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
               rel="noopener noreferrer"
               className="flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
             >
-              <WhatsAppIcon />
-              WhatsApp
+              <WhatsAppIcon /> WhatsApp
             </a>
             <div className="border-t border-white/10 my-1" />
             <button
@@ -321,13 +247,11 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
             >
               {copied ? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  Copied!
+                  <CheckCircle className="w-4 h-4 text-green-500" /> Copied!
                 </>
               ) : (
                 <>
-                  <Link2 className="w-4 h-4 text-gray-400" />
-                  Copy Link
+                  <Link2 className="w-4 h-4 text-gray-400" /> Copy Link
                 </>
               )}
             </button>
@@ -338,8 +262,8 @@ const ShareButton = ({ title, url }: { title: string; url: string }) => {
   );
 };
 
-// Table of Contents Component (same as before)
-const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
+// Table of Contents
+const TableOfContents = ({ content }: { content: ContentBlock[] }) => {
   const [activeId, setActiveId] = useState("");
   const headings = content.filter((item) => item.type === "heading");
 
@@ -349,13 +273,10 @@ const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
       let current = "";
       headingElements.forEach((el) => {
         const rect = el.getBoundingClientRect();
-        if (rect.top <= 150) {
-          current = el.id;
-        }
+        if (rect.top <= 150) current = el.id;
       });
       setActiveId(current);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -365,8 +286,7 @@ const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
   return (
     <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 sticky top-24">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <BookOpen className="w-5 h-5 text-primary-light" />
-        Table of Contents
+        <BookOpen className="w-5 h-5 text-primary-light" /> Table of Contents
       </h3>
       <ul className="space-y-2">
         {headings.map((heading, i) => {
@@ -375,11 +295,7 @@ const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
             <li key={i}>
               <a
                 href={`#${id}`}
-                className={`block text-sm transition-colors py-1 border-l-2 pl-3 ${
-                  activeId === id
-                    ? "border-primary-light text-primary-light"
-                    : "border-transparent text-gray-400 hover:text-white"
-                }`}
+                className={`block text-sm transition-colors py-1 border-l-2 pl-3 ${activeId === id ? "border-primary-light text-primary-light" : "border-transparent text-gray-400 hover:text-white"}`}
                 onClick={(e) => {
                   e.preventDefault();
                   document
@@ -387,7 +303,7 @@ const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
               >
-                {heading.content}
+                {heading.content as string}
               </a>
             </li>
           );
@@ -397,19 +313,19 @@ const TableOfContents = ({ content }: { content: BlogPostType["content"] }) => {
   );
 };
 
-// Comment Component (same as before)
+// Comment Item
 const CommentItem = ({
   comment,
-  onReply,
   onLike,
-  onDelete,
+  // onDelete,
+  onReply,
   isAdmin,
   depth = 0,
 }: {
   comment: CommentType;
-  onReply: (id: string) => void;
   onLike: (id: string) => void;
-  onDelete: (id: string) => void;
+  // onDelete: (id: string) => void;
+  onReply: (id: string) => void;
   isAdmin: boolean;
   depth?: number;
 }) => {
@@ -419,7 +335,7 @@ const CommentItem = ({
 
   const handleSubmitReply = () => {
     if (replyContent.trim()) {
-      onReply(comment.id);
+      onReply(comment._id);
       setReplyContent("");
       setShowReplyInput(false);
     }
@@ -433,11 +349,11 @@ const CommentItem = ({
         <div className="shrink-0">
           {comment.userAvatar ? (
             <Image
-              src={comment.userAvatar}
+              src={getOptimizedUrl(comment.userAvatar, 50, 50)}
               alt={comment.userName}
               width={40}
               height={40}
-              className="rounded-full"
+              className="rounded-full object-cover"
             />
           ) : (
             <div className="w-10 h-10 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
@@ -447,7 +363,6 @@ const CommentItem = ({
             </div>
           )}
         </div>
-
         <div className="flex-1">
           <div className="bg-white/5 rounded-xl p-4 border border-white/10">
             <div className="flex items-center justify-between mb-2">
@@ -460,10 +375,11 @@ const CommentItem = ({
                     Admin
                   </span>
                 )}
-                <span className="text-xs text-gray-500">{comment.date}</span>
+                <span className="text-xs text-gray-500">
+                  {formatDate(comment.createdAt)}
+                </span>
               </div>
-
-              {(isAdmin || !comment.isAdmin) && (
+              {isAdmin && (
                 <div className="relative">
                   <button
                     onClick={() => setShowOptions(!showOptions)}
@@ -471,49 +387,37 @@ const CommentItem = ({
                   >
                     <MoreVertical className="w-4 h-4 text-gray-400" />
                   </button>
-
-                  {showOptions && isAdmin && (
+                  {showOptions && (
                     <div className="absolute right-0 top-8 bg-gray-900 border border-white/10 rounded-lg shadow-xl z-10">
                       <button
-                        onClick={() => onDelete(comment.id)}
+                        // onClick={() => onDelete(comment._id)}
                         className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2"
                       >
-                        <Trash2 className="w-4 h-4" />
-                        Delete
+                        <Trash2 className="w-4 h-4" /> Delete
                       </button>
                     </div>
                   )}
                 </div>
               )}
             </div>
-
             <p className="text-gray-300 text-sm">{comment.content}</p>
           </div>
-
           <div className="flex items-center gap-4 mt-2">
             <button
-              onClick={() => onLike(comment.id)}
-              className={`flex items-center gap-1 text-xs transition-colors ${
-                comment.isLiked
-                  ? "text-primary-light"
-                  : "text-gray-400 hover:text-white"
-              }`}
+              onClick={() => onLike(comment._id)}
+              className={`flex items-center gap-1 text-xs transition-colors ${comment.likes > 0 ? "text-primary-light" : "text-gray-400 hover:text-white"}`}
             >
-              <ThumbsUp className="w-3.5 h-3.5" />
-              <span>{comment.likes}</span>
+              <ThumbsUp className="w-3.5 h-3.5" /> <span>{comment.likes}</span>
             </button>
-
             {depth < 2 && (
               <button
                 onClick={() => setShowReplyInput(!showReplyInput)}
                 className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
               >
-                <Reply className="w-3.5 h-3.5" />
-                Reply
+                <Reply className="w-3.5 h-3.5" /> Reply
               </button>
             )}
           </div>
-
           {showReplyInput && (
             <div className="mt-3 flex gap-2">
               <input
@@ -533,16 +437,15 @@ const CommentItem = ({
           )}
         </div>
       </div>
-
       {comment.replies && comment.replies.length > 0 && (
         <div className="mt-4 space-y-4">
           {comment.replies.map((reply) => (
             <CommentItem
-              key={reply.id}
+              key={reply._id}
               comment={reply}
-              onReply={onReply}
               onLike={onLike}
-              onDelete={onDelete}
+              // onDelete={onDelete}
+              onReply={onReply}
               isAdmin={isAdmin}
               depth={depth + 1}
             />
@@ -553,106 +456,199 @@ const CommentItem = ({
   );
 };
 
-// Main Component
+// Skeleton Loader
+const BlogDetailSkeleton = () => (
+  <div className="animate-pulse space-y-8">
+    <div className="h-100 md:h-125 bg-gray-800 rounded-3xl" />
+    <div className="space-y-4">
+      <div className="h-8 bg-gray-800 rounded w-3/4" />
+      <div className="h-4 bg-gray-800 rounded w-1/2" />
+      <div className="h-4 bg-gray-800 rounded w-full" />
+    </div>
+  </div>
+);
+
+// ===== MAIN COMPONENT =====
 export default function BlogDetailPage() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params?.slug as string;
+
+  const [blog, setBlog] = useState<BlogPostType | null>(null);
+  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [blog] = useState<BlogPostType>(sampleBlog);
-  const [comments, setComments] = useState<CommentType[]>(sampleComments);
   const [newComment, setNewComment] = useState("");
   const [isLiked, setIsLiked] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isAdmin] = useState(true);
+  const [commentLoading, setCommentLoading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+
+  // ===== FETCH BLOG =====
+  useEffect(() => {
+    if (slug) fetchBlog(slug);
+  }, [slug]);
+
+  console.log("Blog Data:", slug);
+  const fetchBlog = async (blogSlug: string) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/blog/${blogSlug}`);
+      setBlog(res.data.data);
+    } catch (error) {
+      console.error("Error fetching blog:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reading progress
   useEffect(() => {
     const handleScroll = () => {
       const total =
         document.documentElement.scrollHeight -
         document.documentElement.clientHeight;
       const current = window.scrollY;
-      setProgress((current / total) * 100);
+      setProgress(total > 0 ? (current / total) * 100 : 0);
       setShowScrollTop(current > 500);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
+  // ===== LIKE BLOG =====
+  const handleLike = async () => {
+    if (!blog) return;
+    try {
+      await axios.put(`/api/blog/${slug}`, {
+        likes: isLiked ? blog.likes - 1 : blog.likes + 1,
+      });
+      setBlog((prev) =>
+        prev
+          ? { ...prev, likes: isLiked ? prev.likes - 1 : prev.likes + 1 }
+          : prev,
+      );
+      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error("Error liking blog:", error);
+    }
   };
 
-  const handleCommentLike = (commentId: string) => {
-    setComments((prev) => {
-      const updateComment = (comments: CommentType[]): CommentType[] => {
-        return comments.map((c) => {
-          if (c.id === commentId) {
-            return {
-              ...c,
-              likes: c.isLiked ? c.likes - 1 : c.likes + 1,
-              isLiked: !c.isLiked,
-            };
-          }
-          if (c.replies) {
-            return { ...c, replies: updateComment(c.replies) };
-          }
-          return c;
-        });
-      };
-      return updateComment(prev);
-    });
+  // ===== COMMENT LIKE =====
+  const handleCommentLike = async (commentId: string) => {
+    if (!blog) return;
+    try {
+      await axios.post(`/api/blog/${slug}/comments/like`, { slug, commentId });
+      // Update locally
+      setBlog((prev) => {
+        if (!prev) return prev;
+        const updateLikes = (comments: CommentType[]): CommentType[] => {
+          return comments.map((c) => {
+            if (c._id === commentId) return { ...c, likes: c.likes + 1 };
+            if (c.replies) return { ...c, replies: updateLikes(c.replies) };
+            return c;
+          });
+        };
+        return { ...prev, comments: updateLikes(prev.comments || []) };
+      });
+    } catch (error) {
+      console.error("Error liking comment:", error);
+    }
   };
 
-  const handleReply = (commentId: string) => {
+  // // ===== DELETE COMMENT =====
+  // const handleDeleteComment = async (commentId: string) => {
+  //   if (!blog) return;
+  //   try {
+  //     await axios.delete(
+  //       `/api/blog/${slug}/comments?commentId=${commentId}`,
+  //     );
+  //     setBlog((prev) => {
+  //       if (!prev) return prev;
+  //       const deleteFromComments = (comments: CommentType[]): CommentType[] => {
+  //         return comments.filter((c) => {
+  //           if (c._id === commentId) return false;
+  //           if (c.replies) c.replies = deleteFromComments(c.replies);
+  //           return true;
+  //         });
+  //       };
+  //       return { ...prev, comments: deleteFromComments(prev.comments || []) };
+  //     });
+  //   } catch (error) {
+  //     console.error("Error deleting comment:", error);
+  //   }
+  // };
+
+  // ===== POST COMMENT =====
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || !blog) return;
+
+    setCommentLoading(true);
+    try {
+      const res = await axios.post(`/api/blog/${slug}/comments`, {
+        userName: "Guest User",
+        content: newComment,
+      });
+
+      const newCommentData = res.data.data;
+      setBlog((prev) =>
+        prev
+          ? { ...prev, comments: [newCommentData, ...(prev.comments || [])] }
+          : prev,
+      );
+      setNewComment("");
+    } catch (error) {
+      console.error("Error posting comment:", error);
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
+  // ===== REPLY TO COMMENT =====
+  const handleReply = async (commentId: string) => {
+    // This is handled inside CommentItem
     console.log("Reply to:", commentId);
   };
 
-  const handleDeleteComment = (commentId: string) => {
-    setComments((prev) => {
-      const deleteFromComments = (comments: CommentType[]): CommentType[] => {
-        return comments.filter((c) => {
-          if (c.id === commentId) return false;
-          if (c.replies) {
-            c.replies = deleteFromComments(c.replies);
-          }
-          return true;
-        });
-      };
-      return deleteFromComments(prev);
-    });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
+  // ===== LOADING STATE =====
+  if (loading) {
+    return (
+      <div className="relative min-h-screen bg-black">
+        <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto pt-24">
+          <BlogDetailSkeleton />
+        </div>
+      </div>
+    );
+  }
 
-    const comment: CommentType = {
-      id: Date.now().toString(),
-      userId: "currentUser",
-      userName: "Guest User",
-      content: newComment,
-      date: new Date().toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }),
-      likes: 0,
-      isLiked: false,
-    };
+  // ===== NOT FOUND =====
+  if (!blog) {
+    return (
+      <div className="relative min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl text-white mb-4">Blog not found</h2>
+          <Link
+            href="/blog"
+            className="text-primary-light hover:text-accent transition-colors"
+          >
+            ← Back to Blogs
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-    setComments((prev) => [comment, ...prev]);
-    setNewComment("");
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const featuredImageUrl = getImageUrl(blog.image);
+  const authorAvatarUrl = getImageUrl(blog.authorAvatar);
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* Background Glow Effects */}
-      <div className="absolute inset-0 pointer-events-none">
+      {/* Background Glow */}
+      <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
       </div>
@@ -678,7 +674,7 @@ export default function BlogDetailPage() {
         )}
       </AnimatePresence>
 
-      {/* Content Container - 80% Width */}
+      {/* Content */}
       <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
         {/* Navigation */}
         <div className="pt-8">
@@ -687,10 +683,8 @@ export default function BlogDetailPage() {
               onClick={() => router.back()}
               className="flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-primary-light transition-colors"
             >
-              <ChevronLeft className="w-5 h-5" />
-              Back to Blogs
+              <ChevronLeft className="w-5 h-5" /> Back to Blogs
             </button>
-
             <Link
               href="/blog"
               className="text-gray-400 hover:text-primary-light transition-colors"
@@ -700,47 +694,52 @@ export default function BlogDetailPage() {
           </div>
         </div>
 
-        {/* Hero Section */}
+        {/* Hero */}
         <section className="pt-12 pb-8">
           <div className="relative rounded-3xl overflow-hidden h-100 md:h-125 lg:h-150">
-            <Image
-              src={blog.image}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-
+            {featuredImageUrl ? (
+              <Image
+                src={getOptimizedUrl(featuredImageUrl, 1200, 600)}
+                alt={blog.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                <span className="text-6xl">📝</span>
+              </div>
+            )}
             <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
-
             <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 lg:p-12">
               <div className="max-w-4xl">
                 <span className="inline-block px-3 py-1.5 bg-primary/90 backdrop-blur-sm text-white text-xs font-medium rounded-full mb-4">
                   {blog.category}
                 </span>
-
                 <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4">
                   {blog.title}
                 </h1>
-
                 {blog.subtitle && (
                   <p className="text-gray-300 text-base md:text-lg mb-6 max-w-3xl">
                     {blog.subtitle}
                   </p>
                 )}
-
                 <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm text-gray-400">
                   <span className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    {blog.date}
+                    <Calendar className="w-4 h-4" />{" "}
+                    {formatDate(blog.createdAt)}
                   </span>
                   <span className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {blog.readTime}
+                    <Clock className="w-4 h-4" />{" "}
+                    {blog.readTime || "5 min read"}
                   </span>
                   <span className="flex items-center gap-2">
-                    <Eye className="w-4 h-4" />
-                    {blog.views.toLocaleString()} views
+                    <Eye className="w-4 h-4" /> {blog.views.toLocaleString()}{" "}
+                    views
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <Heart className="w-4 h-4" /> {blog.likes} likes
                   </span>
                 </div>
               </div>
@@ -748,7 +747,7 @@ export default function BlogDetailPage() {
           </div>
         </section>
 
-        {/* Article Content + Sidebar */}
+        {/* Content + Sidebar */}
         <section className="py-12">
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Main Content */}
@@ -766,7 +765,7 @@ export default function BlogDetailPage() {
                         id={id}
                         className="text-2xl md:text-3xl font-bold text-white mt-12 mb-6"
                       >
-                        {item.content}
+                        {item.content as string}
                       </h2>
                     );
                   }
@@ -776,16 +775,17 @@ export default function BlogDetailPage() {
                         key={index}
                         className="text-gray-300 leading-relaxed mb-6"
                       >
-                        {item.content}
+                        {item.content as string}
                       </p>
                     );
                   }
                   if (item.type === "image") {
+                    const imgUrl = getContentImageUrl(item.content);
                     return (
                       <figure key={index} className="my-10">
                         <div className="relative h-75 md:h-100 rounded-2xl overflow-hidden">
                           <Image
-                            src={item.content as string}
+                            src={getOptimizedUrl(imgUrl, 800, 400)}
                             alt={item.caption || ""}
                             fill
                             className="object-cover"
@@ -806,7 +806,7 @@ export default function BlogDetailPage() {
                         className="border-l-4 border-primary pl-6 my-8"
                       >
                         <p className="text-xl md:text-2xl text-white italic">
-                          "{item.content}"
+                          "{item.content as string}"
                         </p>
                       </blockquote>
                     );
@@ -819,7 +819,7 @@ export default function BlogDetailPage() {
                             key={i}
                             className="flex items-start gap-3 text-gray-300"
                           >
-                            <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 shrink-0" />
+                            <span className="w-1.5 h-1.5 bg-primary rounded-full mt-2 shrink-0" />{" "}
                             {listItem}
                           </li>
                         ))}
@@ -831,52 +831,66 @@ export default function BlogDetailPage() {
               </div>
 
               {/* Tags */}
-              <div className="mt-12 pt-8 border-t border-white/10">
-                <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-primary-light" />
-                  Tags
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {blog.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1.5 bg-white/5 text-gray-300 text-xs rounded-full border border-white/10 hover:border-primary/50 hover:text-primary-light transition-colors cursor-pointer"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+              {blog.tags.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-white/10">
+                  <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-primary-light" /> Tags
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {blog.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1.5 bg-white/5 text-gray-300 text-xs rounded-full border border-white/10"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Author Bio */}
               <div className="mt-12 p-6 bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl border border-white/10">
                 <div className="flex flex-col sm:flex-row gap-6">
-                  <Image
-                    src={blog.author.avatar}
-                    alt={blog.author.name}
-                    width={80}
-                    height={80}
-                    className="rounded-full"
-                  />
+                  {authorAvatarUrl ? (
+                    <Image
+                      src={getOptimizedUrl(authorAvatarUrl, 80, 80)}
+                      alt={blog.authorName}
+                      width={80}
+                      height={80}
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-white font-bold text-2xl">
+                        {blog.authorName.charAt(0)}
+                      </span>
+                    </div>
+                  )}
                   <div>
                     <h3 className="text-xl font-semibold text-white mb-1">
-                      {blog.author.name}
+                      {blog.authorName}
                     </h3>
-                    <p className="text-primary-light text-sm mb-2">
-                      {blog.author.role}
-                    </p>
-                    <p className="text-gray-400 text-sm">{blog.author.bio}</p>
+                    {blog.authorRole && (
+                      <p className="text-primary-light text-sm mb-2">
+                        {blog.authorRole}
+                      </p>
+                    )}
+                    {blog.authorBio && (
+                      <p className="text-gray-400 text-sm">{blog.authorBio}</p>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Comments Section */}
+              {/* Comments */}
               <div className="mt-12">
                 <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 text-primary-light" />
-                  Comments ({comments.length})
+                  Comments ({(blog.comments || []).length})
                 </h3>
 
+                {/* Comment Form */}
                 <form onSubmit={handleSubmitComment} className="mb-8">
                   <div className="flex gap-3">
                     <div className="w-10 h-10 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
@@ -893,24 +907,34 @@ export default function BlogDetailPage() {
                       <div className="flex justify-end mt-2">
                         <button
                           type="submit"
-                          className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary-hover transition-colors flex items-center gap-2"
+                          disabled={commentLoading}
+                          className="px-6 py-2 bg-primary text-white rounded-full hover:bg-primary-hover transition-colors flex items-center gap-2 disabled:opacity-50"
                         >
-                          Post Comment
-                          <Send className="w-4 h-4" />
+                          {commentLoading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />{" "}
+                              Posting...
+                            </>
+                          ) : (
+                            <>
+                              Post Comment <Send className="w-4 h-4" />
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
                   </div>
                 </form>
 
+                {/* Comments List */}
                 <div className="space-y-6">
-                  {comments.map((comment) => (
+                  {(blog.comments || []).map((comment) => (
                     <CommentItem
-                      key={comment.id}
+                      key={comment._id}
                       comment={comment}
-                      onReply={handleReply}
                       onLike={handleCommentLike}
-                      onDelete={handleDeleteComment}
+                      // onDelete={handleDeleteComment}
+                      onReply={handleReply}
                       isAdmin={isAdmin}
                     />
                   ))}
@@ -920,23 +944,17 @@ export default function BlogDetailPage() {
 
             {/* Sidebar */}
             <div className="lg:col-span-1 space-y-8">
-              {/* Actions */}
               <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10">
                 <div className="flex items-center justify-between">
                   <button
                     onClick={handleLike}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
-                      isLiked
-                        ? "bg-primary/20 text-red-500 border border-primary/30"
-                        : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isLiked ? "bg-primary/20 text-red-500 border border-primary/30" : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50"}`}
                   >
                     <Heart
                       className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`}
-                    />
+                    />{" "}
                     <span>{blog.likes}</span>
                   </button>
-
                   <ShareButton
                     title={blog.title}
                     url={
@@ -946,51 +964,19 @@ export default function BlogDetailPage() {
                 </div>
               </div>
 
-              {/* Table of Contents */}
               <TableOfContents content={blog.content} />
 
-              {/* Related Posts */}
-              <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Related Posts
-                </h3>
-                <div className="space-y-4">
-                  {blog.relatedPosts.map((post) => (
-                    <Link
-                      key={post.id}
-                      href={`/blog/${post.id}`}
-                      className="flex gap-3 group"
-                    >
-                      <Image
-                        src={post.image}
-                        alt={post.title}
-                        width={60}
-                        height={60}
-                        className="rounded-lg object-cover shrink-0"
-                      />
-                      <div>
-                        <h4 className="text-sm font-medium text-white group-hover:text-primary-light transition-colors line-clamp-2">
-                          {post.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {post.date}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Newsletter */}
               <div className="bg-linear-to-br from-primary/10 to-accent/10 rounded-2xl p-6 border border-primary/20">
                 <h3 className="text-lg font-semibold text-white mb-2">
-                  Subscribe to Newsletter
+                  Subscribe
                 </h3>
                 <p className="text-gray-400 text-sm mb-4">
-                  Get the latest exhibition tips and trends straight to your
-                  inbox.
+                  Get the latest tips straight to your inbox.
                 </p>
-                <form className="space-y-3">
+                <form
+                  className="space-y-3"
+                  onSubmit={(e) => e.preventDefault()}
+                >
                   <input
                     type="email"
                     placeholder="Your email"

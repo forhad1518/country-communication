@@ -423,8 +423,8 @@ export default function BlogManagementPage() {
   const handleDelete = async () => {
     if (!deleteModal.blog) return;
     try {
-      await axios.delete(`/api/blog/${deleteModal.blog._id}`);
-      setBlogs((prev) => prev.filter((b) => b._id !== deleteModal.blog?._id));
+      await axios.delete(`/api/blog/${deleteModal.blog.slug}`);
+      setBlogs((prev) => prev.filter((b) => b.slug !== deleteModal.blog?.slug));
       setToast({ message: "Blog deleted successfully", type: "success" });
       setDeleteModal({ isOpen: false, blog: null });
     } catch (error: any) {
@@ -438,10 +438,10 @@ export default function BlogManagementPage() {
 
   const handleBulkDelete = async () => {
     try {
-      for (const id of selectedBlogs) {
-        await axios.delete(`/api/blog/${id}`);
+      for (const slug of selectedBlogs) {
+        await axios.delete(`/api/blog/${slug}`);
       }
-      setBlogs((prev) => prev.filter((b) => !selectedBlogs.includes(b._id)));
+      setBlogs((prev) => prev.filter((b) => !selectedBlogs.includes(b.slug)));
       setToast({
         message: `${selectedBlogs.length} blogs deleted`,
         type: "success",
@@ -484,9 +484,9 @@ export default function BlogManagementPage() {
     }
   };
 
-  const handleStatusChange = async (blogId: string, newStatus: BlogStatus) => {
+  const handleStatusChange = async (slug: string, newStatus: BlogStatus) => {
     try {
-      await axios.put(`/api/blog/${blogId}`, {
+      await axios.put(`/api/blog/${slug}`, {
         status: newStatus,
         publishedAt:
           newStatus === "published" ? new Date().toISOString() : undefined,
@@ -494,7 +494,7 @@ export default function BlogManagementPage() {
 
       setBlogs((prev) =>
         prev.map((b) =>
-          b._id === blogId
+          b.slug === slug
             ? {
                 ...b,
                 status: newStatus,
@@ -517,7 +517,7 @@ export default function BlogManagementPage() {
     if (selectAll) {
       setSelectedBlogs([]);
     } else {
-      setSelectedBlogs(paginatedBlogs.map((b) => b._id));
+      setSelectedBlogs(paginatedBlogs.map((b) => b.slug));
     }
     setSelectAll(!selectAll);
   };
@@ -852,7 +852,7 @@ export default function BlogManagementPage() {
                         value={blog.status}
                         onChange={(e) =>
                           handleStatusChange(
-                            blog._id,
+                            blog.slug,
                             e.target.value as BlogStatus,
                           )
                         }
@@ -910,7 +910,7 @@ export default function BlogManagementPage() {
                           <Copy className="w-4 h-4" />
                         </button>
                         <Link
-                          href={`/admin/blog/edit/${blog._id}`}
+                          href={`/admin/blog/edit/${blog.slug}`}
                           className="p-1.5 text-gray-400 hover:text-accent hover:bg-accent/5 rounded transition"
                           title="Edit"
                         >

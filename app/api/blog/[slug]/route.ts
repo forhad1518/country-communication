@@ -1,26 +1,26 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/config/connectDB";
 import Blog from "@/models/blog";
 
-// GET - Fetch single blog by ID or slug
+// GET - Fetch single blog by slug
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     await dbConnect();
 
-    const { id } = await params;
+    const { slug } = await params;
 
-    const blog = await Blog.findOne({
-      $or: [{ _id: id }, { slug: id }],
-    });
+    // Find by slug
+    const blog = await Blog.findOne({ slug: slug });
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
 
-    // Increment views (optional)
+    // Increment views
     await Blog.findByIdAndUpdate(blog._id, { $inc: { views: 1 } });
 
     return NextResponse.json({ data: blog });
@@ -33,18 +33,19 @@ export async function GET(
   }
 }
 
-// PUT - Update blog
+// PUT - Update blog by slug
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { id } = await params;
   try {
     await dbConnect();
 
+    const { slug } = await params;
     const body = await req.json();
 
-    const blog = await Blog.findByIdAndUpdate(id, body, {
+    // Find and update by slug
+    const blog = await Blog.findOneAndUpdate({ slug: slug }, body, {
       new: true,
       runValidators: true,
     });
@@ -75,16 +76,18 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete blog
+// DELETE - Delete blog by slug
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { id } = await params;
   try {
     await dbConnect();
 
-    const blog = await Blog.findByIdAndDelete(id);
+    const { slug } = await params;
+
+    // Find and delete by slug
+    const blog = await Blog.findOneAndDelete({ slug: slug });
 
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
