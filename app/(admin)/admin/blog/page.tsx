@@ -484,9 +484,9 @@ export default function BlogManagementPage() {
     }
   };
 
-  const handleStatusChange = async (slug: string, newStatus: BlogStatus) => {
+  const handleStatusChange = async (id: string, newStatus: BlogStatus) => {
     try {
-      await axios.put(`/api/blog/${slug}`, {
+      await axios.put(`/api/blog/${id}`, {
         status: newStatus,
         publishedAt:
           newStatus === "published" ? new Date().toISOString() : undefined,
@@ -494,7 +494,7 @@ export default function BlogManagementPage() {
 
       setBlogs((prev) =>
         prev.map((b) =>
-          b.slug === slug
+          b._id === id
             ? {
                 ...b,
                 status: newStatus,
@@ -852,7 +852,7 @@ export default function BlogManagementPage() {
                         value={blog.status}
                         onChange={(e) =>
                           handleStatusChange(
-                            blog.slug,
+                            blog._id,
                             e.target.value as BlogStatus,
                           )
                         }
