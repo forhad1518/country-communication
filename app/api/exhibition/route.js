@@ -4,6 +4,7 @@ import connectDB from "@/config/connectDB";
 import {
   createExhibition,
   getAllExhibitions,
+  updateExhibition,
   deleteExhibition,
 } from "@/repositories/exhibition.repo";
 import { successResponse, errorResponse } from "@/utils/response";
@@ -24,6 +25,16 @@ export async function GET() {
   try {
     const data = await getAllExhibitions();
     return successResponse(data);
+  } catch (error) {
+    return errorResponse(error.message);
+  }
+}
+
+export async function PUT(data){
+  await connectDB();
+  try {    const { id, ...updateData } = await data.json();
+    const updatedExhibition = await updateExhibition(id, updateData);
+    return successResponse(updatedExhibition);
   } catch (error) {
     return errorResponse(error.message);
   }
