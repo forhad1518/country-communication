@@ -45,7 +45,7 @@ export async function PUT(
     const body = await req.json();
 
     // Find and update by slug
-    const blog = await Blog.findOneAndUpdate({ slug: slug }, body, {
+    const blog = await Blog.findByIdAndUpdate(slug, body, {
       new: true,
       runValidators: true,
     });
