@@ -1,120 +1,189 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
+import axios from "axios";
 import Heading1 from "@/components/Heading1";
 import bg from "@/public/fair_bg.webp";
 
-import logo1 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.36 (1).jpeg";
-import logo2 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.36 (2).jpeg";
-import logo3 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.37 (3).jpeg";
-import logo4 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.37 (4).jpeg";
-import logo5 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.37 (5).jpeg";
-import logo6 from "@/public/images/fetures_logo/WhatsApp Image 2026-03-14 at 16.14.37 (6).jpeg";
-import { div } from "framer-motion/client";
+// Types
+type ExhibitionService = {
+  _id: string;
+  exhibitionName: string;
+  location: string;
+  description: string;
+  logo: {
+    url: string;
+    publicId: string;
+  };
+};
+
+// Skeleton Loader
+const ServiceSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+    {[1, 2, 3, 4, 5, 6].map((i) => (
+      <div
+        key={i}
+        className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 h-full border border-white/20 shadow-lg animate-pulse"
+      >
+        <div className="w-full aspect-4/3 mb-3 md:mb-4 bg-gray-200 rounded-lg" />
+        <div className="text-center space-y-2">
+          <div className="h-5 bg-gray-200 rounded w-3/4 mx-auto" />
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default function Offer_service() {
-    // Remove duplicates - only unique services
-    const all_services = [
-        { logo: logo1, title: "Exhibition Design", description: "Custom 3D exhibition stand designs" },
-        { logo: logo2, title: "Booth Construction", description: "Premium quality booth fabrication" },
-        { logo: logo3, title: "Event Management", description: "End-to-end event planning & execution" },
-        { logo: logo4, title: "Logistics Support", description: "Transportation & warehousing solutions" },
-        { logo: logo5, title: "Graphic Design", description: "Visual branding & signage" },
-        { logo: logo6, title: "On-Site Supervision", description: "Professional project management" }
-    ];
+  const [services, setServices] = useState<ExhibitionService[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    return (
-        <section 
-            className="relative py-16 md:py-14 bg-fixed bg-cover bg-center"
-            style={{ backgroundImage: `url(${bg.src})` }}
-        >
-            {/* Dark Overlay for better contrast */}
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
-            
-            {/* Brand Color Overlay */}
-            <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
+  // ===== FETCH EXHIBITIONS FROM API =====
+  useEffect(() => {
+    fetchExhibitions();
+  }, []);
 
-            {/* Content */}
-            <div className="relative z-10">
-                <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
-                    
-                    {/* Section Header */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="mb-12"
-                    >
-                        <Heading1 text="We offer services at exhibitions and events." />
-                    </motion.div>
+  const fetchExhibitions = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/api/exhibition");
+      const data = res.data.data || [];
+      setServices(data);
+    } catch (error) {
+      console.error("Error fetching exhibitions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                    {/* Services Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                        {all_services.map((service, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.4, delay: index * 0.05 }}
-                                whileHover={{ 
-                                    y: -5,
-                                    boxShadow: "0 20px 40px -10px rgba(0, 153, 153, 0.3)"
-                                }}
-                                className="group"
-                            >
-                                <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 h-full border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-300">
-                                    
-                                    {/* Logo Container */}
-                                    <div className="relative w-full aspect-4/3 mb-3 md:mb-4 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg p-3 group-hover:from-primary/5 group-hover:to-accent/5 transition-colors">
-                                        <Image
-                                            src={service.logo}
-                                            alt={service.title}
-                                            fill
-                                            className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
+  // Helper: Get optimized image URL
+  const getImageUrl = (
+    logo: { url: string; publicId: string } | undefined,
+  ): string => {
+    if (!logo || !logo.url) return "";
+    if (logo.url.includes("cloudinary.com")) {
+      return logo.url.replace(
+        "/upload/",
+        "/upload/w_auto,h_225,c_fill,q_auto,f_auto/",
+      );
+    }
+    return logo.url;
+  };
 
-                                    {/* Content */}
-                                    <div className="text-center">
-                                        <h3 className="text-sm md:text-base font-bold text-gray-800 mb-1 group-hover:text-primary transition-colors">
-                                            {service.title}
-                                        </h3>
-                                    </div>
+  return (
+    <section
+      className="relative py-16 md:py-24 bg-fixed bg-cover bg-center"
+      style={{ backgroundImage: `url(${bg.src})` }}
+    >
+      {/* Dark Overlay for better contrast */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px]" />
 
-                                    {/* Hover Indicator */}
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-linear-to-r from-primary to-accent group-hover:w-3/4 transition-all duration-300 rounded-full" />
-                                </div>
-                            </motion.div>
-                        ))}
+      {/* Brand Color Overlay */}
+      <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
+
+      {/* Content */}
+      <div className="relative z-10">
+        <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12"
+          >
+            <Heading1 text="We offer services at exhibitions and events." />
+          </motion.div>
+
+          {/* Services Grid */}
+          {loading ? (
+            <ServiceSkeleton />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {services.map((service, index) => (
+                <motion.div
+                  key={service._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  whileHover={{
+                    y: -5,
+                    boxShadow: "0 20px 40px -10px rgba(0, 153, 153, 0.3)",
+                  }}
+                  className="group cursor-pointer"
+                >
+                  <div className="bg-white/95 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 h-full border border-white/20 shadow-lg hover:shadow-2xl transition-all duration-300">
+                    {/* Logo Container */}
+                    <div className="relative w-full aspect-4/3 mb-3 md:mb-4 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg p-3 group-hover:from-primary/5 group-hover:to-accent/5 transition-colors">
+                      {service.logo?.url ? (
+                        <Image
+                          src={getImageUrl(service.logo)}
+                          alt={service.exhibitionName}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-6xl">🏢</span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Bottom CTA */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.6 }}
-                        className="text-center mt-12 md:mt-16"
-                    >
-                        <a
-                            href="/services"
-                            className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-full border border-white/30 hover:bg-primary hover:border-primary transition-all duration-300 group shadow-lg"
-                        >
-                            <span>Explore All Services</span>
-                            <svg 
-                                className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
-                                fill="none" 
-                                viewBox="0 0 24 24" 
-                                stroke="currentColor"
-                            >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </motion.div>
-                </div>
+                    {/* Content */}
+                    <div className="text-center">
+                      <h3 className="text-sm md:text-base font-bold text-gray-800 mb-1 group-hover:text-primary transition-colors">
+                        {service.exhibitionName}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {service.location}
+                      </p>
+                    </div>
+
+                    {/* Hover Indicator */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-linear-to-r from-primary to-accent group-hover:w-3/4 transition-all duration-300 rounded-full" />
+                  </div>
+                </motion.div>
+              ))}
             </div>
-        </section>
-    );
+          )}
+
+          {/* Bottom CTA */}
+          {services.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.6 }}
+              className="text-center mt-12 md:mt-16"
+            >
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-full border border-white/30 hover:bg-primary hover:border-primary transition-all duration-300 group shadow-lg cursor-pointer"
+              >
+                <span>Explore All Services</span>
+                <svg
+                  className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </Link>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 }
