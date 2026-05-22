@@ -18,16 +18,17 @@ interface NavLink {
 
 const navLinks: NavLink[] = [
     { href: "/about", label: "About Us" },
-    {
-        href: "/services",
-        label: "Services",
-        hasDropdown: true,
-        dropdownItems: [
-            { href: "/services/exhibition", label: "Exhibition Stands" },
-            { href: "/services/event-management", label: "Event Management" },
-            { href: "/services/interior", label: "Interior Design" },
-        ]
-    },
+    // {
+    //     href: "/services",
+    //     label: "Services",
+    //     hasDropdown: true,
+    //     dropdownItems: [
+    //         { href: "/services/exhibition", label: "Exhibition Stands" },
+    //         { href: "/services/event-management", label: "Event Management" },
+    //         { href: "/services/interior", label: "Interior Design" },
+    //     ]
+    // },
+    { href: "/exhibitions", label: "Exhibitions" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
     {href: "/contact", label: "Contact"}

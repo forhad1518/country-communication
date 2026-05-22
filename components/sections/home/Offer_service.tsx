@@ -162,10 +162,10 @@ export default function Offer_service() {
               className="text-center mt-12 md:mt-16"
             >
               <Link
-                href="/services"
+                href="/exhibitions"
                 className="inline-flex items-center gap-2 px-8 py-3 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-full border border-white/30 hover:bg-primary hover:border-primary transition-all duration-300 group shadow-lg cursor-pointer"
               >
-                <span>Explore All Services</span>
+                <span>Explore All Exhibitions</span>
                 <svg
                   className="w-5 h-5 group-hover:translate-x-1 transition-transform"
                   fill="none"
