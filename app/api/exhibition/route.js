@@ -30,11 +30,24 @@ export async function GET() {
   }
 }
 
-export async function PUT(data){
+export async function PUT(data) {
   await connectDB();
-  try { const { id, ...updateData } = await data.json();
+  try {
+    const { id, ...updateData } = await data.json();
     const updatedExhibition = await updateExhibition(id, updateData);
     return successResponse(updatedExhibition);
+  } catch (error) {
+    return errorResponse(error.message);
+  }
+}
+
+export async function DELETE(request) {
+  await connectDB();
+  try {
+    const body = await request.json();
+    const { id } = body;
+    const data = await deleteExhibition(id);
+    return successResponse(data);
   } catch (error) {
     return errorResponse(error.message);
   }
