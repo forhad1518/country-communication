@@ -32,7 +32,7 @@ export async function GET() {
 
 export async function PUT(data){
   await connectDB();
-  try {    const { id, ...updateData } = await data.json();
+  try { const { id, ...updateData } = await data.json();
     const updatedExhibition = await updateExhibition(id, updateData);
     return successResponse(updatedExhibition);
   } catch (error) {

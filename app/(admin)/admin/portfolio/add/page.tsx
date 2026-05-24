@@ -1,43 +1,43 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import slugify from "@/utils/slugify";
 import axios from "axios";
 import uploadFiles from "@/helpers/upload.image";
 import SubmitLoading from "@/components/skeleton/SubmitLoading";
-import parseKeywords from "@/utils/parseKeyword";
 import {
   Upload,
   X,
   Plus,
   Save,
-  Eye,
   CheckCircle,
   AlertCircle,
-  Image as ImageIcon,
   FileText,
   Palette,
   Wrench,
   Target,
   BarChart3,
   Search,
-  ArrowRight,
   ArrowLeft,
   Send,
+  Tag,
 } from "lucide-react";
 
 // Types
 type PreviewState = {
-  design: string | null;
-  live: string | null;
-  gallery: string[];
   renders: string[];
   real: string[];
   mood: string[];
   client: string | null;
+};
+
+type Exhibition = {
+  _id: string;
+  exhibitionName: string;
+  location: string;
 };
 
 // Toast Component
@@ -54,7 +54,6 @@ const Toast = ({
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -72,69 +71,211 @@ const Toast = ({
   );
 };
 
-// Drag & Drop File Upload Component
+// Tag Input Component
+const TagInput = ({
+  tags,
+  setTags,
+  placeholder = "Add tag and press Enter",
+}: {
+  tags: string[];
+  setTags: (tags: string[]) => void;
+  placeholder?: string;
+}) => {
+  const [input, setInput] = useState("");
+  const addTag = () => {
+    const t = input.trim();
+    if (t && !tags.includes(t)) {
+      setTags([...tags, t]);
+      setInput("");
+    }
+  };
+  const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
+  return (
+    <div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addTag();
+            }
+          }}
+          placeholder={placeholder}
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        />
+        <button
+          type="button"
+          onClick={addTag}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition cursor-pointer"
+        >
+          Add
+        </button>
+      </div>
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
+            >
+              <Tag className="w-3 h-3" /> {tag}
+              <button
+                onClick={() => removeTag(tag)}
+                className="hover:text-red-500 transition cursor-pointer"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Checkbox Group Component
+const CheckboxGroup = ({
+  label,
+  options,
+  selected,
+  setSelected,
+}: {
+  label: string;
+  name: string;
+  options: string[];
+  selected: string[];
+  setSelected: (items: string[]) => void;
+}) => {
+  const [customInput, setCustomInput] = useState("");
+  const toggleOption = (o: string) =>
+    selected.includes(o)
+      ? setSelected(selected.filter((s) => s !== o))
+      : setSelected([...selected, o]);
+  const addCustomItem = () => {
+    const t = customInput.trim();
+    if (t && !selected.includes(t)) {
+      setSelected([...selected, t]);
+      setCustomInput("");
+    }
+  };
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700 mb-2 block">
+        {label}
+      </label>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+        {options.map((o) => (
+          <label
+            key={o}
+            className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
+          >
+            <input
+              type="checkbox"
+              checked={selected.includes(o)}
+              onChange={() => toggleOption(o)}
+              className="rounded text-primary focus:ring-primary"
+            />
+            <span className="text-sm text-gray-700">{o}</span>
+          </label>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={customInput}
+          onChange={(e) => setCustomInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addCustomItem();
+            }
+          }}
+          placeholder="Add custom item..."
+          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+        />
+        <button
+          type="button"
+          onClick={addCustomItem}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm transition cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+      {selected.filter((s) => !options.includes(s)).length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {selected
+            .filter((s) => !options.includes(s))
+            .map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center gap-1 px-3 py-1 bg-accent/10 text-accent text-xs rounded-full border border-accent/20"
+              >
+                ✦ {item}
+                <button
+                  onClick={() => toggleOption(item)}
+                  className="hover:text-red-500 transition cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// File Upload Component
 const FileUpload = ({
   label,
   preview,
+  name,
   previewList,
   multiple = false,
   required = false,
-  accept = "image/*",
   onChange,
   onRemove,
   error,
 }: any) => {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const files = e.dataTransfer.files;
-    if (files && onChange) {
-      onChange({ target: { files } });
-    }
+    if (files && onChange) onChange({ target: { files } });
   };
-
   return (
     <div>
       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
-
       <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`mt-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
-          isDragging
-            ? "border-primary bg-primary/5"
-            : error
-              ? "border-red-300 bg-red-50"
-              : "border-gray-300 hover:border-primary hover:bg-gray-50"
-        }`}
+        className={`mt-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${isDragging ? "border-primary bg-primary/5" : error ? "border-red-300 bg-red-50" : "border-gray-300 hover:border-primary hover:bg-gray-50"}`}
       >
         <input
           ref={inputRef}
           type="file"
+          name={name}
           multiple={multiple}
-          accept={accept}
+          accept="image/*"
           onChange={onChange}
           className="hidden"
         />
-
         <Upload
           className={`w-8 h-8 mx-auto mb-2 ${error ? "text-red-400" : "text-gray-400"}`}
         />
@@ -145,10 +286,7 @@ const FileUpload = ({
           {multiple ? "Multiple files supported" : "Single file"}
         </p>
       </div>
-
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
-
-      {/* Single Preview */}
       {preview && (
         <div className="relative inline-block mt-3">
           <Image
@@ -162,15 +300,13 @@ const FileUpload = ({
             <button
               type="button"
               onClick={onRemove}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-md"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-md cursor-pointer"
             >
               <X className="w-3 h-3" />
             </button>
           )}
         </div>
       )}
-
-      {/* Multiple Preview */}
       {previewList && previewList.length > 0 && (
         <div className="flex flex-wrap gap-3 mt-3">
           {previewList.map((img: string, i: number) => (
@@ -186,7 +322,7 @@ const FileUpload = ({
                 <button
                   type="button"
                   onClick={() => onRemove(i)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-md"
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition shadow-md cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -199,7 +335,7 @@ const FileUpload = ({
   );
 };
 
-// Main Component
+// ===== MAIN COMPONENT =====
 export default function AddPortfolio() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -211,10 +347,12 @@ export default function AddPortfolio() {
   const [activeSection, setActiveSection] = useState("basic");
   const [expandedSections, setExpandedSections] = useState<string[]>(["basic"]);
 
+  const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
+  const [materials, setMaterials] = useState<string[]>([]);
+  const [technologies, setTechnologies] = useState<string[]>([]);
+  const [keywords, setKeywords] = useState<string[]>([]);
+
   const [preview, setPreview] = useState<PreviewState>({
-    design: null,
-    live: null,
-    gallery: [],
     renders: [],
     real: [],
     mood: [],
@@ -228,54 +366,52 @@ export default function AddPortfolio() {
     { id: "materials", label: "Materials", icon: Wrench },
     { id: "execution", label: "Execution", icon: Search },
     { id: "results", label: "Results", icon: BarChart3 },
-    { id: "images", label: "Images", icon: ImageIcon },
+    { id: "seo", label: "SEO", icon: Tag },
   ];
 
-  const toggleSection = (sectionId: string) => {
+  useEffect(() => {
+    fetchExhibitions();
+  }, []);
+
+  const fetchExhibitions = async () => {
+    try {
+      const res = await axios.get("/api/exhibition");
+      setExhibitions(res.data.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const toggleSection = (id: string) =>
     setExpandedSections((prev) =>
-      prev.includes(sectionId)
-        ? prev.filter((id) => id !== sectionId)
-        : [...prev, sectionId],
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
-  };
-
-  const expandAll = () => {
-    setExpandedSections(sections.map((s) => s.id));
-  };
-
-  const collapseAll = () => {
-    setExpandedSections([]);
-  };
+  const expandAll = () => setExpandedSections(sections.map((s) => s.id));
+  const collapseAll = () => setExpandedSections([]);
 
   const handleImage = (e: any, type: keyof PreviewState) => {
     const files = e.target.files;
     if (!files) return;
-
-    if (type === "design" || type === "live" || type === "client") {
+    if (type === "client")
+      setPreview((p) => ({ ...p, [type]: URL.createObjectURL(files[0]) }));
+    else
       setPreview((p) => ({
         ...p,
-        [type]: URL.createObjectURL(files[0]),
+        [type]: Array.from(files).map((f: any) => URL.createObjectURL(f)),
       }));
-    } else {
-      const imgs = Array.from(files).map((f: any) => URL.createObjectURL(f));
-      setPreview((p) => ({ ...p, [type]: imgs }));
-    }
   };
 
   const removePreview = (type: keyof PreviewState, index?: number) => {
-    if (typeof index === "number") {
+    if (typeof index === "number")
       setPreview((p) => ({
         ...p,
         [type]: (p[type] as string[]).filter((_, i) => i !== index),
       }));
-    } else {
-      setPreview((p) => ({ ...p, [type]: null }));
-    }
+    else setPreview((p) => ({ ...p, [type]: null }));
   };
 
   const validateForm = (formData: FormData): boolean => {
     const newErrors: Record<string, string> = {};
-
     if (!formData.get("title")) newErrors.title = "Title is required";
     if (!formData.get("exhibition"))
       newErrors.exhibition = "Exhibition is required";
@@ -283,94 +419,47 @@ export default function AddPortfolio() {
       newErrors.clientName = "Client name is required";
     if (!formData.get("boothSize"))
       newErrors.boothSize = "Booth size is required";
-    if (!formData.get("designImage"))
-      newErrors.designImage = "Design image is required";
-    if (!formData.get("liveImage"))
-      newErrors.liveImage = "Live image is required";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
+  const handleSubmit = async (status: "draft" | "published" = "published") => {
+    const form = document.getElementById("portfolio-form") as HTMLFormElement;
+    if (!form) return;
     const formData = new FormData(form);
-
     if (!validateForm(formData)) {
       setToast({ message: "Please fill all required fields", type: "error" });
       return;
     }
-
     setLoading(true);
 
     try {
       const slug = slugify(formData.get("title") as string);
-      const keyword = parseKeywords(formData.get("keywords") as string);
 
-      const designImage = await uploadFiles({
-        type: "single",
-        files: formData.get("designImage") as File,
-        slug: `${slug}_design`,
+      const rendersImages = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("renders") as File[],
+        slug: `${slug}_renders`,
         api: "/api/upload/image",
       });
-
-      const liveImage = await uploadFiles({
-        type: "single",
-        files: formData.get("liveImage") as File,
-        slug: `${slug}_live`,
+      const realImages = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("realImages") as File[],
+        slug: `${slug}_real`,
         api: "/api/upload/image",
       });
-
-      const gallery =
-        formData.getAll("galleryImages").length > 0
-          ? await uploadFiles({
-              type: "multiple",
-              files: formData.getAll("galleryImages") as File[],
-              slug: `${slug}_gallery`,
-              api: "/api/upload/image",
-            })
-          : [];
-
-      const renders =
-        formData.getAll("renders").length > 0
-          ? await uploadFiles({
-              type: "multiple",
-              files: formData.getAll("renders") as File[],
-              slug: `${slug}_renders`,
-              api: "/api/upload/image",
-            })
-          : [];
-
-      const realImages =
-        formData.getAll("realImages").length > 0
-          ? await uploadFiles({
-              type: "multiple",
-              files: formData.getAll("realImages") as File[],
-              slug: `${slug}_real`,
-              api: "/api/upload/image",
-            })
-          : [];
-
-      const moodboard =
-        formData.getAll("moodboard").length > 0
-          ? await uploadFiles({
-              type: "multiple",
-              files: formData.getAll("moodboard") as File[],
-              slug: `${slug}_mood`,
-              api: "/api/upload/image",
-            })
-          : [];
-
-      const clientImage = formData.get("clientImage")
-        ? await uploadFiles({
-            type: "single",
-            files: formData.get("clientImage") as File,
-            slug: `${slug}_client`,
-            api: "/api/upload/image",
-          })
-        : null;
+      const moodboardImages = await uploadFiles({
+        type: "multiple",
+        files: formData.getAll("moodboard") as File[],
+        slug: `${slug}_moodboard`,
+        api: "/api/upload/image",
+      });
+      const clientImage = await uploadFiles({
+        type: "single",
+        files: formData.get("clientImage") as unknown as File[],
+        slug: `${slug}_client`,
+        api: "/api/upload/image",
+      });
 
       const data = {
         title: formData.get("title"),
@@ -385,35 +474,32 @@ export default function AddPortfolio() {
         objective: formData.get("objective"),
         challenges: formData.get("challenges"),
         process: {
-          renders,
-          realImages,
-          moodboard,
+          rendersImages: rendersImages,
+          realImages: realImages,
+          moodboardImages: moodboardImages,
           processText: formData.get("processText"),
         },
-        materials: formData.getAll("materials").filter((v) => v),
-        technologies: formData.getAll("technologies").filter((v) => v),
+        materials: materials,
+        technologies: technologies,
         execution: formData.get("execution"),
         results: {
           visitors: formData.get("visitors"),
           engagement: formData.get("engagement"),
           testimonial: formData.get("testimonial"),
           clientName: formData.get("testimonialName"),
-          clientImage,
+          clientImage: clientImage,
         },
-        keywords: keyword,
-        designImage,
-        liveImage,
-        gallery,
+        keywords,
+        status,
         slug,
       };
 
       await axios.post("/api/portfolio", data);
-
-      setToast({ message: "Portfolio added successfully!", type: "success" });
-
-      setTimeout(() => {
-        router.push("/admin/portfolio");
-      }, 1500);
+      setToast({
+        message: `Portfolio ${status === "published" ? "published" : "saved as draft"} successfully!`,
+        type: "success",
+      });
+      setTimeout(() => router.push("/admin/portfolio"), 1500);
     } catch (err) {
       console.error(err);
       setToast({ message: "Failed to add portfolio", type: "error" });
@@ -426,7 +512,6 @@ export default function AddPortfolio() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <Toast
@@ -442,7 +527,7 @@ export default function AddPortfolio() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </button>
@@ -458,47 +543,41 @@ export default function AddPortfolio() {
         <div className="flex gap-2">
           <button
             type="button"
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm flex items-center gap-2"
+            onClick={() => handleSubmit("draft")}
+            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm flex items-center gap-2 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
-            Save Draft
+            <Save className="w-4 h-4" /> Save Draft
           </button>
           <button
-            type="submit"
-            form="portfolio-form"
-            className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm flex items-center gap-2 shadow-md shadow-primary/20"
+            type="button"
+            onClick={() => handleSubmit("published")}
+            className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition text-sm flex items-center gap-2 shadow-md shadow-primary/20 cursor-pointer"
           >
-            <Send className="w-4 h-4" />
-            Publish
+            <Send className="w-4 h-4" /> Publish
           </button>
         </div>
       </div>
 
-      {/* Section Navigation Tabs */}
+      {/* Section Tabs */}
       <div className="flex gap-2 bg-white rounded-xl p-1 border shadow-sm overflow-x-auto">
-        {sections.map((section) => (
+        {sections.map((s) => (
           <button
-            key={section.id}
+            key={s.id}
             type="button"
-            onClick={() => setActiveSection(section.id)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              activeSection === section.id
-                ? "bg-primary text-white shadow-md shadow-primary/20"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
+            onClick={() => setActiveSection(s.id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap cursor-pointer ${activeSection === s.id ? "bg-primary text-white shadow-md shadow-primary/20" : "text-gray-600 hover:bg-gray-100"}`}
           >
-            <section.icon className="w-4 h-4" />
-            {section.label}
+            <s.icon className="w-4 h-4" /> {s.label}
           </button>
         ))}
       </div>
 
-      {/* Expand/Collapse All */}
+      {/* Expand/Collapse */}
       <div className="flex gap-2">
         <button
           type="button"
           onClick={expandAll}
-          className="text-xs text-primary hover:text-primary-hover transition"
+          className="text-xs text-primary hover:text-primary-hover transition cursor-pointer"
         >
           Expand All
         </button>
@@ -506,23 +585,29 @@ export default function AddPortfolio() {
         <button
           type="button"
           onClick={collapseAll}
-          className="text-xs text-primary hover:text-primary-hover transition"
+          className="text-xs text-primary hover:text-primary-hover transition cursor-pointer"
         >
           Collapse All
         </button>
       </div>
 
       {/* Form */}
-      <form id="portfolio-form" onSubmit={handleSubmit}>
+      <form
+        id="portfolio-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSubmit("published");
+        }}
+      >
         <div className="bg-white rounded-xl border shadow-sm divide-y divide-gray-100">
-          {/* BASIC INFORMATION */}
+          {/* ===== 1. BASIC INFO ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "basic" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("basic")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-primary" />
@@ -534,7 +619,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("basic") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("basic") && (
                 <motion.div
@@ -552,11 +636,7 @@ export default function AddPortfolio() {
                         type="text"
                         name="title"
                         placeholder="Enter portfolio title"
-                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                          errors.title
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${errors.title ? "border-red-300 bg-red-50" : "border-gray-300"}`}
                       />
                       {errors.title && (
                         <p className="text-red-500 text-xs mt-1">
@@ -564,26 +644,21 @@ export default function AddPortfolio() {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                         Exhibition <span className="text-red-500">*</span>
                       </label>
                       <select
                         name="exhibition"
-                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                          errors.exhibition
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${errors.exhibition ? "border-red-300 bg-red-50" : "border-gray-300"}`}
                       >
                         <option value="">Select Exhibition</option>
-                        <option value="dubai-expo-2024">Dubai Expo 2024</option>
-                        <option value="ces-2024">CES 2024</option>
-                        <option value="mwc-barcelona-2024">
-                          MWC Barcelona 2024
-                        </option>
-                        <option value="ifa-berlin-2024">IFA Berlin 2024</option>
+                        {exhibitions.map((ex) => (
+                          <option key={ex._id} value={ex.exhibitionName}>
+                            {ex.exhibitionName}
+                            {ex.location ? ` (${ex.location})` : ""}
+                          </option>
+                        ))}
                       </select>
                       {errors.exhibition && (
                         <p className="text-red-500 text-xs mt-1">
@@ -591,7 +666,6 @@ export default function AddPortfolio() {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                         Client Name <span className="text-red-500">*</span>
@@ -600,11 +674,7 @@ export default function AddPortfolio() {
                         type="text"
                         name="clientName"
                         placeholder="Enter client name"
-                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                          errors.clientName
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${errors.clientName ? "border-red-300 bg-red-50" : "border-gray-300"}`}
                       />
                       {errors.clientName && (
                         <p className="text-red-500 text-xs mt-1">
@@ -612,7 +682,6 @@ export default function AddPortfolio() {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                         Booth Size (sqm) <span className="text-red-500">*</span>
@@ -621,11 +690,7 @@ export default function AddPortfolio() {
                         type="text"
                         name="boothSize"
                         placeholder="e.g., 200 sqm"
-                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${
-                          errors.boothSize
-                            ? "border-red-300 bg-red-50"
-                            : "border-gray-300"
-                        }`}
+                        className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${errors.boothSize ? "border-red-300 bg-red-50" : "border-gray-300"}`}
                       />
                       {errors.boothSize && (
                         <p className="text-red-500 text-xs mt-1">
@@ -633,7 +698,6 @@ export default function AddPortfolio() {
                         </p>
                       )}
                     </div>
-
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                         Location
@@ -645,7 +709,6 @@ export default function AddPortfolio() {
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       />
                     </div>
-
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                         Build Time (Hours)
@@ -658,7 +721,6 @@ export default function AddPortfolio() {
                       />
                     </div>
                   </div>
-
                   <div>
                     <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                       Project Overview
@@ -675,14 +737,14 @@ export default function AddPortfolio() {
             </AnimatePresence>
           </div>
 
-          {/* BRIEF & CHALLENGE */}
+          {/* ===== 2. BRIEF ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "brief" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("brief")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
@@ -694,7 +756,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("brief") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("brief") && (
                 <motion.div
@@ -730,14 +791,14 @@ export default function AddPortfolio() {
             </AnimatePresence>
           </div>
 
-          {/* DESIGN PROCESS */}
+          {/* ===== 3. PROCESS ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "process" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("process")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Palette className="w-5 h-5 text-primary" />
@@ -749,7 +810,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("process") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("process") && (
                 <motion.div
@@ -798,14 +858,14 @@ export default function AddPortfolio() {
             </AnimatePresence>
           </div>
 
-          {/* MATERIALS & TECHNOLOGY */}
+          {/* ===== 4. MATERIALS ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "materials" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("materials")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Wrench className="w-5 h-5 text-primary" />
@@ -817,7 +877,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("materials") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("materials") && (
                 <motion.div
@@ -826,81 +885,51 @@ export default function AddPortfolio() {
                   exit={{ height: 0, opacity: 0 }}
                   className="space-y-4 overflow-hidden"
                 >
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Materials Used
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {[
-                        "Wood",
-                        "Metal",
-                        "Fabric",
-                        "Glass",
-                        "Acrylic",
-                        "LED Panels",
-                        "Carpet",
-                        "Vinyl",
-                      ].map((material) => (
-                        <label
-                          key={material}
-                          className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
-                        >
-                          <input
-                            type="checkbox"
-                            name="materials"
-                            value={material}
-                            className="rounded text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {material}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Technologies Used
-                    </label>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {[
-                        "LED Screens",
-                        "VR Experience",
-                        "Interactive Kiosks",
-                        "AR",
-                        "Projection Mapping",
-                        "Touch Screens",
-                        "Sound System",
-                        "Lighting Control",
-                      ].map((tech) => (
-                        <label
-                          key={tech}
-                          className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition"
-                        >
-                          <input
-                            type="checkbox"
-                            name="technologies"
-                            value={tech}
-                            className="rounded text-primary focus:ring-primary"
-                          />
-                          <span className="text-sm text-gray-700">{tech}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                  <CheckboxGroup
+                    label="Materials Used"
+                    name="materials"
+                    options={[
+                      "Wood",
+                      "Metal",
+                      "Fabric",
+                      "Glass",
+                      "Acrylic",
+                      "LED Panels",
+                      "Carpet",
+                      "Vinyl",
+                    ]}
+                    selected={materials}
+                    setSelected={setMaterials}
+                  />
+                  <CheckboxGroup
+                    label="Technologies Used"
+                    name="technologies"
+                    options={[
+                      "LED Screens",
+                      "VR Experience",
+                      "Interactive Kiosks",
+                      "AR",
+                      "Projection Mapping",
+                      "Touch Screens",
+                      "Sound System",
+                      "Lighting Control",
+                    ]}
+                    selected={technologies}
+                    setSelected={setTechnologies}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
 
-          {/* EXECUTION */}
+          {/* ===== 5. EXECUTION ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "execution" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("execution")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <Search className="w-5 h-5 text-primary" />
@@ -912,7 +941,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("execution") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("execution") && (
                 <motion.div
@@ -937,14 +965,14 @@ export default function AddPortfolio() {
             </AnimatePresence>
           </div>
 
-          {/* RESULTS */}
+          {/* ===== 6. RESULTS ===== */}
           <div
             className={`p-6 transition-all ${activeSection === "results" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
               onClick={() => toggleSection("results")}
-              className="w-full flex items-center justify-between mb-4"
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-primary" />
@@ -956,7 +984,6 @@ export default function AddPortfolio() {
                 {expandedSections.includes("results") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
               {expandedSections.includes("results") && (
                 <motion.div
@@ -1008,7 +1035,7 @@ export default function AddPortfolio() {
                       <input
                         type="text"
                         name="testimonialName"
-                        placeholder="e.g., John Doe, Marketing Director"
+                        placeholder="e.g., John Doe"
                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       />
                     </div>
@@ -1025,80 +1052,38 @@ export default function AddPortfolio() {
             </AnimatePresence>
           </div>
 
-          {/* IMAGES */}
+          {/* ===== 7. SEO ===== */}
           <div
-            className={`p-6 transition-all ${activeSection === "images" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
+            className={`p-6 transition-all ${activeSection === "seo" ? "bg-primary/5 border-l-4 border-l-primary" : ""}`}
           >
             <button
               type="button"
-              onClick={() => toggleSection("images")}
-              className="w-full flex items-center justify-between mb-4"
+              onClick={() => toggleSection("seo")}
+              className="w-full flex items-center justify-between mb-4 cursor-pointer"
             >
               <div className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-primary" />
+                <Tag className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Main Images
+                  SEO Settings
                 </h2>
               </div>
               <span className="text-gray-400 text-sm">
-                {expandedSections.includes("images") ? "▼" : "▶"}
+                {expandedSections.includes("seo") ? "▼" : "▶"}
               </span>
             </button>
-
             <AnimatePresence>
-              {expandedSections.includes("images") && (
+              {expandedSections.includes("seo") && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   className="space-y-4 overflow-hidden"
                 >
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <FileUpload
-                      label="Design Image"
-                      name="designImage"
-                      required
-                      onChange={(e: any) => handleImage(e, "design")}
-                      preview={preview.design}
-                      onRemove={() => removePreview("design")}
-                      error={errors.designImage}
-                    />
-                    <FileUpload
-                      label="Live Image"
-                      name="liveImage"
-                      required
-                      onChange={(e: any) => handleImage(e, "live")}
-                      preview={preview.live}
-                      onRemove={() => removePreview("live")}
-                      error={errors.liveImage}
-                    />
-                  </div>
-                  <FileUpload
-                    label="Gallery Images"
-                    name="galleryImages"
-                    multiple
-                    onChange={(e: any) => handleImage(e, "gallery")}
-                    previewList={preview.gallery}
-                    onRemove={(i: number) => removePreview("gallery", i)}
+                  <TagInput
+                    tags={keywords}
+                    setTags={setKeywords}
+                    placeholder="Add keyword and press Enter..."
                   />
-
-                  {/* SEO */}
-                  <div className="mt-6 pt-6 border-t">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">
-                      SEO Settings
-                    </h3>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                        Keywords
-                      </label>
-                      <input
-                        type="text"
-                        name="keywords"
-                        placeholder="exhibition, booth design, trade show..."
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                      />
-                    </div>
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1110,26 +1095,24 @@ export default function AddPortfolio() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2"
+            className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium flex items-center gap-2 cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Cancel
+            <ArrowLeft className="w-4 h-4" /> Cancel
           </button>
-
           <div className="flex gap-3">
             <button
               type="button"
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 text-sm"
+              onClick={() => handleSubmit("draft")}
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 text-sm cursor-pointer"
             >
-              <Save className="w-4 h-4" />
-              Save Draft
+              <Save className="w-4 h-4" /> Save Draft
             </button>
             <button
-              type="submit"
-              className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 shadow-md shadow-primary/20 text-sm"
+              type="button"
+              onClick={() => handleSubmit("published")}
+              className="bg-primary text-white px-8 py-3 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 shadow-md shadow-primary/20 text-sm cursor-pointer"
             >
-              <span>Publish Portfolio</span>
-              <Send className="w-4 h-4" />
+              <span>Publish Portfolio</span> <Send className="w-4 h-4" />
             </button>
           </div>
         </div>
