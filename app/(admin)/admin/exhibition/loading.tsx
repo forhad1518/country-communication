@@ -53,7 +53,7 @@ export default function Loading({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-primary-light text-sm md:text-base mt-4 font-medium"
+              className="text-primary text-sm md:text-base mt-4 font-medium"
             >
               {text}
             </motion.p>
@@ -86,7 +86,7 @@ export default function Loading({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-primary-light text-sm md:text-base mt-4 font-medium"
+              className="text-primary text-sm md:text-base mt-4 font-medium"
             >
               {text}
             </motion.p>
@@ -125,7 +125,7 @@ export default function Loading({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-primary-light text-sm md:text-base mt-4 font-medium"
+              className="text-primary text-sm md:text-base mt-4 font-medium"
             >
               {text}
             </motion.p>
@@ -173,7 +173,7 @@ export default function Loading({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="text-primary-light text-sm md:text-base mt-6 font-medium"
+              className="text-primary text-sm md:text-base mt-6 font-medium"
             >
               {text}
             </motion.p>

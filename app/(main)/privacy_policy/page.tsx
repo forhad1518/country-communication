@@ -71,7 +71,7 @@ const PolicySection = ({
     className="scroll-mt-24"
   >
     <div className="flex items-start gap-4 mb-6">
-      <div className="p-3 bg-primary rounded-xl text-primary-light flex-shrink-0">
+      <div className="p-3 bg-primary rounded-xl text-secondary shrink-0">
         <Icon className="w-6 h-6" />
       </div>
       <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
@@ -102,7 +102,7 @@ const TocItem = ({
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       }}
     >
-      <Icon className="w-4 h-4 text-gray-500 group-hover:text-primary-light transition-colors" />
+      <Icon className="w-4 h-4 text-gray-500 group-hover:text-secondary transition-colors" />
       {title}
     </a>
   </li>
@@ -129,8 +129,8 @@ export default function PrivacyPolicyPage() {
     <div className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Glow Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-125 h-125 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-100 h-100 bg-accent/10 rounded-full blur-3xl" />
       </div>
 
       {/* Scroll to Top Button */}
@@ -150,7 +150,7 @@ export default function PrivacyPolicyPage() {
       <div className="relative z-10">
         {/* ===== HERO SECTION ===== */}
         <section className="pt-20 md:pt-28 pb-12 border-b border-white/10">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -158,13 +158,13 @@ export default function PrivacyPolicyPage() {
               className="text-center"
             >
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-primary rounded-2xl text-primary-light">
+                <div className="p-4 bg-primary rounded-2xl text-secondary">
                   <Shield className="w-12 h-12" />
                 </div>
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
                   Privacy Policy
                 </span>
               </h1>
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
 
         {/* ===== MAIN CONTENT ===== */}
         <section className="py-16 md:py-20">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <div className="grid lg:grid-cols-4 gap-12">
               {/* Table of Contents - Sidebar */}
               <motion.aside
@@ -200,9 +200,9 @@ export default function PrivacyPolicyPage() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="lg:col-span-1"
               >
-                <div className="sticky top-24 bg-gradient-to-br from-gray-900/80 to-black/80 rounded-2xl p-6 border border-white/10">
+                <div className="sticky top-24 bg-linear-to-br from-gray-900/80 to-black/80 rounded-2xl p-6 border border-white/10">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-primary-light" />
+                    <Shield className="w-5 h-5 text-secondary" />
                     Contents
                   </h3>
                   <nav>
@@ -279,7 +279,7 @@ export default function PrivacyPolicyPage() {
                     you visit our website{" "}
                     <Link
                       href="/"
-                      className="text-primary-light hover:text-accent transition-colors"
+                      className="text-secondary hover:text-accent transition-colors"
                     >
                       www.countrycomm.com
                     </Link>
@@ -575,7 +575,7 @@ export default function PrivacyPolicyPage() {
                         key={i}
                         className="flex items-center gap-2 bg-white/5 rounded-lg p-3 border border-white/10"
                       >
-                        <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                        <div className="w-2 h-2 bg-primary rounded-full shrink-0" />
                         <span className="text-gray-300 text-sm">{right}</span>
                       </div>
                     ))}
@@ -642,17 +642,17 @@ export default function PrivacyPolicyPage() {
                     us:
                   </p>
 
-                  <div className="bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 mt-4">
+                  <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 mt-4">
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+                        <div className="p-2 bg-primary/10 rounded-lg text-secondary">
                           <MailIcon />
                         </div>
                         <div>
                           <p className="text-white font-medium">Email</p>
                           <a
                             href="mailto:privacy@countrycomm.com"
-                            className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                            className="text-gray-400 hover:text-secondary transition-colors text-sm"
                           >
                             privacy@countrycomm.com
                           </a>
@@ -660,14 +660,14 @@ export default function PrivacyPolicyPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+                        <div className="p-2 bg-primary/10 rounded-lg text-secondary">
                           <PhoneIcon />
                         </div>
                         <div>
                           <p className="text-white font-medium">Phone</p>
                           <a
                             href="tel:+8801234567890"
-                            className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                            className="text-gray-400 hover:text-secondary transition-colors text-sm"
                           >
                             +880 1234 567890
                           </a>
@@ -675,8 +675,8 @@ export default function PrivacyPolicyPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
-                          <Globe className="w-[18px] h-[18px]" />
+                        <div className="p-2 bg-primary/10 rounded-lg text-secondary">
+                          <Globe className="w-4.5 h-4.5" />
                         </div>
                         <div>
                           <p className="text-white font-medium">Address</p>

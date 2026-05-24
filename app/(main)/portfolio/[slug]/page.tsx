@@ -407,7 +407,7 @@ const TableOfContents = ({
       className="space-y-1.5"
     >
       <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-        <BookOpen className="w-4 h-4 text-primary-light" /> Contents
+        <BookOpen className="w-4 h-4 text-primary" /> Contents
       </h3>
       {sections.map((s) => (
         <a
@@ -419,7 +419,7 @@ const TableOfContents = ({
               .getElementById(s.id)
               ?.scrollIntoView({ behavior: "smooth" });
           }}
-          className={`block text-xs py-1.5 px-3 rounded-lg transition-all cursor-pointer ${activeId === s.id ? "bg-primary/20 text-primary-light border-l-2 border-primary" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+          className={`block text-xs py-1.5 px-3 rounded-lg transition-all cursor-pointer ${activeId === s.id ? "bg-primary/20 text-primary border-l-2 border-primary" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
         >
           {s.label}
         </a>
@@ -613,7 +613,7 @@ export default function PortfolioDetailPage() {
       <div className="relative min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl text-white mb-4">Not found</h2>
-          <Link href="/portfolio" className="text-primary-light">
+          <Link href="/portfolio" className="text-primary">
             ← Back
           </Link>
         </div>
@@ -656,13 +656,13 @@ export default function PortfolioDetailPage() {
         <div className="pt-8 flex justify-between items-center">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-400 hover:text-primary-light transition-colors cursor-pointer"
+            className="flex items-center gap-2 text-gray-400 hover:text-primary transition-colors cursor-pointer"
           >
             <ChevronLeft className="w-5 h-5" /> Back
           </button>
           <Link
             href="/portfolio"
-            className="text-gray-400 hover:text-primary-light transition-colors"
+            className="text-gray-400 hover:text-primary transition-colors"
           >
             All Projects
           </Link>
@@ -753,7 +753,7 @@ export default function PortfolioDetailPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     className="bg-white/5 rounded-xl p-4 border border-white/10 text-center"
                   >
-                    <Building2 className="w-5 h-5 text-primary-light mx-auto mb-2" />
+                    <Building2 className="w-5 h-5 text-primary mx-auto mb-2" />
                     <p className="text-xs text-gray-400">Client</p>
                     <p className="text-white font-medium text-sm">
                       {portfolio.projectInfo.clientName}
@@ -779,7 +779,7 @@ export default function PortfolioDetailPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     className="bg-white/5 rounded-xl p-4 border border-white/10 text-center"
                   >
-                    <MapPin className="w-5 h-5 text-primary-light mx-auto mb-2" />
+                    <MapPin className="w-5 h-5 text-primary mx-auto mb-2" />
                     <p className="text-xs text-gray-400">Location</p>
                     <p className="text-white font-medium text-sm">
                       {portfolio.projectInfo.location}
@@ -821,7 +821,7 @@ export default function PortfolioDetailPage() {
                   className="bg-linear-to-br from-primary/5 to-accent/5 rounded-2xl p-8 border border-primary/10"
                 >
                   <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-                    <Target className="w-6 h-6 text-primary-light" /> Client
+                    <Target className="w-6 h-6 text-primary" /> Client
                     Objective
                   </h2>
                   <p className="text-gray-300 text-justify leading-relaxed">
@@ -890,14 +890,14 @@ export default function PortfolioDetailPage() {
                   {portfolio.materials && portfolio.materials.length > 0 && (
                     <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
                       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Wrench className="w-5 h-5 text-primary-light" />{" "}
+                        <Wrench className="w-5 h-5 text-primary" />{" "}
                         Materials
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {portfolio.materials.map((m, i) => (
                           <span
                             key={i}
-                            className="px-3 py-1.5 bg-primary/10 text-primary-light text-xs rounded-full border border-primary/20"
+                            className="px-3 py-1.5 bg-primary/10 text-primary text-xs rounded-full border border-primary/20"
                           >
                             {m}
                           </span>
@@ -967,7 +967,7 @@ export default function PortfolioDetailPage() {
                   <div className="grid grid-cols-2 gap-4 mb-8">
                     {portfolio.results.visitors && (
                       <div className="bg-white/5 rounded-2xl p-6 border border-white/10 text-center">
-                        <Users className="w-8 h-8 text-primary-light mx-auto mb-2" />
+                        <Users className="w-8 h-8 text-primary mx-auto mb-2" />
                         <p className="text-3xl font-bold text-white">
                           {portfolio.results.visitors}+
                         </p>
@@ -1010,7 +1010,7 @@ export default function PortfolioDetailPage() {
                       </p>
                     )}
                     {portfolio.results.clientName && (
-                      <p className="text-primary-light font-semibold text-center">
+                      <p className="text-primary font-semibold text-center">
                         — {portfolio.results.clientName}
                       </p>
                     )}
@@ -1022,7 +1022,7 @@ export default function PortfolioDetailPage() {
               {portfolio.keywords && portfolio.keywords.length > 0 && (
                 <div className="pt-8 border-t border-white/10">
                   <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-primary-light" /> SEO Keywords
+                    <Tag className="w-4 h-4 text-primary" /> SEO Keywords
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {portfolio.keywords.map((kw, i) => (

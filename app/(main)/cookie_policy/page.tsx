@@ -73,7 +73,7 @@ const CookieSection = ({
     className="scroll-mt-24"
   >
     <div className="flex items-start gap-4 mb-6">
-      <div className="p-3 bg-primary rounded-xl text-primary-light shrink-0">
+      <div className="p-3 bg-primary rounded-xl text-secondary shrink-0">
         <Icon className="w-6 h-6" />
       </div>
       <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
@@ -104,7 +104,7 @@ const TocItem = ({
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       }}
     >
-      <Icon className="w-4 h-4 text-gray-500 group-hover:text-primary-light transition-colors" />
+      <Icon className="w-4 h-4 text-gray-500 group-hover:text-secondary transition-colors" />
       {title}
     </a>
   </li>
@@ -129,7 +129,7 @@ const CookieTypeCard = ({
   <div className="bg-white/5 rounded-xl p-5 border border-white/10 hover:border-primary/30 transition-all duration-300">
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+        <div className="p-2 bg-primary/10 rounded-lg text-secondary">
           <Icon className="w-5 h-5" />
         </div>
         <h3 className="text-lg font-semibold text-white">{name}</h3>
@@ -300,7 +300,7 @@ export default function CookiePolicyPage() {
             >
               <div className="flex justify-center mb-6">
                 <div className="relative">
-                  <div className="p-4 bg-primary rounded-2xl text-primary-light">
+                  <div className="p-4 bg-primary rounded-2xl text-secondary">
                     <Cookie className="w-12 h-12" />
                   </div>
                   <motion.div
@@ -349,7 +349,7 @@ export default function CookiePolicyPage() {
               >
                 <div className="sticky top-24 bg-linear-to-br from-gray-900/80 to-black/80 rounded-2xl p-6 border border-white/10">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <Cookie className="w-5 h-5 text-primary-light" />
+                    <Cookie className="w-5 h-5 text-secondary" />
                     Contents
                   </h3>
                   <nav>
@@ -413,7 +413,7 @@ export default function CookiePolicyPage() {
 
                   <div className="bg-linear-to-br from-primary/5 to-accent/5 rounded-xl p-6 border border-primary/20 mt-4">
                     <div className="flex items-start gap-4">
-                      <Cookie className="w-8 h-8 text-primary-light shrink-0 mt-1" />
+                      <Cookie className="w-8 h-8 text-secondary shrink-0 mt-1" />
                       <div>
                         <h3 className="text-white font-semibold mb-2">
                           How Cookies Work
@@ -583,7 +583,7 @@ export default function CookiePolicyPage() {
                           <Link
                             href={thirdParty.policy}
                             target="_blank"
-                            className="text-primary-light text-xs hover:text-accent transition-colors"
+                            className="text-secondary text-xs hover:text-accent transition-colors"
                           >
                             Privacy Policy ↗
                           </Link>
@@ -607,7 +607,7 @@ export default function CookiePolicyPage() {
 
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mt-4">
                     <p className="text-gray-300 text-sm flex items-start gap-2">
-                      <Info className="w-5 h-5 text-primary-light shrink-0 mt-0.5" />
+                      <Info className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
                       <span>
                         We do not have control over cookies set by third
                         parties. Please review their respective privacy policies
@@ -672,7 +672,7 @@ export default function CookiePolicyPage() {
                         target="_blank"
                         className="flex items-center gap-3 bg-white/5 rounded-lg p-3 border border-white/10 hover:border-primary/30 transition-all group"
                       >
-                        <Globe className="w-4 h-4 text-gray-400 group-hover:text-primary-light transition-colors" />
+                        <Globe className="w-4 h-4 text-gray-400 group-hover:text-secondary transition-colors" />
                         <span className="text-gray-300 text-sm group-hover:text-white transition-colors">
                           {browser.name} →
                         </span>
@@ -692,7 +692,7 @@ export default function CookiePolicyPage() {
                       <Link
                         href="https://tools.google.com/dlpage/gaoptout"
                         target="_blank"
-                        className="text-primary-light hover:text-accent transition-colors"
+                        className="text-secondary hover:text-accent transition-colors"
                       >
                         Google Analytics Opt-out Browser Add-on
                       </Link>
@@ -701,7 +701,7 @@ export default function CookiePolicyPage() {
                       <Link
                         href="https://www.youronlinechoices.com/"
                         target="_blank"
-                        className="text-primary-light hover:text-accent transition-colors"
+                        className="text-secondary hover:text-accent transition-colors"
                       >
                         European Interactive Digital Advertising Alliance (EDAA)
                       </Link>
@@ -710,7 +710,7 @@ export default function CookiePolicyPage() {
                       <Link
                         href="https://optout.networkadvertising.org/"
                         target="_blank"
-                        className="text-primary-light hover:text-accent transition-colors"
+                        className="text-secondary hover:text-accent transition-colors"
                       >
                         Network Advertising Initiative (NAI) Opt-Out
                       </Link>
@@ -719,7 +719,7 @@ export default function CookiePolicyPage() {
                       <Link
                         href="https://optout.aboutads.info/"
                         target="_blank"
-                        className="text-primary-light hover:text-accent transition-colors"
+                        className="text-secondary hover:text-accent transition-colors"
                       >
                         Digital Advertising Alliance (DAA) Opt-Out
                       </Link>
@@ -774,7 +774,7 @@ export default function CookiePolicyPage() {
                           description:
                             "Choose which categories of cookies you want to allow. Essential cookies cannot be disabled.",
                           icon: Settings,
-                          color: "text-primary-light",
+                          color: "text-secondary",
                         },
                         {
                           option: "Reject All (Except Essential)",
@@ -850,14 +850,14 @@ export default function CookiePolicyPage() {
                   <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 mt-4">
                     <div className="space-y-4">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary rounded-lg text-primary-light">
+                        <div className="p-2 bg-primary rounded-lg text-secondary">
                           <MailIcon />
                         </div>
                         <div>
                           <p className="text-white font-medium">Email</p>
                           <a
                             href="mailto:privacy@countrycomm.com"
-                            className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                            className="text-gray-400 hover:text-secondary transition-colors text-sm"
                           >
                             privacy@countrycomm.com
                           </a>
@@ -865,14 +865,14 @@ export default function CookiePolicyPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary rounded-lg text-primary-light">
+                        <div className="p-2 bg-primary rounded-lg text-secondary">
                           <PhoneIcon />
                         </div>
                         <div>
                           <p className="text-white font-medium">Phone</p>
                           <a
                             href="tel:+8801234567890"
-                            className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                            className="text-gray-400 hover:text-secondary transition-colors text-sm"
                           >
                             +880 1234 567890
                           </a>
@@ -880,7 +880,7 @@ export default function CookiePolicyPage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary  rounded-lg text-primary-light">
+                        <div className="p-2 bg-primary  rounded-lg text-secondary">
                           <Globe className="w-4.5 h-4.5" />
                         </div>
                         <div>
@@ -904,14 +904,14 @@ export default function CookiePolicyPage() {
                     <span>Also see our:</span>
                     <Link
                       href="/privacy-policy"
-                      className="text-primary-light hover:text-accent transition-colors"
+                      className="text-secondary hover:text-accent transition-colors"
                     >
                       Privacy Policy
                     </Link>
                     <span>•</span>
                     <Link
                       href="/terms-conditions"
-                      className="text-primary-light hover:text-accent transition-colors"
+                      className="text-secondary hover:text-accent transition-colors"
                     >
                       Terms & Conditions
                     </Link>
@@ -928,7 +928,7 @@ export default function CookiePolicyPage() {
                 >
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-4">
                     <p className="text-gray-300 text-sm">
-                      <span className="text-primary-light font-semibold">
+                      <span className="text-secondary font-semibold">
                         Cookie-Free Alternative:
                       </span>{" "}
                       You can also browse our website in your browser's

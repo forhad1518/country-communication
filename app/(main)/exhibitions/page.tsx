@@ -177,7 +177,7 @@ export default function AllExhibitionsPage() {
 
                     {/* Content */}
                     <div className="p-5 relative">
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary-light transition-colors line-clamp-1">
+                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors line-clamp-1">
                         {exhibition.exhibitionName}
                       </h3>
                       <p className="text-sm text-gray-400 line-clamp-1">

@@ -232,10 +232,10 @@ const ContactInfoCard = ({
     viewport={{ once: true }}
     transition={{ duration: 0.5, delay }}
     whileHover={{ y: -5 }}
-    className="group bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/30 shadow-xl hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300"
+    className="group bg-linear-to-br from-gray-900/80 to-black/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-primary/30 shadow-xl hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300"
   >
     <div className="flex items-start gap-4">
-      <div className="p-4 bg-primary rounded-xl transition-colors text-primary-light">
+      <div className="p-4 bg-primary rounded-xl transition-colors text-secondary">
         {icon}
       </div>
       <div className="flex-1">
@@ -294,7 +294,7 @@ const ContactForm = () => {
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl"
+      className="bg-linear-to-br from-gray-900/80 to-black/80 backdrop-blur-sm rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl"
     >
       {isSubmitted ? (
         <motion.div
@@ -442,7 +442,7 @@ const ContactForm = () => {
               disabled={loading}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-4 bg-gradient-to-r from-primary to-primary-hover text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="w-full py-4 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
             >
               {loading ? (
                 <>
@@ -512,16 +512,16 @@ export default function ContactPage() {
     <div className="relative min-h-screen bg-black overflow-hidden">
       {/* Background Glow Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-accent/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-150 h-150 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-125 h-125 bg-accent/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-primary/5 rounded-full blur-3xl" />
       </div>
 
       {/* Content */}
       <div className="relative z-10">
         {/* ===== HERO SECTION ===== */}
         <section className="pt-20 md:pt-28 pb-12">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -530,7 +530,7 @@ export default function ContactPage() {
             >
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-white via-primary-light to-accent bg-clip-text text-transparent">
                   Let's Build Something
                   <br />
                   Remarkable Together
@@ -548,7 +548,7 @@ export default function ContactPage() {
 
         {/* ===== QUICK CONTACT BUTTONS ===== */}
         <section className="pb-12">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -584,7 +584,7 @@ export default function ContactPage() {
 
         {/* ===== CONTACT INFO CARDS ===== */}
         <section className="pb-16">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Phone Card */}
               <ContactInfoCard icon={<PhoneIcon />} title="Call Us" delay={0.1}>
@@ -593,7 +593,7 @@ export default function ContactPage() {
                     <p className="text-xs text-gray-500">{phone.label}</p>
                     <a
                       href={`tel:${phone.number.replace(/\s/g, "")}`}
-                      className="text-white hover:text-primary-light transition-colors font-medium"
+                      className="text-white hover:text-secondary transition-colors font-medium"
                     >
                       {phone.number}
                     </a>
@@ -608,7 +608,7 @@ export default function ContactPage() {
                     <p className="text-xs text-gray-500">{email.label}</p>
                     <a
                       href={`mailto:${email.email}`}
-                      className="text-white hover:text-primary-light transition-colors font-medium break-all"
+                      className="text-white hover:text-secondary transition-colors font-medium break-all"
                     >
                       {email.email}
                     </a>
@@ -639,7 +639,7 @@ export default function ContactPage() {
 
         {/* ===== ADDRESS + MAP + FORM ===== */}
         <section className="pb-20">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <div className="grid lg:grid-cols-2 gap-8 mb-8">
               {/* Address Card */}
               <ContactInfoCard
@@ -658,7 +658,7 @@ export default function ContactPage() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contactInfo.address.full)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 mt-2 text-primary-light text-sm hover:text-accent transition-colors"
+                  className="inline-flex items-center gap-1 mt-2 text-secondary text-sm hover:text-accent transition-colors"
                 >
                   Get Directions
                   <ChevronRight className="w-4 h-4" />
@@ -703,7 +703,7 @@ export default function ContactPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl h-[400px] md:h-[500px] bg-gray-900 mb-8"
+              className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl h-100 md:h-125 bg-gray-900 mb-8"
             >
               <iframe
                 src={contactInfo.mapEmbedUrl}
@@ -724,7 +724,7 @@ export default function ContactPage() {
 
         {/* ===== SOCIAL MEDIA ===== */}
         <section className="py-12 border-t border-white/10">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center gap-6">
               <div>
                 <h3 className="text-xl font-semibold text-white mb-1">
@@ -756,7 +756,7 @@ export default function ContactPage() {
 
         {/* ===== NEWSLETTER ===== */}
         <section className="py-16 border-t border-white/10">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-[1600px] mx-auto">
+          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

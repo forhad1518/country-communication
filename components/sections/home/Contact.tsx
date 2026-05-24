@@ -156,7 +156,7 @@ const ContactCard = ({
             className="group bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 hover:border-primary/30 shadow-lg hover:shadow-xl hover:shadow-primary/10 transition-all duration-300"
         >
             <div className="flex items-start gap-4">
-                <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors text-primary-light">
+                <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors text-secondary">
                     {icon}
                 </div>
                 <div className="flex-1">
@@ -373,7 +373,7 @@ export default function Contact() {
                 </motion.div>
 
                 {/* Contact Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 text-primary">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12 text-secondary">
                     {/* Phone Card */}
                     <ContactCard
                         icon={<PhoneIcon />}
@@ -385,7 +385,7 @@ export default function Contact() {
                                     <a
                                         key={i}
                                         href={`tel:${phone.replace(/\s/g, '')}`}
-                                        className="block hover:text-primary transition-colors"
+                                        className="block hover:text-secondary transition-colors"
                                     >
                                         {phone}
                                     </a>
@@ -405,7 +405,7 @@ export default function Contact() {
                                     <a
                                         key={i}
                                         href={`mailto:${email}`}
-                                        className="block hover:text-primary transition-colors"
+                                        className="block hover:text-secondary transition-colors"
                                     >
                                         {email}
                                     </a>
@@ -424,7 +424,7 @@ export default function Contact() {
                                 {contactData.officeHours.map((schedule, i) => (
                                     <div key={i} className="flex justify-between">
                                         <span>{schedule.days}</span>
-                                        <span className={schedule.hours === "Closed" ? "text-red-400" : "text-primary"}>
+                                        <span className={schedule.hours === "Closed" ? "text-red-400" : "text-secondary"}>
                                             {schedule.hours}
                                         </span>
                                     </div>
@@ -444,7 +444,7 @@ export default function Contact() {
                     className="group bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300 mb-12"
                 >
                     <div className="flex items-start gap-4">
-                        <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors text-primary">
+                        <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors text-secondary">
                             <MapPinIcon />
                         </div>
                         <div className="flex-1">
@@ -456,7 +456,7 @@ export default function Contact() {
                                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${contactData.address.street}, ${contactData.address.city}, ${contactData.address.country}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 mt-3 text-primary text-sm hover:text-accent transition-colors"
+                                className="inline-flex items-center gap-1 mt-3 text-secondary text-sm hover:text-accent transition-colors"
                             >
                                 Get Directions
                                 <ChevronRightIcon />

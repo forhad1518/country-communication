@@ -375,7 +375,7 @@ export default function ExhibitionCampaign() {
                         </div>
                         <div className="w-1 h-1 bg-gray-500 rounded-full hidden md:block" />
                         <div className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-primary-light" />
+                            <Calendar className="w-5 h-5 text-primary" />
                             <span className="text-sm md:text-base">{formattedDate}</span>
                         </div>
                     </motion.div>
@@ -492,7 +492,7 @@ export default function ExhibitionCampaign() {
                             <p className="text-xs text-gray-400">Expected Exhibitors</p>
                         </div>
                         <div className="text-center">
-                            <div className="flex items-center gap-2 text-primary-light mb-1">
+                            <div className="flex items-center gap-2 text-primary mb-1">
                                 <MapPin className="w-4 h-4" />
                                 <span className="text-2xl font-bold text-white">
                                     {campaign.stats?.visitors || "50k+"}

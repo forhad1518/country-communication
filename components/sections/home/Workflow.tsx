@@ -44,12 +44,12 @@ const WorkflowStep = ({
             {/* Icon */}
             <div className="mb-4">
                 <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-6 h-6 text-primary-light group-hover:text-accent transition-colors" />
+                    <Icon className="w-6 h-6 text-primary group-hover:text-accent transition-colors" />
                 </div>
             </div>
 
             {/* Content */}
-            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-primary-light transition-colors">
+            <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-primary transition-colors">
                 {title}
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">

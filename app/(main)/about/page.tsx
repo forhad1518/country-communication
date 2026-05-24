@@ -28,9 +28,9 @@ import {
 
 // Stats Data
 const companyStats = [
-    { icon: Building2, value: "500+", label: "Booths Delivered", color: "text-primary-light" },
+    { icon: Building2, value: "500+", label: "Booths Delivered", color: "text-primary" },
     { icon: Globe, value: "15+", label: "Countries Served", color: "text-accent" },
-    { icon: Award, value: "50+", label: "Industry Awards", color: "text-primary-light" },
+    { icon: Award, value: "50+", label: "Industry Awards", color: "text-primary" },
     { icon: Users, value: "200+", label: "Team Members", color: "text-accent" },
 ];
 
@@ -220,7 +220,7 @@ const TeamCard = ({ member, index }: { member: typeof teamMembers[0]; index: num
                 />
             </div>
             <h3 className="text-lg font-semibold text-white mb-1">{member.name}</h3>
-            <p className="text-primary-light text-sm mb-2">{member.role}</p>
+            <p className="text-primary text-sm mb-2">{member.role}</p>
             <p className="text-gray-400 text-xs">{member.bio}</p>
         </div>
     </motion.div>
@@ -372,7 +372,7 @@ export default function AboutPage() {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                             >
-                                <span className="text-primary-light text-sm font-medium">Who We Are</span>
+                                <span className="text-primary text-sm font-medium">Who We Are</span>
                                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2 mb-6">
                                     Bangladesh's Most Trusted Exhibition Partner
                                 </h2>
@@ -440,7 +440,7 @@ export default function AboutPage() {
                                     className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 hover:border-primary/30 transition-all duration-300"
                                 >
                                     <div className="p-3 bg-primary rounded-xl w-fit mb-4">
-                                        <value.icon className="w-6 h-6 text-primary-light" />
+                                        <value.icon className="w-6 h-6 text-secondary" />
                                     </div>
                                     <h3 className="text-lg font-semibold text-white mb-2">{value.title}</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed">{value.description}</p>
@@ -459,7 +459,7 @@ export default function AboutPage() {
                             viewport={{ once: true }}
                             className="text-center mb-14"
                         >
-                            <span className="text-primary-light text-sm font-medium">Our Facilities</span>
+                            <span className="text-primary text-sm font-medium">Our Facilities</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
                                 State-of-the-Art Manufacturing
                             </h2>
@@ -598,7 +598,7 @@ export default function AboutPage() {
                             viewport={{ once: true }}
                             className="text-center mb-14"
                         >
-                            <span className="text-primary-light text-sm font-medium">Our Team</span>
+                            <span className="text-primary text-sm font-medium">Our Team</span>
                             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
                                 Meet the Experts
                             </h2>

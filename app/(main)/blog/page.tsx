@@ -153,7 +153,7 @@ const BlogCard = ({ blog, index }: { blog: BlogPost; index: number }) => {
           </div>
 
           {/* Title */}
-          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-primary-light transition-colors line-clamp-2">
+          <h3 className="text-xl font-bold text-white mb-3 group-hover:text-primary transition-colors line-clamp-2">
             {blog.title}
           </h3>
 
@@ -353,7 +353,7 @@ export default function BlogPage() {
           <div className="flex justify-between items-center">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-primary-light transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-primary transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
               Back
@@ -361,7 +361,7 @@ export default function BlogPage() {
 
             <Link
               href="/"
-              className="text-gray-400 hover:text-primary-light transition-colors"
+              className="text-gray-400 hover:text-primary transition-colors"
             >
               Home
             </Link>
@@ -414,11 +414,11 @@ export default function BlogPage() {
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-300 hover:border-primary hover:text-primary-light transition-colors w-full sm:w-auto justify-center"
+              className="flex items-center gap-2 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-gray-300 hover:border-primary hover:text-primary transition-colors w-full sm:w-auto justify-center"
             >
               <Filter className="w-4 h-4" />
               <span>Filter by Category</span>
-              <span className="text-primary-light font-medium ml-1">
+              <span className="text-primary font-medium ml-1">
                 ({selectedCategory})
               </span>
             </button>
@@ -441,7 +441,7 @@ export default function BlogPage() {
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                         selectedCategory === category
                           ? "bg-primary text-white shadow-lg shadow-primary/30"
-                          : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50 hover:text-primary-light"
+                          : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50 hover:text-primary"
                       }`}
                     >
                       {category}
@@ -480,7 +480,7 @@ export default function BlogPage() {
                   setSearchTerm("");
                   setSelectedCategory("All");
                 }}
-                className="mt-4 text-primary-light hover:text-accent font-medium transition-colors"
+                className="mt-4 text-primary hover:text-accent font-medium transition-colors"
               >
                 Clear all filters →
               </button>

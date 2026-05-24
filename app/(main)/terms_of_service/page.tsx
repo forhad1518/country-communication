@@ -89,7 +89,7 @@ const TermsSection = ({
     className="scroll-mt-24"
   >
     <div className="flex items-start gap-4 mb-6">
-      <div className="p-3 bg-primary rounded-xl text-primary-light shrink-0">
+      <div className="p-3 bg-primary rounded-xl text-secondary shrink-0">
         <Icon className="w-6 h-6" />
       </div>
       <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
@@ -120,7 +120,7 @@ const TocItem = ({
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
       }}
     >
-      <Icon className="w-4 h-4 text-gray-500 group-hover:text-primary-light transition-colors" />
+      <Icon className="w-4 h-4 text-gray-500 group-hover:text-secondary transition-colors" />
       {title}
     </a>
   </li>
@@ -176,7 +176,7 @@ export default function TermsConditionsPage() {
               className="text-center"
             >
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-primary rounded-2xl text-primary-light">
+                <div className="p-4 bg-primary rounded-2xl text-secondary">
                   <FileText className="w-12 h-12" />
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function TermsConditionsPage() {
               >
                 <div className="sticky top-24 bg-linear-to-br from-gray-900/80 to-black/80 rounded-2xl p-6 border border-white/10">
                   <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-primary-light" />
+                    <FileText className="w-5 h-5 text-secondary" />
                     Contents
                   </h3>
                   <nav>
@@ -323,7 +323,7 @@ export default function TermsConditionsPage() {
                   </p>
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mt-4">
                     <p className="text-white text-sm">
-                      <span className="font-semibold text-primary-light">
+                      <span className="font-semibold text-secondary">
                         Important:
                       </span>{" "}
                       By submitting a project inquiry, signing a contract, or
@@ -377,7 +377,7 @@ export default function TermsConditionsPage() {
                         key={i}
                         className="flex gap-3 bg-white/5 rounded-lg p-3 border border-white/10"
                       >
-                        <span className="text-primary-light font-semibold min-w-fit">
+                        <span className="text-secondary font-semibold min-w-fit">
                           {item.term}
                         </span>
                         <span className="text-gray-400 text-sm">
@@ -556,7 +556,7 @@ export default function TermsConditionsPage() {
                           </span>
                           <p className="text-gray-500 text-xs">{item.timing}</p>
                         </div>
-                        <span className="text-primary-light font-bold text-lg">
+                        <span className="text-secondary font-bold text-lg">
                           {item.percentage}
                         </span>
                       </div>
@@ -744,7 +744,7 @@ export default function TermsConditionsPage() {
                         key={i}
                         className="flex gap-4 bg-white/5 rounded-xl p-4 border border-white/10"
                       >
-                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary-light font-bold text-sm shrink-0">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-secondary font-bold text-sm shrink-0">
                           {i + 1}
                         </div>
                         <div>
@@ -813,14 +813,14 @@ export default function TermsConditionsPage() {
                     <div className="grid md:grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+                          <div className="p-2 bg-primary/10 rounded-lg text-secondary">
                             <MailIcon />
                           </div>
                           <div>
                             <p className="text-white font-medium">Email</p>
                             <a
                               href="mailto:legal@countrycomm.com"
-                              className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                              className="text-gray-400 hover:text-secondary transition-colors text-sm"
                             >
                               legal@countrycomm.com
                             </a>
@@ -828,14 +828,14 @@ export default function TermsConditionsPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+                          <div className="p-2 bg-primary/10 rounded-lg text-secondary">
                             <PhoneIcon />
                           </div>
                           <div>
                             <p className="text-white font-medium">Phone</p>
                             <a
                               href="tel:+8801234567890"
-                              className="text-gray-400 hover:text-primary-light transition-colors text-sm"
+                              className="text-gray-400 hover:text-secondary transition-colors text-sm"
                             >
                               +880 1234 567890
                             </a>
@@ -845,7 +845,7 @@ export default function TermsConditionsPage() {
 
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/10 rounded-lg text-primary-light">
+                          <div className="p-2 bg-primary/10 rounded-lg text-secondary">
                             <MapPinIcon />
                           </div>
                           <div>
@@ -872,7 +872,7 @@ export default function TermsConditionsPage() {
                 >
                   <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 mb-4">
                     <p className="text-gray-300 text-sm">
-                      <span className="text-primary-light font-semibold">
+                      <span className="text-secondary font-semibold">
                         Acknowledgment:
                       </span>{" "}
                       By using our services, you acknowledge that you have read

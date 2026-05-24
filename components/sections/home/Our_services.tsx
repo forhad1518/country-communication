@@ -18,7 +18,7 @@ const servicesData = [
         description: "Custom-designed exhibition booths that captivate and engage your audience",
         link: "/services/exhibition",
         color: "from-primary/20 to-primary/5",
-        iconColor: "text-primary-light",
+        iconColor: "text-primary",
         stats: "200+ Projects"
     },
     {
@@ -36,7 +36,7 @@ const servicesData = [
         description: "Innovative interior and exterior design solutions for commercial spaces",
         link: "/services/interior",
         color: "from-primary/20 to-primary/5",
-        iconColor: "text-primary-light",
+        iconColor: "text-primary",
         stats: "100+ Designs"
     },
     {

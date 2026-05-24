@@ -138,7 +138,7 @@ export default function AdminLayout({
                 }`}
               >
                 <Icon
-                  className={`w-5 h-5 shrink-0 ${isActive(menu.link) ? "text-white" : "group-hover:text-primary-light"}`}
+                  className={`w-5 h-5 shrink-0 ${isActive(menu.link) ? "text-white" : "group-hover:text-primary"}`}
                 />
 
                 {!sidebarCollapsed && (

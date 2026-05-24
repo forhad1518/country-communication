@@ -286,7 +286,7 @@ const TableOfContents = ({ content }: { content: ContentBlock[] }) => {
   return (
     <div className="bg-linear-to-br from-gray-900/50 to-black/50 rounded-2xl p-6 border border-white/10 sticky top-24">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <BookOpen className="w-5 h-5 text-primary-light" /> Table of Contents
+        <BookOpen className="w-5 h-5 text-primary" /> Table of Contents
       </h3>
       <ul className="space-y-2">
         {headings.map((heading, i) => {
@@ -295,7 +295,7 @@ const TableOfContents = ({ content }: { content: ContentBlock[] }) => {
             <li key={i}>
               <a
                 href={`#${id}`}
-                className={`block text-sm transition-colors py-1 border-l-2 pl-3 ${activeId === id ? "border-primary-light text-primary-light" : "border-transparent text-gray-400 hover:text-white"}`}
+                className={`block text-sm transition-colors py-1 border-l-2 pl-3 ${activeId === id ? "border-primary-light text-primary" : "border-transparent text-gray-400 hover:text-white"}`}
                 onClick={(e) => {
                   e.preventDefault();
                   document
@@ -371,7 +371,7 @@ const CommentItem = ({
                   {comment.userName}
                 </span>
                 {comment.isAdmin && (
-                  <span className="px-2 py-0.5 bg-primary/20 text-primary-light text-xs rounded-full border border-primary/30">
+                  <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs rounded-full border border-primary/30">
                     Admin
                   </span>
                 )}
@@ -405,7 +405,7 @@ const CommentItem = ({
           <div className="flex items-center gap-4 mt-2">
             <button
               onClick={() => onLike(comment._id)}
-              className={`flex items-center gap-1 text-xs transition-colors ${comment.likes > 0 ? "text-primary-light" : "text-gray-400 hover:text-white"}`}
+              className={`flex items-center gap-1 text-xs transition-colors ${comment.likes > 0 ? "text-primary" : "text-gray-400 hover:text-white"}`}
             >
               <ThumbsUp className="w-3.5 h-3.5" /> <span>{comment.likes}</span>
             </button>
@@ -633,7 +633,7 @@ export default function BlogDetailPage() {
           <h2 className="text-2xl text-white mb-4">Blog not found</h2>
           <Link
             href="/blog"
-            className="text-primary-light hover:text-accent transition-colors"
+            className="text-primary hover:text-accent transition-colors"
           >
             ← Back to Blogs
           </Link>
@@ -681,13 +681,13 @@ export default function BlogDetailPage() {
           <div className="flex justify-between items-center">
             <button
               onClick={() => router.back()}
-              className="flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-primary-light transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 text-gray-400 hover:text-primary transition-colors"
             >
               <ChevronLeft className="w-5 h-5" /> Back to Blogs
             </button>
             <Link
               href="/blog"
-              className="text-gray-400 hover:text-primary-light transition-colors"
+              className="text-gray-400 hover:text-primary transition-colors"
             >
               All Posts
             </Link>
@@ -834,7 +834,7 @@ export default function BlogDetailPage() {
               {blog.tags.length > 0 && (
                 <div className="mt-12 pt-8 border-t border-white/10">
                   <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-                    <Tag className="w-4 h-4 text-primary-light" /> Tags
+                    <Tag className="w-4 h-4 text-primary" /> Tags
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {blog.tags.map((tag) => (
@@ -872,7 +872,7 @@ export default function BlogDetailPage() {
                       {blog.authorName}
                     </h3>
                     {blog.authorRole && (
-                      <p className="text-primary-light text-sm mb-2">
+                      <p className="text-primary text-sm mb-2">
                         {blog.authorRole}
                       </p>
                     )}
@@ -886,7 +886,7 @@ export default function BlogDetailPage() {
               {/* Comments */}
               <div className="mt-12">
                 <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-primary-light" />
+                  <MessageCircle className="w-5 h-5 text-primary" />
                   Comments ({(blog.comments || []).length})
                 </h3>
 

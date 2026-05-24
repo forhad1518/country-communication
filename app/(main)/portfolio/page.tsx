@@ -127,7 +127,7 @@ const PortfolioCard = ({
 
           {/* Content */}
           <div className="p-5">
-            <h3 className="font-bold text-white text-lg mb-1 group-hover:text-primary-light transition-colors line-clamp-1">
+            <h3 className="font-bold text-white text-lg mb-1 group-hover:text-primary transition-colors line-clamp-1">
               {project.title}
             </h3>
             <p className="text-sm text-gray-400 mb-2 line-clamp-1">
@@ -328,7 +328,7 @@ export default function Portfolio() {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:border-primary hover:text-primary-light transition-colors w-full sm:w-auto justify-center"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:border-primary hover:text-primary transition-colors w-full sm:w-auto justify-center"
             >
               <Filter className="w-4 h-4" /> Filters{" "}
               {selectedExhibition !== "All" && (
@@ -354,7 +354,7 @@ export default function Portfolio() {
                       <button
                         key={name}
                         onClick={() => setSelectedExhibition(name)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedExhibition === name ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50 hover:text-primary-light"}`}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedExhibition === name ? "bg-primary text-white shadow-lg shadow-primary/30" : "bg-white/5 text-gray-300 border border-white/10 hover:border-primary/50 hover:text-primary"}`}
                       >
                         {name === "All" ? "All Exhibitions" : name}
                       </button>
@@ -364,7 +364,7 @@ export default function Portfolio() {
                     <div className="pt-4">
                       <button
                         onClick={() => setSelectedExhibition("All")}
-                        className="text-primary-light text-sm hover:text-accent transition"
+                        className="text-primary text-sm hover:text-accent transition"
                       >
                         Clear filter →
                       </button>
@@ -404,7 +404,7 @@ export default function Portfolio() {
                 setSearchTerm("");
                 setSelectedExhibition("All");
               }}
-              className="mt-4 text-primary-light hover:text-accent font-medium transition-colors"
+              className="mt-4 text-primary hover:text-accent font-medium transition-colors"
             >
               Clear all filters →
             </button>
@@ -431,7 +431,7 @@ export default function Portfolio() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className={`p-2 rounded-lg border transition-all ${page === 1 ? "text-gray-600 border-gray-700 cursor-not-allowed" : "text-primary-light border-white/10 hover:border-primary hover:bg-primary/10"}`}
+              className={`p-2 rounded-lg border transition-all ${page === 1 ? "text-gray-600 border-gray-700 cursor-not-allowed" : "text-primary border-white/10 hover:border-primary hover:bg-primary/10"}`}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -446,7 +446,7 @@ export default function Portfolio() {
                   <button
                     key={pageNum}
                     onClick={() => setPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-all ${page === pageNum ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-gray-400 hover:bg-white/5 hover:text-primary-light"}`}
+                    className={`w-10 h-10 rounded-lg font-medium transition-all ${page === pageNum ? "bg-primary text-white shadow-lg shadow-primary/30" : "text-gray-400 hover:bg-white/5 hover:text-primary"}`}
                   >
                     {pageNum}
                   </button>
@@ -459,7 +459,7 @@ export default function Portfolio() {
                   </span>
                   <button
                     onClick={() => setPage(totalPages)}
-                    className="w-10 h-10 rounded-lg font-medium text-gray-400 hover:bg-white/5 hover:text-primary-light transition-all"
+                    className="w-10 h-10 rounded-lg font-medium text-gray-400 hover:bg-white/5 hover:text-primary transition-all"
                   >
                     {totalPages}
                   </button>
@@ -469,7 +469,7 @@ export default function Portfolio() {
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className={`p-2 rounded-lg border transition-all ${page === totalPages ? "text-gray-600 border-gray-700 cursor-not-allowed" : "text-primary-light border-white/10 hover:border-primary hover:bg-primary/10"}`}
+              className={`p-2 rounded-lg border transition-all ${page === totalPages ? "text-gray-600 border-gray-700 cursor-not-allowed" : "text-primary border-white/10 hover:border-primary hover:bg-primary/10"}`}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
