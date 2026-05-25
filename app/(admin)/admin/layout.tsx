@@ -140,7 +140,7 @@ export default function AdminLayout({
                   className="object-contain"
                 />
               </div>
-              <span className="text-white font-bold text-sm">CountryComm</span>
+              <span className="text-white font-bold text-sm">Country Communication</span>
             </Link>
           ) : (
             <Link
