@@ -1,5 +1,3 @@
-// app/api/office-info/route.ts
-
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/config/connectDB";
 import OfficeInfo from "@/models/OfficeInfo";
