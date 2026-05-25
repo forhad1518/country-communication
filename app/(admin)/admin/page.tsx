@@ -654,9 +654,7 @@ export default function DashboardPage() {
           <div className="space-y-4">
             {recentActivities.map((activity, i) => (
               <div key={i} className="flex gap-3">
-                <div
-                  className={`p-2 rounded-lg ${activity.bgColor} shrink-0`}
-                >
+                <div className={`p-2 rounded-lg ${activity.bgColor} shrink-0`}>
                   <activity.icon className={`w-4 h-4 ${activity.textColor}`} />
                 </div>
                 <div className="flex-1 min-w-0">
