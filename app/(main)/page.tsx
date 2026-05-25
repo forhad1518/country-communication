@@ -7,6 +7,7 @@ import Workflow from "@/components/sections/home/Workflow";
 import Working_process from "@/components/sections/home/Working_process";
 import ExhibitionCampaign from "@/components/sections/home/ExhibitionCampaign";
 import Contact from "@/components/sections/home/Contact";
+import OurClients from "@/components/ValuableClient";
 
 
 export default function Home() {
@@ -31,6 +32,10 @@ export default function Home() {
       {/* next exhibition */}
       <div className="">
         <ExhibitionCampaign />
+      </div>
+      {/* next exhibition */}
+      <div className="">
+        <OurClients />
       </div>
       {/* Contact Section */}
       <div>
