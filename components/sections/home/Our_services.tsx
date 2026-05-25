@@ -159,7 +159,7 @@ const ServiceCard = ({
 // Main Component
 export default function OurServices() {
   return (
-    <section className="py-16 md:py-24 bg-linear-to-b from-black via-gray-900 to-black overflow-hidden">
+    <section className="py-8 md:py-10 bg-linear-to-b from-black via-gray-900 to-black overflow-hidden">
       <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-16">
