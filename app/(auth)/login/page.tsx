@@ -2,24 +2,48 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Lock, Mail, LogIn, Sparkles, Shield } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  LogIn,
+  Sparkles,
+  Shield,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function UserAuth() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [apiError, setApiError] = useState<{
+    message: string;
+    type: "error" | "warning";
+  } | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // Check for deactivated redirect
+    const reason = searchParams.get("reason");
+    if (reason === "deactivated") {
+      setApiError({
+        message:
+          "Your account has been deactivated. Please contact administrator.",
+        type: "warning",
+      });
+    }
+  }, [searchParams]);
 
   const validate = () => {
     let err = { email: "", password: "" };
@@ -48,12 +72,12 @@ export default function UserAuth() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user types
     if (errors[name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+    if (apiError) setApiError(null);
   };
-  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -61,6 +85,7 @@ export default function UserAuth() {
 
     try {
       setLoading(true);
+      setApiError(null);
 
       const res = await axios.post("/api/auth/login", {
         email: form.email,
@@ -75,9 +100,39 @@ export default function UserAuth() {
         }, 1000);
       }
     } catch (error: any) {
-      console.log(error);
+      console.log("Login error:", error);
 
-      alert(error?.response?.data?.message || "Login failed");
+      const status = error?.response?.status;
+      const message =
+        error?.response?.data?.message || "Login failed. Please try again.";
+
+      // Handle different error scenarios
+      if (status === 403) {
+        // Account deactivated
+        setApiError({
+          message:
+            "Your account has been deactivated. Please contact the administrator.",
+          type: "warning",
+        });
+      } else if (status === 401) {
+        // Invalid credentials
+        setApiError({
+          message: "Invalid email or password. Please try again.",
+          type: "error",
+        });
+      } else if (status === 429) {
+        // Too many attempts
+        setApiError({
+          message: "Too many login attempts. Please try again later.",
+          type: "warning",
+        });
+      } else {
+        // Other errors
+        setApiError({
+          message: message,
+          type: "error",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -98,18 +153,12 @@ export default function UserAuth() {
           <div className="absolute inset-0 pointer-events-none">
             {[...Array(10)].map((_, i) => {
               const randomX = Math.random() * window.innerWidth;
-
               const randomY = Math.random() * window.innerHeight;
-
               return (
                 <motion.div
                   key={i}
                   className="absolute w-1 h-1 bg-primary/30 rounded-full"
-                  initial={{
-                    x: randomX,
-                    y: randomY,
-                    opacity: 0,
-                  }}
+                  initial={{ x: randomX, y: randomY, opacity: 0 }}
                   animate={{
                     y: [randomY, randomY - 100],
                     opacity: [0, 0.8, 0],
@@ -139,9 +188,26 @@ export default function UserAuth() {
         {/* Card Content */}
         <div className="relative bg-linear-to-br from-gray-900/90 to-black/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
           {/* Lock Icon */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+            className="flex justify-center mb-6"
+          >
+            <div className="relative">
+              <div className="p-4 bg-linear-to-r from-primary to-accent rounded-2xl">
+                <Lock className="w-8 h-8 text-primary-light" />
+              </div>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="absolute -top-1 -right-1 w-3 h-3 bg-accent rounded-full"
+              />
+            </div>
+          </motion.div>
 
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-6">
             <motion.h1
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -162,22 +228,58 @@ export default function UserAuth() {
             </motion.p>
           </div>
 
-          {/* Success Message */}
+          {/* ===== API ERROR MESSAGE ===== */}
+          <AnimatePresence>
+            {apiError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={`rounded-xl p-4 mb-6 flex items-start gap-3 ${
+                  apiError.type === "warning"
+                    ? "bg-yellow-500/10 border border-yellow-500/30"
+                    : "bg-red-500/10 border border-red-500/30"
+                }`}
+              >
+                <AlertCircle
+                  className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    apiError.type === "warning"
+                      ? "text-yellow-400"
+                      : "text-red-400"
+                  }`}
+                />
+                <p
+                  className={`text-sm ${
+                    apiError.type === "warning"
+                      ? "text-yellow-300"
+                      : "text-red-300"
+                  }`}
+                >
+                  {apiError.message}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ===== SUCCESS MESSAGE ===== */}
           <AnimatePresence>
             {isSuccess && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6 text-center"
+                className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-6 flex items-start gap-3"
               >
-                <div className="flex items-center justify-center gap-2 text-green-400">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="font-medium">Login Successful!</span>
+                <CheckCircle className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-green-300 font-medium text-sm">
+                    Login Successful!
+                  </p>
+                  <p className="text-gray-400 text-xs mt-0.5">
+                    Redirecting to dashboard...
+                  </p>
                 </div>
-                <p className="text-gray-400 text-xs mt-1">
-                  Redirecting to dashboard...
-                </p>
+                <Sparkles className="w-4 h-4 text-green-400 ml-auto" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -249,7 +351,7 @@ export default function UserAuth() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-white transition-colors cursor-pointer"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -284,7 +386,7 @@ export default function UserAuth() {
                 disabled={loading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full py-3.5 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-3.5 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+import axios from "axios";
 import {
   Search,
   Plus,
@@ -23,77 +23,20 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  MoreVertical,
-  Download,
-  Upload,
 } from "lucide-react";
 
 // Types
-type UserRole = "admin" | "editor" | "user" | "viewer";
+type UserRole = "admin" | "editor";
 
 type UserData = {
   _id: string;
   name: string;
   email: string;
   role: UserRole;
-  avatar?: string;
-  status: "active" | "inactive";
+  isActive: boolean;
   lastLogin?: string;
   createdAt: string;
 };
-
-// Sample Users Data
-const sampleUsers: UserData[] = [
-  {
-    _id: "1",
-    name: "Iqbal Mahmud",
-    email: "iqbal@countrycomm.com",
-    role: "admin",
-    avatar: "https://picsum.photos/100/100?admin",
-    status: "active",
-    lastLogin: "2025-01-15T10:30:00",
-    createdAt: "2024-01-01T08:00:00",
-  },
-  {
-    _id: "2",
-    name: "Fatima Ahmed",
-    email: "fatima@countrycomm.com",
-    role: "editor",
-    avatar: "https://picsum.photos/100/100?editor",
-    status: "active",
-    lastLogin: "2025-01-14T14:20:00",
-    createdAt: "2024-03-15T09:00:00",
-  },
-  {
-    _id: "3",
-    name: "Tanvir Hasan",
-    email: "tanvir@countrycomm.com",
-    role: "user",
-    avatar: "https://picsum.photos/100/100?user",
-    status: "active",
-    lastLogin: "2025-01-10T11:00:00",
-    createdAt: "2024-06-20T10:00:00",
-  },
-  {
-    _id: "4",
-    name: "Nusrat Jahan",
-    email: "nusrat@countrycomm.com",
-    role: "viewer",
-    avatar: "https://picsum.photos/100/100?viewer",
-    status: "inactive",
-    lastLogin: "2024-12-01T09:00:00",
-    createdAt: "2024-08-10T12:00:00",
-  },
-  {
-    _id: "5",
-    name: "Rahim Uddin",
-    email: "rahim@countrycomm.com",
-    role: "editor",
-    status: "active",
-    lastLogin: "2025-01-13T16:45:00",
-    createdAt: "2024-11-01T08:30:00",
-  },
-];
 
 // Toast Component
 const Toast = ({
@@ -109,7 +52,6 @@ const Toast = ({
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
@@ -133,41 +75,49 @@ const DeleteModal = ({
   onClose,
   onConfirm,
   userName,
+  isCurrentUser,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   userName: string;
-}) => {
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-96 p-6"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Confirm Delete
-              </h3>
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded"
-              >
-                <X className="w-5 h-5 text-gray-500" />
-              </button>
+  isCurrentUser?: boolean;
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+          onClick={onClose}
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl z-50 w-96 p-6"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">
+              {isCurrentUser ? "Cannot Delete" : "Confirm Delete"}
+            </h3>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-100 rounded cursor-pointer"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+          {isCurrentUser ? (
+            <div className="flex items-start gap-3 mb-6">
+              <AlertCircle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+              <p className="text-gray-600 text-sm">
+                You cannot delete your own account while logged in.
+              </p>
             </div>
-
+          ) : (
             <div className="flex items-start gap-3 mb-6">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-gray-600 text-sm">
@@ -176,27 +126,28 @@ const DeleteModal = ({
                 cannot be undone.
               </p>
             </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm"
-              >
-                Cancel
-              </button>
+          )}
+          <div className="flex gap-3 justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm cursor-pointer"
+            >
+              {isCurrentUser ? "Close" : "Cancel"}
+            </button>
+            {!isCurrentUser && (
               <button
                 onClick={onConfirm}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm cursor-pointer"
               >
                 Delete User
               </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
+            )}
+          </div>
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
 
 // User Form Modal (Add/Edit)
 const UserFormModal = ({
@@ -208,14 +159,14 @@ const UserFormModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: any) => void;
+  onSave: (data: any) => Promise<void>;
   user?: UserData | null;
   mode: "add" | "edit";
 }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "user" as UserRole,
+    role: "editor" as UserRole,
     password: "",
     confirmPassword: "",
   });
@@ -236,7 +187,7 @@ const UserFormModal = ({
       setFormData({
         name: "",
         email: "",
-        role: "user",
+        role: "editor",
         password: "",
         confirmPassword: "",
       });
@@ -246,14 +197,12 @@ const UserFormModal = ({
 
   const validate = () => {
     const errs: Record<string, string> = {};
-
     if (!formData.name.trim()) errs.name = "Name is required";
     if (!formData.email.trim()) {
       errs.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errs.email = "Invalid email format";
     }
-
     if (mode === "add") {
       if (!formData.password) errs.password = "Password is required";
       else if (formData.password.length < 6)
@@ -263,23 +212,23 @@ const UserFormModal = ({
     } else if (formData.password && formData.password.length < 6) {
       errs.password = "Minimum 6 characters";
     }
-
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     setLoading(true);
-    setTimeout(() => {
-      onSave(formData);
-      setLoading(false);
+    try {
+      await onSave(formData);
       onClose();
-    }, 800);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -311,12 +260,11 @@ const UserFormModal = ({
               </h3>
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-gray-100 rounded cursor-pointer"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
@@ -330,18 +278,13 @@ const UserFormModal = ({
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter full name"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
-                      errors.name
-                        ? "border-red-300 focus:ring-red-500/20"
-                        : "border-gray-300 focus:ring-primary/20 focus:border-primary"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${errors.name ? "border-red-300 focus:ring-red-500/20" : "border-gray-300 focus:ring-primary/20 focus:border-primary"}`}
                   />
                 </div>
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-1">{errors.name}</p>
                 )}
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Email Address
@@ -354,18 +297,13 @@ const UserFormModal = ({
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter email"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
-                      errors.email
-                        ? "border-red-300 focus:ring-red-500/20"
-                        : "border-gray-300 focus:ring-primary/20 focus:border-primary"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${errors.email ? "border-red-300 focus:ring-red-500/20" : "border-gray-300 focus:ring-primary/20 focus:border-primary"}`}
                   />
                 </div>
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                 )}
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Role
@@ -380,12 +318,9 @@ const UserFormModal = ({
                   >
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
-                    <option value="user">User</option>
-                    <option value="viewer">Viewer</option>
                   </select>
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   {mode === "add"
@@ -404,16 +339,12 @@ const UserFormModal = ({
                         ? "Create password"
                         : "New password (optional)"
                     }
-                    className={`w-full pl-10 pr-12 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
-                      errors.password
-                        ? "border-red-300 focus:ring-red-500/20"
-                        : "border-gray-300 focus:ring-primary/20 focus:border-primary"
-                    }`}
+                    className={`w-full pl-10 pr-12 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${errors.password ? "border-red-300 focus:ring-red-500/20" : "border-gray-300 focus:ring-primary/20 focus:border-primary"}`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -426,7 +357,6 @@ const UserFormModal = ({
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Confirm Password
@@ -439,11 +369,7 @@ const UserFormModal = ({
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirm password"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${
-                      errors.confirmPassword
-                        ? "border-red-300 focus:ring-red-500/20"
-                        : "border-gray-300 focus:ring-primary/20 focus:border-primary"
-                    }`}
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-all ${errors.confirmPassword ? "border-red-300 focus:ring-red-500/20" : "border-gray-300 focus:ring-primary/20 focus:border-primary"}`}
                   />
                 </div>
                 {errors.confirmPassword && (
@@ -452,19 +378,18 @@ const UserFormModal = ({
                   </p>
                 )}
               </div>
-
               <div className="flex gap-3 justify-end pt-2">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm disabled:opacity-50 cursor-pointer"
                 >
                   {loading
                     ? "Saving..."
@@ -490,7 +415,7 @@ const PasswordResetModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (password: string) => void;
+  onSave: (password: string) => Promise<void>;
   userName: string;
 }) => {
   const [password, setPassword] = useState("");
@@ -498,10 +423,13 @@ const PasswordResetModal = ({
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    setPassword("");
+    setConfirmPassword("");
+    setError("");
+  }, [isOpen]);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
       return;
@@ -510,23 +438,16 @@ const PasswordResetModal = ({
       setError("Passwords do not match");
       return;
     }
-
     setLoading(true);
-    setTimeout(() => {
-      onSave(password);
-      setLoading(false);
-      setPassword("");
-      setConfirmPassword("");
+    try {
+      await onSave(password);
       onClose();
-    }, 800);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  useEffect(() => {
-    setPassword("");
-    setConfirmPassword("");
-    setError("");
-  }, [isOpen]);
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -550,17 +471,15 @@ const PasswordResetModal = ({
               </h3>
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded"
+                className="p-1 hover:bg-gray-100 rounded cursor-pointer"
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-
             <p className="text-sm text-gray-500 mb-4">
               Reset password for{" "}
               <span className="font-medium text-gray-700">{userName}</span>
             </p>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
@@ -581,7 +500,7 @@ const PasswordResetModal = ({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? (
                       <EyeOff className="w-4 h-4" />
@@ -591,7 +510,6 @@ const PasswordResetModal = ({
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Confirm Password
@@ -607,26 +525,24 @@ const PasswordResetModal = ({
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
-
               {error && (
                 <p className="text-red-500 text-xs flex items-center gap-1">
                   <AlertCircle className="w-3 h-3" />
                   {error}
                 </p>
               )}
-
               <div className="flex gap-3 justify-end pt-2">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors text-sm cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors text-sm disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -639,24 +555,14 @@ const PasswordResetModal = ({
   );
 };
 
-// Role Badge Component
+// Role Badge
 const RoleBadge = ({ role }: { role: UserRole }) => {
   const styles = {
     admin: "bg-purple-100 text-purple-700 border-purple-200",
     editor: "bg-blue-100 text-blue-700 border-blue-200",
-    user: "bg-green-100 text-green-700 border-green-200",
-    viewer: "bg-gray-100 text-gray-600 border-gray-200",
   };
-
-  const icons = {
-    admin: Shield,
-    editor: Edit,
-    user: User,
-    viewer: Eye,
-  };
-
+  const icons = { admin: Shield, editor: Edit };
   const Icon = icons[role];
-
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${styles[role]}`}
@@ -667,27 +573,52 @@ const RoleBadge = ({ role }: { role: UserRole }) => {
   );
 };
 
-// Status Badge
-const StatusBadge = ({ status }: { status: "active" | "inactive" }) => (
+// Status Badge with protection
+const StatusBadge = ({
+  isActive,
+  isCurrentUser,
+}: {
+  isActive: boolean;
+  isCurrentUser?: boolean;
+}) => (
   <span
-    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${
-      status === "active"
-        ? "bg-green-100 text-green-700 border-green-200"
-        : "bg-red-100 text-red-700 border-red-200"
-    }`}
+    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${isCurrentUser ? "cursor-not-allowed opacity-70" : "cursor-pointer"} ${isActive ? "bg-green-100 text-green-700 border-green-200" : "bg-red-100 text-red-700 border-red-200"}`}
   >
-    {status === "active" ? (
-      <UserCheck className="w-3 h-3" />
+    {isActive ? (
+      <>
+        <UserCheck className="w-3 h-3" /> Active
+      </>
     ) : (
-      <UserX className="w-3 h-3" />
+      <>
+        <UserX className="w-3 h-3" /> Inactive
+      </>
     )}
-    {status.charAt(0).toUpperCase() + status.slice(1)}
   </span>
 );
 
-// Main Component
+// Skeleton
+const TableSkeleton = () => (
+  <div className="animate-pulse">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <div
+        key={i}
+        className="flex items-center gap-4 py-3 border-b border-gray-100"
+      >
+        <div className="w-8 h-8 bg-gray-200 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-1/3" />
+          <div className="h-3 bg-gray-200 rounded w-1/2" />
+        </div>
+        <div className="w-20 h-6 bg-gray-200 rounded-full" />
+      </div>
+    ))}
+  </div>
+);
+
+// ===== MAIN COMPONENT =====
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<UserData[]>(sampleUsers);
+  const [users, setUsers] = useState<UserData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [statusFilter, setStatusFilter] = useState<
@@ -712,10 +643,144 @@ export default function UserManagementPage() {
     user: UserData | null;
   }>({ isOpen: false, user: null });
   const [showFilters, setShowFilters] = useState(false);
-
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>(""); // Logged in user's email
   const itemsPerPage = 8;
 
-  // Filter users
+  // ===== GET CURRENT USER =====
+  useEffect(() => {
+    fetchUsers();
+    getCurrentUser();
+  }, []);
+
+  const getCurrentUser = async () => {
+    try {
+      // Get current user from cookie/token or API
+      const res = await axios.get("/api/auth/me"); // You need this endpoint
+      if (res.data?.user?.email) {
+        setCurrentUserEmail(res.data.user.email);
+      }
+    } catch (err) {
+      // Fallback: try to decode from cookie
+      console.log("Could not get current user:", err);
+    }
+  };
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/api/users");
+      setUsers(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setToast({ message: "Failed to load users", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ===== CHECK IF USER IS CURRENT LOGGED IN USER =====
+  const isCurrentUser = (user: UserData): boolean => {
+    return user.email === currentUserEmail;
+  };
+
+  // ===== CRUD OPERATIONS =====
+  const handleAddUser = async (formData: any) => {
+    try {
+      await axios.post("/api/users", formData);
+      await fetchUsers();
+      setToast({ message: "User created successfully", type: "success" });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.error || "Failed to create user",
+        type: "error",
+      });
+      throw err;
+    }
+  };
+
+  const handleEditUser = async (formData: any) => {
+    if (!formModal.user) return;
+    try {
+      const updateData: any = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+      };
+      if (formData.password) updateData.password = formData.password;
+      await axios.put(`/api/users/${formModal.user._id}`, updateData);
+      await fetchUsers();
+      setToast({ message: "User updated successfully", type: "success" });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.error || "Failed to update user",
+        type: "error",
+      });
+      throw err;
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteModal.user) return;
+
+    // ===== PREVENT SELF-DELETE =====
+    if (isCurrentUser(deleteModal.user)) {
+      setToast({
+        message: "You cannot delete your own account!",
+        type: "error",
+      });
+      setDeleteModal({ isOpen: false, user: null });
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/users/${deleteModal.user._id}`);
+      await fetchUsers();
+      setToast({ message: "User deleted successfully", type: "success" });
+      setDeleteModal({ isOpen: false, user: null });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.error || "Failed to delete user",
+        type: "error",
+      });
+    }
+  };
+
+  const handleResetPassword = async (password: string) => {
+    if (!passwordModal.user) return;
+    try {
+      await axios.put(`/api/users/${passwordModal.user._id}/change-password`, {
+        newPassword: password,
+      });
+      setToast({ message: "Password reset successfully", type: "success" });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.error || "Failed to reset password",
+        type: "error",
+      });
+      throw err;
+    }
+  };
+
+  const handleToggleStatus = async (userId: string, user: UserData) => {
+    // ===== PREVENT SELF-DEACTIVATE =====
+    if (isCurrentUser(user)) {
+      setToast({
+        message: "You cannot deactivate your own account!",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      await axios.put(`/api/users/${userId}/toggle-status`);
+      await fetchUsers();
+      setToast({ message: "User status updated", type: "success" });
+    } catch (err: any) {
+      setToast({ message: "Failed to toggle status", type: "error" });
+    }
+  };
+
+  // Filter
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const matchesSearch =
@@ -723,90 +788,29 @@ export default function UserManagementPage() {
         user.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
       const matchesStatus =
-        statusFilter === "all" || user.status === statusFilter;
+        statusFilter === "all" ||
+        (statusFilter === "active" ? user.isActive : !user.isActive);
       return matchesSearch && matchesRole && matchesStatus;
     });
   }, [users, searchTerm, roleFilter, statusFilter]);
 
-  // Pagination
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, roleFilter, statusFilter]);
 
-  // Handlers
-  const handleAddUser = (formData: any) => {
-    const newUser: UserData = {
-      _id: Date.now().toString(),
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      status: "active",
-      createdAt: new Date().toISOString(),
-    };
-    setUsers((prev) => [newUser, ...prev]);
-    setToast({ message: "User created successfully", type: "success" });
-  };
-
-  const handleEditUser = (formData: any) => {
-    if (!formModal.user) return;
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === formModal.user?._id
-          ? {
-              ...u,
-              name: formData.name,
-              email: formData.email,
-              role: formData.role,
-            }
-          : u,
-      ),
-    );
-    setToast({ message: "User updated successfully", type: "success" });
-  };
-
-  const handleDeleteUser = () => {
-    if (!deleteModal.user) return;
-    setUsers((prev) => prev.filter((u) => u._id !== deleteModal.user?._id));
-    setToast({ message: "User deleted successfully", type: "success" });
-    setDeleteModal({ isOpen: false, user: null });
-  };
-
-  const handleResetPassword = (password: string) => {
-    setToast({ message: "Password reset successfully", type: "success" });
-  };
-
-  const handleToggleStatus = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u._id === userId
-          ? {
-              ...u,
-              status:
-                u.status === "active"
-                  ? "inactive"
-                  : ("active" as "active" | "inactive"),
-            }
-          : u,
-      ),
-    );
-    setToast({ message: "User status updated", type: "success" });
-  };
-
   const stats = {
     total: users.length,
-    active: users.filter((u) => u.status === "active").length,
+    active: users.filter((u) => u.isActive).length,
     admin: users.filter((u) => u.role === "admin").length,
   };
 
   return (
     <div className="space-y-6">
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <Toast
@@ -816,13 +820,14 @@ export default function UserManagementPage() {
           />
         )}
       </AnimatePresence>
-
-      {/* Modals */}
       <DeleteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, user: null })}
         onConfirm={handleDeleteUser}
         userName={deleteModal.user?.name || ""}
+        isCurrentUser={
+          deleteModal.user ? isCurrentUser(deleteModal.user) : false
+        }
       />
       <UserFormModal
         isOpen={formModal.isOpen}
@@ -848,23 +853,17 @@ export default function UserManagementPage() {
             Manage user accounts and permissions
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() =>
-              setFormModal({ isOpen: true, mode: "add", user: null })
-            }
-            className="bg-primary text-white px-4 py-2.5 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 text-sm shadow-md shadow-primary/20"
-          >
-            <Plus className="w-4 h-4" />
-            Add User
-          </button>
-          <button className="p-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-600">
-            <Download className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={() =>
+            setFormModal({ isOpen: true, mode: "add", user: null })
+          }
+          className="bg-primary text-white px-4 py-2.5 rounded-lg hover:bg-primary-hover transition flex items-center gap-2 text-sm shadow-md shadow-primary/20 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" /> Add User
+        </button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
           {
@@ -913,21 +912,16 @@ export default function UserManagementPage() {
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-              {(roleFilter !== "all" || statusFilter !== "all") && (
-                <span className="w-2 h-2 bg-primary rounded-full" />
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+          >
+            <Filter className="w-4 h-4" /> Filters{" "}
+            {(roleFilter !== "all" || statusFilter !== "all") && (
+              <span className="w-2 h-2 bg-primary rounded-full" />
+            )}
+          </button>
         </div>
-
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -951,8 +945,6 @@ export default function UserManagementPage() {
                     <option value="all">All Roles</option>
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
-                    <option value="user">User</option>
-                    <option value="viewer">Viewer</option>
                   </select>
                 </div>
                 <div>
@@ -995,9 +987,6 @@ export default function UserManagementPage() {
                   Status
                 </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
-                  Last Login
-                </th>
-                <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">
                   Created
                 </th>
                 <th className="py-3 px-4 text-xs font-medium text-gray-500 uppercase text-right">
@@ -1006,96 +995,109 @@ export default function UserManagementPage() {
               </tr>
             </thead>
             <tbody>
-              {paginatedUsers.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-gray-500">
+                  <td colSpan={5} className="py-8">
+                    <TableSkeleton />
+                  </td>
+                </tr>
+              ) : paginatedUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-12 text-center text-gray-500">
                     No users found
                   </td>
                 </tr>
               ) : (
-                paginatedUsers.map((user) => (
-                  <tr
-                    key={user._id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50 transition"
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        {user.avatar ? (
-                          <Image
-                            src={user.avatar}
-                            alt={user.name}
-                            width={36}
-                            height={36}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="w-9 h-9 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center">
+                paginatedUsers.map((user) => {
+                  const isSelf = isCurrentUser(user);
+                  return (
+                    <tr
+                      key={user._id}
+                      className="border-b border-gray-50 hover:bg-gray-50/50 transition"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
                             <span className="text-white font-semibold text-sm">
                               {user.name.charAt(0)}
                             </span>
                           </div>
-                        )}
-                        <div>
-                          <p className="font-medium text-gray-800 text-sm">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+                          <div>
+                            <p className="font-bold text-gray-800 text-sm">
+                              {user.name}{" "}
+                              {isSelf && (
+                                <span className="text-xs text-primary font-normal ml-1">
+                                  (You)
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {user.email}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <RoleBadge role={user.role} />
-                    </td>
-                    <td className="py-3 px-4 hidden md:table-cell">
-                      <button onClick={() => handleToggleStatus(user._id)}>
-                        <StatusBadge status={user.status} />
-                      </button>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-500 hidden lg:table-cell">
-                      {user.lastLogin
-                        ? new Date(user.lastLogin).toLocaleDateString()
-                        : "Never"}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-500 hidden lg:table-cell">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center justify-end gap-1">
+                      </td>
+                      <td className="py-3 px-4">
+                        <RoleBadge role={user.role} />
+                      </td>
+                      <td className="py-3 px-4 hidden md:table-cell">
                         <button
-                          onClick={() =>
-                            setPasswordModal({ isOpen: true, user })
+                          onClick={() => handleToggleStatus(user._id, user)}
+                          disabled={isSelf}
+                          className={
+                            isSelf ? "cursor-not-allowed" : "cursor-pointer"
                           }
-                          className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition"
-                          title="Reset Password"
                         >
-                          <Key className="w-4 h-4" />
+                          <StatusBadge
+                            isActive={user.isActive}
+                            isCurrentUser={isSelf}
+                          />
                         </button>
-                        <button
-                          onClick={() =>
-                            setFormModal({ isOpen: true, mode: "edit", user })
-                          }
-                          className="p-1.5 text-gray-400 hover:text-accent hover:bg-accent/5 rounded transition"
-                          title="Edit User"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setDeleteModal({ isOpen: true, user })}
-                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition"
-                          title="Delete User"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-500 hidden lg:table-cell">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() =>
+                              setPasswordModal({ isOpen: true, user })
+                            }
+                            className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded transition cursor-pointer"
+                            title="Reset Password"
+                          >
+                            <Key className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setFormModal({ isOpen: true, mode: "edit", user })
+                            }
+                            className="p-1.5 text-gray-400 hover:text-accent hover:bg-accent/5 rounded transition cursor-pointer"
+                            title="Edit User"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              setDeleteModal({ isOpen: true, user })
+                            }
+                            disabled={isSelf}
+                            className={`p-1.5 rounded transition ${isSelf ? "text-gray-300 cursor-not-allowed" : "text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer"}`}
+                            title={
+                              isSelf ? "Cannot delete yourself" : "Delete User"
+                            }
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-between items-center px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
@@ -1107,7 +1109,7 @@ export default function UserManagementPage() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -1116,11 +1118,7 @@ export default function UserManagementPage() {
                   <button
                     key={page}
                     onClick={() => setCurrentPage(page)}
-                    className={`w-7 h-7 rounded text-xs font-medium transition ${
-                      currentPage === page
-                        ? "bg-primary text-white"
-                        : "text-gray-500 hover:bg-gray-100"
-                    }`}
+                    className={`w-7 h-7 rounded text-xs font-medium transition cursor-pointer ${currentPage === page ? "bg-primary text-white" : "text-gray-500 hover:bg-gray-100"}`}
                   >
                     {page}
                   </button>
@@ -1131,7 +1129,7 @@ export default function UserManagementPage() {
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                className="p-1.5 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30 cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
