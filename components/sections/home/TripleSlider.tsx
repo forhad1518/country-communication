@@ -104,7 +104,7 @@ export default function TripleSlider() {
               />
 
               {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
 
               {/* Comment/Title */}
               {slide.comment && (
