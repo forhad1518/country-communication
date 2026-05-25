@@ -1017,7 +1017,7 @@ export default function UserManagementPage() {
                     >
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
+                          <div className="w-9 h-9 bg-linear-to-r from-primary to-accent rounded-full flex items-center justify-center shrink-0">
                             <span className="text-white font-semibold text-sm">
                               {user.name.charAt(0)}
                             </span>
