@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  Handshake
 } from "lucide-react";
 import logo from "@/public/logo_COCO.png";
 import "@/app/globals.css";
@@ -82,6 +83,7 @@ export default function AdminLayout({
     { button: "Blog", link: "/admin/blog", icon: FileText },
     { button: "Portfolio", link: "/admin/portfolio", icon: FolderOpen },
     { button: "Exhibition", link: "/admin/exhibition", icon: Calendar },
+    { button: "Our_Clients", link: "/admin/our_clients", icon: Handshake },
     { button: "Settings", link: "/admin/settings", icon: Settings },
   ];
 
@@ -91,7 +93,7 @@ export default function AdminLayout({
   // Build menu based on role
   const controllMenu =
     adminInfo.role === "admin"
-      ? [...baseMenu.slice(0, 4), usersMenu, baseMenu[4]]
+      ? [...baseMenu.slice(0, 5), usersMenu, baseMenu[5]]
       : baseMenu;
 
   const isActive = (link: string) => {
@@ -140,7 +142,9 @@ export default function AdminLayout({
                   className="object-contain"
                 />
               </div>
-              <span className="text-white font-bold text-sm">Country Communication</span>
+              <span className="text-white font-bold text-sm">
+                Country Communication
+              </span>
             </Link>
           ) : (
             <Link
