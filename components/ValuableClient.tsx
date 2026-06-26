@@ -27,41 +27,41 @@ const clientLogos2 = [
   { id: 16, name: "OnePlus", logo: "https://picsum.photos/200/80?random=16" },
 ];
 
-// Duplicate for seamless loop
-const row1Logos = [...clientLogos1, ...clientLogos1];
-const row2Logos = [...clientLogos2, ...clientLogos2];
+// Duplicate for seamless loop - show more items on mobile
+const row1Logos = [...clientLogos1, ...clientLogos1, ...clientLogos1];
+const row2Logos = [...clientLogos2, ...clientLogos2, ...clientLogos2];
 
 export default function OurClients() {
   return (
-    <section className="py-8 md:py-10 bg-black overflow-hidden">
-      <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
+    <section className="py-8 md:py-12 lg:py-16 bg-black overflow-hidden">
+      <div className="w-[95%] sm:w-[90%] lg:w-[85%] xl:w-[80%] max-w-400 mx-auto">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-8 md:mb-12 lg:mb-16"
         >
           <Heading1 text="Our Valuable Clients" />
-          <p className="text-gray-400 mt-4 text-sm md:text-base max-w-2xl mx-auto">
+          <p className="text-gray-400 mt-3 md:mt-4 text-xs sm:text-sm md:text-base max-w-2xl mx-auto px-4">
             Proud to work with leading brands across the globe
           </p>
         </motion.div>
 
         {/* Row 1 - Left to Right */}
-        <div className="relative overflow-hidden mb-8 py-4">
+        <div className="relative overflow-hidden mb-6 md:mb-8 py-2 md:py-4">
           {/* Gradient Fade on edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-linear-to-r from-black to-transparent pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-linear-to-l from-black to-transparent pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 z-10 bg-linear-to-r from-black to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 z-10 bg-linear-to-l from-black to-transparent pointer-events-none" />
 
           <motion.div
-            className="flex gap-8"
+            className="flex gap-4 sm:gap-6 md:gap-8"
             animate={{
               x: ["0%", "-50%"],
             }}
             transition={{
               x: {
-                duration: 30,
+                duration: 25,
                 repeat: Infinity,
                 ease: "linear",
               },
@@ -70,15 +70,15 @@ export default function OurClients() {
             {row1Logos.map((client, index) => (
               <div
                 key={`${client.id}-${index}`}
-                className="shrink-0 w-45 h-20 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 flex items-center justify-center p-3 hover:border-primary/30 hover:bg-white/10 transition-all duration-300 group"
+                className="shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
               >
                 <div className="relative w-full h-full flex items-center justify-center">
                   <Image
                     src={client.logo}
                     alt={client.name}
-                    width={140}
-                    height={60}
-                    className="object-contain opacity-60 group-hover:opacity-100 transition-opacity duration-300 filter grayscale group-hover:grayscale-0"
+                    width={120}
+                    height={50}
+                    className="object-contain opacity-60 group-hover:opacity-80 transition-opacity duration-300"
                   />
                 </div>
               </div>
@@ -87,19 +87,19 @@ export default function OurClients() {
         </div>
 
         {/* Row 2 - Right to Left */}
-        <div className="relative overflow-hidden py-4">
+        <div className="relative overflow-hidden py-2 md:py-4">
           {/* Gradient Fade on edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 z-10 bg-linear-to-r from-black to-transparent pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 z-10 bg-linear-to-l from-black to-transparent pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 z-10 bg-linear-to-r from-black to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-24 md:w-32 z-10 bg-linear-to-l from-black to-transparent pointer-events-none" />
 
           <motion.div
-            className="flex gap-8"
+            className="flex gap-4 sm:gap-6 md:gap-8"
             animate={{
               x: ["-50%", "0%"],
             }}
             transition={{
               x: {
-                duration: 30,
+                duration: 25,
                 repeat: Infinity,
                 ease: "linear",
               },
@@ -108,15 +108,15 @@ export default function OurClients() {
             {row2Logos.map((client, index) => (
               <div
                 key={`${client.id}-${index}`}
-                className="shrink-0 w-45 h-20 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 flex items-center justify-center p-3 hover:border-primary/30 hover:bg-white/10 transition-all duration-300 group"
+                className="shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
               >
                 <div className="relative w-full h-full flex items-center justify-center">
                   <Image
                     src={client.logo}
                     alt={client.name}
-                    width={140}
-                    height={60}
-                    className="object-contain opacity-60 group-hover:opacity-100 transition-opacity duration-300 filter grayscale group-hover:grayscale-0"
+                    width={120}
+                    height={50}
+                    className="object-contain opacity-60 group-hover:opacity-80 transition-opacity duration-300"
                   />
                 </div>
               </div>
@@ -130,18 +130,18 @@ export default function OurClients() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="text-center mt-16"
+          className="text-center mt-12 md:mt-16 lg:mt-20"
         >
-          <p className="text-gray-500 text-sm mb-4">
+          <p className="text-gray-500 text-xs sm:text-sm mb-3 md:mb-4">
             Join 200+ brands who trust us
           </p>
           <a
             href="/contact"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
+            className="inline-flex items-center gap-2 px-6 sm:px-8 py-3 sm:py-4 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group text-sm sm:text-base"
           >
             <span>Become Our Client</span>
             <svg
-              className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+              className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
