@@ -7,12 +7,13 @@ import Client, { IClient } from "@/models/Our_Client";
 // GET - fetch a single client by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params; // await the params
     await connectDB();
 
-    const client: IClient | null = await Client.findById(params.id).lean();
+    const client: IClient | null = await Client.findById(id).lean();
 
     if (!client) {
       return NextResponse.json(
@@ -33,9 +34,10 @@ export async function GET(
 // PUT - update a client by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params; // await the params
     await connectDB();
 
     const body: Partial<IClient> = await request.json();
@@ -43,11 +45,10 @@ export async function PUT(
     // Prevent updating _id
     delete body._id;
 
-    const client: IClient | null = await Client.findByIdAndUpdate(
-      params.id,
-      body,
-      { new: true, runValidators: true },
-    ).lean();
+    const client: IClient | null = await Client.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    }).lean();
 
     if (!client) {
       return NextResponse.json(
@@ -68,12 +69,13 @@ export async function PUT(
 // DELETE - remove a client by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params; // await the params
     await connectDB();
 
-    const client: IClient | null = await Client.findByIdAndDelete(params.id);
+    const client: IClient | null = await Client.findByIdAndDelete(id);
 
     if (!client) {
       return NextResponse.json(

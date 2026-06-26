@@ -1,6 +1,8 @@
+// app/admin/our_clients/page.tsx
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,141 +15,69 @@ import {
   ChevronLeft,
   ChevronRight,
   Edit,
+  Trash2,
+  X,
+  Upload,
+  Loader2,
 } from "lucide-react";
+import slugify from "@/utils/slugify";
+import uploadFiles from "@/helpers/upload.image";
 
 // Types
 interface Client {
-  id: number;
+  _id: string;
   companyName: string;
   companyLogo: string;
   clientName: string;
   clientEmail: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
-
-// Sample client data
-const initialClients: Client[] = [
-  {
-    id: 1,
-    companyName: "Samsung Electronics",
-    companyLogo: "https://picsum.photos/200/80?random=1",
-    clientName: "John Kim",
-    clientEmail: "john.kim@samsung.com",
-  },
-  {
-    id: 2,
-    companyName: "LG Corporation",
-    companyLogo: "https://picsum.photos/200/80?random=2",
-    clientName: "Sarah Park",
-    clientEmail: "sarah.park@lg.com",
-  },
-  {
-    id: 3,
-    companyName: "Sony Group",
-    companyLogo: "https://picsum.photos/200/80?random=3",
-    clientName: "Michael Tanaka",
-    clientEmail: "michael.tanaka@sony.com",
-  },
-  {
-    id: 4,
-    companyName: "Panasonic Holdings",
-    companyLogo: "https://picsum.photos/200/80?random=4",
-    clientName: "Emma Watanabe",
-    clientEmail: "emma.watanabe@panasonic.com",
-  },
-  {
-    id: 5,
-    companyName: "Toshiba Corporation",
-    companyLogo: "https://picsum.photos/200/80?random=5",
-    clientName: "David Sato",
-    clientEmail: "david.sato@toshiba.com",
-  },
-  {
-    id: 6,
-    companyName: "Hitachi Ltd",
-    companyLogo: "https://picsum.photos/200/80?random=6",
-    clientName: "Lisa Yamamoto",
-    clientEmail: "lisa.yamamoto@hitachi.com",
-  },
-  {
-    id: 7,
-    companyName: "Sharp Corporation",
-    companyLogo: "https://picsum.photos/200/80?random=7",
-    clientName: "Robert Suzuki",
-    clientEmail: "robert.suzuki@sharp.com",
-  },
-  {
-    id: 8,
-    companyName: "Philips International",
-    companyLogo: "https://picsum.photos/200/80?random=8",
-    clientName: "Maria Garcia",
-    clientEmail: "maria.garcia@philips.com",
-  },
-  {
-    id: 9,
-    companyName: "Nokia Corporation",
-    companyLogo: "https://picsum.photos/200/80?random=9",
-    clientName: "Johan Andersson",
-    clientEmail: "johan.andersson@nokia.com",
-  },
-  {
-    id: 10,
-    companyName: "Ericsson AB",
-    companyLogo: "https://picsum.photos/200/80?random=10",
-    clientName: "Erik Svensson",
-    clientEmail: "erik.svensson@ericsson.com",
-  },
-  {
-    id: 11,
-    companyName: "Motorola Solutions",
-    companyLogo: "https://picsum.photos/200/80?random=11",
-    clientName: "James Wilson",
-    clientEmail: "james.wilson@motorola.com",
-  },
-  {
-    id: 12,
-    companyName: "Huawei Technologies",
-    companyLogo: "https://picsum.photos/200/80?random=12",
-    clientName: "Wei Zhang",
-    clientEmail: "wei.zhang@huawei.com",
-  },
-  {
-    id: 13,
-    companyName: "Xiaomi Corporation",
-    companyLogo: "https://picsum.photos/200/80?random=13",
-    clientName: "Lei Chen",
-    clientEmail: "lei.chen@xiaomi.com",
-  },
-  {
-    id: 14,
-    companyName: "Oppo Mobile",
-    companyLogo: "https://picsum.photos/200/80?random=14",
-    clientName: "Ming Liu",
-    clientEmail: "ming.liu@oppo.com",
-  },
-  {
-    id: 15,
-    companyName: "Vivo Communication",
-    companyLogo: "https://picsum.photos/200/80?random=15",
-    clientName: "Hua Wang",
-    clientEmail: "hua.wang@vivo.com",
-  },
-  {
-    id: 16,
-    companyName: "OnePlus Technology",
-    companyLogo: "https://picsum.photos/200/80?random=16",
-    clientName: "Carl Pei",
-    clientEmail: "carl.pei@oneplus.com",
-  },
-];
 
 const ITEMS_PER_PAGE: number = 5;
 
 export default function ClientsPage() {
-  const [clients, setClients] = useState<Client[]>(initialClients);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
   const [copiedAll, setCopiedAll] = useState<boolean>(false);
+
+  // Edit modal states
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Client>>({});
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string>("");
+  const [editLoading, setEditLoading] = useState<boolean>(false);
+  const [editError, setEditError] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch clients from API
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await fetch("/api/Our-Client/admin");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to fetch clients");
+      }
+      const data = await res.json();
+      // Assuming response has data array
+      setClients(data.data || data);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
 
   // Filter clients based on search
   const filteredClients: Client[] = clients.filter(
@@ -163,7 +93,6 @@ export default function ClientsPage() {
   const endIndex: number = startIndex + ITEMS_PER_PAGE;
   const currentClients: Client[] = filteredClients.slice(startIndex, endIndex);
 
-  // Reset to first page when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -217,16 +146,172 @@ export default function ClientsPage() {
     document.body.removeChild(link);
   };
 
-  // Pagination controls
   const goToPage = (page: number): void => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
+  // ----- DELETE -----
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this client?")) return;
+    try {
+      const res = await fetch(`/api/Our-Client/admin/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Delete failed");
+      }
+      // Refresh list
+      await fetchClients();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // ----- EDIT -----
+  const openEditModal = (client: Client) => {
+    setEditingClient(client);
+    setEditFormData({
+      companyName: client.companyName,
+      companyLogo: client.companyLogo,
+      clientName: client.clientName,
+      clientEmail: client.clientEmail,
+    });
+    setEditImagePreview(client.companyLogo);
+    setEditImageFile(null);
+    setEditError("");
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingClient(null);
+    setEditFormData({});
+    setEditImagePreview("");
+    setEditImageFile(null);
+    setEditError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setEditError("Please select a valid image");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setEditError("Image size must be less than 5MB");
+        return;
+      }
+      setEditImageFile(file);
+      setEditImagePreview(URL.createObjectURL(file));
+      setEditError("");
+    }
+  };
+
+  const removeEditImage = () => {
+    setEditImageFile(null);
+    setEditImagePreview(editingClient?.companyLogo || "");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+
+    setEditLoading(true);
+    setEditError("");
+
+    const { companyName, clientName, clientEmail, companyLogo } = editFormData;
+    if (!companyName || !clientName || !clientEmail) {
+      setEditError("All fields are required");
+      setEditLoading(false);
+      return;
+    }
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(clientEmail)) {
+      setEditError("Invalid email format");
+      setEditLoading(false);
+      return;
+    }
+
+    try {
+      let logoUrl = companyLogo;
+
+      // If a new image was uploaded, upload it first
+      if (editImageFile) {
+        const uploadResult = await uploadFiles({
+          type: "single",
+          files: editImageFile,
+          slug: slugify(companyName || "client"),
+          api: "/api/upload/image",
+        });
+        logoUrl = uploadResult?.data?.url || uploadResult?.url;
+        if (!logoUrl) {
+          throw new Error("Image upload failed");
+        }
+      }
+
+      const payload = {
+        companyName,
+        companyLogo: logoUrl,
+        clientName,
+        clientEmail,
+      };
+
+      const res = await fetch(`/api/Our-Client/admin/${editingClient._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Update failed");
+      }
+
+      // Refresh list
+      await fetchClients();
+      closeEditModal();
+    } catch (err: any) {
+      setEditError(err.message);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="mt-4 text-gray-500">Loading clients...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <section className="min-h-screen py-4 md:py-6 bg-white">
       <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            ❌ {error}
+          </div>
+        )}
+
         {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -235,7 +320,7 @@ export default function ClientsPage() {
           className="flex flex-wrap items-center gap-2 md:gap-3 mb-4 md:mb-6"
         >
           <Link
-            href="/clients/add"
+            href="/admin/our_clients/add"
             className="inline-flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-primary hover:bg-primary-hover text-white text-xs md:text-sm font-semibold rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
           >
             <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -310,7 +395,7 @@ export default function ClientsPage() {
                 {currentClients.length > 0 ? (
                   currentClients.map((client: Client, index: number) => (
                     <motion.tr
-                      key={client.id}
+                      key={client._id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
@@ -357,13 +442,22 @@ export default function ClientsPage() {
                         </div>
                       </td>
                       <td className="px-3 md:px-5 py-3 md:py-4">
-                        <Link
-                          href={`/clients/edit/${client.id}`}
-                          className="inline-flex items-center gap-1 text-primary hover:text-primary-hover text-sm font-medium transition-colors"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                          <span>Edit</span>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => openEditModal(client)}
+                            className="inline-flex items-center gap-1 text-primary hover:text-primary-hover text-sm font-medium transition-colors"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(client._id)}
+                            className="inline-flex items-center gap-1 text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
                       </td>
                     </motion.tr>
                   ))
@@ -442,6 +536,154 @@ export default function ClientsPage() {
           <span>Total Clients: {clients.length}</span>
         </motion.div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editingClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 md:p-8"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                Edit Client
+              </h2>
+              <button
+                onClick={closeEditModal}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            {editError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                ❌ {editError}
+              </div>
+            )}
+
+            <form onSubmit={handleEditSubmit} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  value={editFormData.companyName || ""}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Logo <span className="text-red-500">*</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-lg border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                    {editImagePreview ? (
+                      <Image
+                        src={editImagePreview}
+                        alt="Logo preview"
+                        width={64}
+                        height={64}
+                        className="object-contain w-full h-full"
+                      />
+                    ) : (
+                      <Upload className="w-6 h-6 text-gray-400" />
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditImageChange}
+                      className="hidden"
+                      id="edit-logo-upload"
+                    />
+                    <label
+                      htmlFor="edit-logo-upload"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium rounded-lg border border-gray-200 cursor-pointer transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                      <span>Change Image</span>
+                    </label>
+                    {editImageFile && (
+                      <button
+                        type="button"
+                        onClick={removeEditImage}
+                        className="ml-2 text-sm text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      JPG, PNG, SVG (max 5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="clientName"
+                  value={editFormData.clientName || ""}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="clientEmail"
+                  value={editFormData.clientEmail || ""}
+                  onChange={handleEditChange}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="flex-1 px-6 py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg shadow-lg shadow-primary/20 hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {editLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </section>
   );
 }
