@@ -59,9 +59,9 @@ const PortfolioSchema = new Schema(
 
     // DESIGN PROCESS
     process: {
-      rendersImages: [ImageSchema],
-      realImages: [ImageSchema],
-      moodboardImages: [ImageSchema],
+      rendersImages: [{ url: String, publicId: String }],
+      realImages: [{ url: String, publicId: String }],
+      moodboardImages: [{ url: String, publicId: String }],
       processText: {
         type: String,
         trim: true,
@@ -84,7 +84,7 @@ const PortfolioSchema = new Schema(
       engagement: { type: String, trim: true },
       testimonial: { type: String, trim: true },
       clientName: { type: String, trim: true },
-      clientImage: ImageSchema,
+      clientImage: { url: String, publicId: String },
     },
 
     // SEO
