@@ -107,7 +107,7 @@ const TagInput = ({
       setInput("");
     }
   };
-  const removeTag = (tag: string) => setTags(tags.filter((t) => t !== tag));
+  const removeTag = (tag: string) => setTags(tags.filter((t: string) => t !== tag));
   return (
     <div>
       <div className="flex gap-2">
@@ -159,7 +159,7 @@ const CheckboxGroup = ({ label, options, selected, setSelected }: any) => {
   const [customInput, setCustomInput] = useState("");
   const toggleOption = (o: string) =>
     selected.includes(o)
-      ? setSelected(selected.filter((s) => s !== o))
+      ? setSelected(selected.filter((s: string) => s !== o))
       : setSelected([...selected, o]);
   const addCustomItem = () => {
     const t = customInput.trim();

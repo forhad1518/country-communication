@@ -113,9 +113,13 @@ export async function POST(req: NextRequest) {
       objective: body.objective || "",
       challenges: body.challenges || "",
       process: {
-        rendersImages: body.process?.rendersImages || [],
-        realImages: body.process?.realImages || [],
-        moodboardImages: body.process?.moodboardImages || [],
+        rendersImages: body.process?.rendersImages || [
+          { url: "", publicId: "" },
+        ],
+        realImages: body.process?.realImages || [{ url: "", publicId: "" }],
+        moodboardImages: body.process?.moodboardImages || [
+          { url: "", publicId: "" },
+        ],
         processText: body.process?.processText || "",
       },
       materials: body.materials || [],
