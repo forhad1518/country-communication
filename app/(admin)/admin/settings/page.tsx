@@ -56,24 +56,6 @@ type OfficeInfoType = {
   officeHours: { days: string; hours: string }[];
 };
 
-type ExhibitionEventType = {
-  running: {
-    exhibitionName: string;
-    location: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    isActive: boolean;
-  };
-  next: {
-    exhibitionName: string;
-    location: string;
-    description: string;
-    startDate: string;
-    endDate: string;
-    isActive: boolean;
-  };
-};
 
 // Toast Component
 const Toast = ({
@@ -140,26 +122,6 @@ export default function SettingsPage() {
   });
   const [officeSaving, setOfficeSaving] = useState(false);
 
-  // ===== EXHIBITION EVENT STATE =====
-  const [exhibitionEvent, setExhibitionEvent] = useState<ExhibitionEventType>({
-    running: {
-      exhibitionName: "",
-      location: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      isActive: true,
-    },
-    next: {
-      exhibitionName: "",
-      location: "",
-      description: "",
-      startDate: "",
-      endDate: "",
-      isActive: true,
-    },
-  });
-  const [eventSaving, setEventSaving] = useState(false);
 
   // ===== PASSWORD STATE =====
   const [passwordForm, setPasswordForm] = useState({
@@ -181,7 +143,6 @@ export default function SettingsPage() {
     fetchSliders();
     fetchContactInfo();
     fetchOfficeInfo();
-    fetchExhibitionEvents();
   }, []);
 
   // ===== SLIDER API =====
@@ -346,64 +307,6 @@ export default function SettingsPage() {
       officeHours: prev.officeHours.filter((_, i) => i !== index),
     }));
 
-  // ===== EXHIBITION EVENT API =====
-  const fetchExhibitionEvents = async () => {
-    try {
-      const res = await axios.get("/api/exhibition-event");
-      if (res.data.data) {
-        setExhibitionEvent({
-          running: {
-            exhibitionName: res.data.data.running?.exhibitionName || "",
-            location: res.data.data.running?.location || "",
-            description: res.data.data.running?.description || "",
-            startDate: res.data.data.running?.startDate
-              ? res.data.data.running.startDate.split("T")[0]
-              : "",
-            endDate: res.data.data.running?.endDate
-              ? res.data.data.running.endDate.split("T")[0]
-              : "",
-            isActive:
-              res.data.data.running?.isActive !== undefined
-                ? res.data.data.running.isActive
-                : true,
-          },
-          next: {
-            exhibitionName: res.data.data.next?.exhibitionName || "",
-            location: res.data.data.next?.location || "",
-            description: res.data.data.next?.description || "",
-            startDate: res.data.data.next?.startDate
-              ? res.data.data.next.startDate.split("T")[0]
-              : "",
-            endDate: res.data.data.next?.endDate
-              ? res.data.data.next.endDate.split("T")[0]
-              : "",
-            isActive:
-              res.data.data.next?.isActive !== undefined
-                ? res.data.data.next.isActive
-                : true,
-          },
-        });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleSaveEvents = async () => {
-    setEventSaving(true);
-    try {
-      await axios.put("/api/exhibition-event", exhibitionEvent);
-      setToast({ message: "Events saved!", type: "success" });
-    } catch (err: any) {
-      setToast({
-        message: err.response?.data?.error || "Failed to save",
-        type: "error",
-      });
-    } finally {
-      setEventSaving(false);
-    }
-  };
-
   // ===== PASSWORD API =====
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -446,7 +349,6 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: "slider", label: "Hero Slider", icon: ImageIcon },
-    { id: "events", label: "Events", icon: Calendar },
     { id: "contact", label: "Contact Info", icon: Phone },
     { id: "office", label: "Office Info", icon: Building2 },
     { id: "password", label: "Password", icon: Lock },
@@ -606,168 +508,6 @@ export default function SettingsPage() {
                   </div>
                 ))
               )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* ===== EVENTS ===== */}
-        {activeTab === "events" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="space-y-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Exhibition Events
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Manage running & next events
-                </p>
-              </div>
-              <button
-                onClick={handleSaveEvents}
-                disabled={eventSaving}
-                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm cursor-pointer disabled:opacity-50"
-              >
-                {eventSaving ? (
-                  "Saving..."
-                ) : (
-                  <>
-                    <Save className="w-4 h-4 inline mr-1" /> Save
-                  </>
-                )}
-              </button>
-            </div>
-            <div className="border rounded-xl p-5 space-y-3">
-              <h4 className="font-semibold text-gray-700">Running Event</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={exhibitionEvent.running.exhibitionName}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      running: {
-                        ...prev.running,
-                        exhibitionName: e.target.value,
-                      },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={exhibitionEvent.running.location}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      running: { ...prev.running, location: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={exhibitionEvent.running.startDate}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      running: { ...prev.running, startDate: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={exhibitionEvent.running.endDate}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      running: { ...prev.running, endDate: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-              </div>
-              <textarea
-                placeholder="Description"
-                value={exhibitionEvent.running.description}
-                onChange={(e) =>
-                  setExhibitionEvent((prev) => ({
-                    ...prev,
-                    running: { ...prev.running, description: e.target.value },
-                  }))
-                }
-                rows={2}
-                className="w-full border rounded px-3 py-2 text-sm resize-none"
-              />
-            </div>
-            <div className="border rounded-xl p-5 space-y-3">
-              <h4 className="font-semibold text-gray-700">Next Event</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={exhibitionEvent.next.exhibitionName}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      next: { ...prev.next, exhibitionName: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={exhibitionEvent.next.location}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      next: { ...prev.next, location: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={exhibitionEvent.next.startDate}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      next: { ...prev.next, startDate: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <input
-                  type="date"
-                  value={exhibitionEvent.next.endDate}
-                  onChange={(e) =>
-                    setExhibitionEvent((prev) => ({
-                      ...prev,
-                      next: { ...prev.next, endDate: e.target.value },
-                    }))
-                  }
-                  className="border rounded px-3 py-2 text-sm"
-                />
-              </div>
-              <textarea
-                placeholder="Description"
-                value={exhibitionEvent.next.description}
-                onChange={(e) =>
-                  setExhibitionEvent((prev) => ({
-                    ...prev,
-                    next: { ...prev.next, description: e.target.value },
-                  }))
-                }
-                rows={2}
-                className="w-full border rounded px-3 py-2 text-sm resize-none"
-              />
             </div>
           </motion.div>
         )}
