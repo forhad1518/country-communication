@@ -13,6 +13,14 @@ const exhibitionSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
   logo: {
     url: {
       type: String,
@@ -28,5 +36,6 @@ const exhibitionSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
 export default mongoose.models.Exhibition ||
   mongoose.model("Exhibition", exhibitionSchema);

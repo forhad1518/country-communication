@@ -1,5 +1,4 @@
 "use server";
-import axios from "axios";
 import connectDB from "@/config/connectDB";
 import {
   createExhibition,
@@ -13,6 +12,7 @@ export async function POST(request) {
   await connectDB();
   try {
     const body = await request.json();
+    // body already contains startDate and endDate from the frontend
     const data = await createExhibition(body);
     return successResponse(data);
   } catch (error) {
@@ -30,10 +30,11 @@ export async function GET() {
   }
 }
 
-export async function PUT(data) {
+export async function PUT(request) {
   await connectDB();
   try {
-    const { id, ...updateData } = await data.json();
+    const body = await request.json();
+    const { id, ...updateData } = body; // updateData includes startDate, endDate
     const updatedExhibition = await updateExhibition(id, updateData);
     return successResponse(updatedExhibition);
   } catch (error) {

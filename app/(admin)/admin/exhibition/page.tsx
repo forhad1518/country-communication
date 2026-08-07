@@ -38,6 +38,8 @@ type Exhibition = {
   exhibitionName: string;
   location: string;
   description: string;
+  startDate: string;
+  endDate: string;
   logo: {
     url: string;
     publicId: string;
@@ -256,6 +258,8 @@ const EditModal = ({
     exhibitionName: "",
     location: "",
     description: "",
+    startDate: "",
+    endDate: "",
   });
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [removeImage, setRemoveImage] = useState(false);
@@ -267,6 +271,8 @@ const EditModal = ({
         exhibitionName: item.exhibitionName,
         location: item.location,
         description: item.description,
+        startDate: item.startDate?.split("T")[0] || "",
+        endDate: item.endDate?.split("T")[0] || "",
       });
       setNewImageFile(null);
       setRemoveImage(false);
@@ -278,7 +284,6 @@ const EditModal = ({
       setNewImageFile(file);
       setRemoveImage(false);
     } else {
-      // User wants to remove image
       setNewImageFile(null);
       setRemoveImage(true);
     }
@@ -390,6 +395,44 @@ const EditModal = ({
                 />
               </div>
 
+              {/* Date fields */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
+                    }
+                    required
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        endDate: e.target.value,
+                      }))
+                    }
+                    required
+                    className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  />
+                </div>
+              </div>
+
               {/* Image Upload in Edit Modal */}
               <ImageUpload
                 label="Logo"
@@ -460,6 +503,8 @@ export default function ExhibitionPage() {
     exhibitionName: "",
     location: "",
     description: "",
+    startDate: "",
+    endDate: "",
   });
   const [addImageFile, setAddImageFile] = useState<File | null>(null);
   const [addImagePreview, setAddImagePreview] = useState<string | null>(null);
@@ -544,6 +589,8 @@ export default function ExhibitionPage() {
       exhibitionName,
       location,
       description,
+      startDate,
+      endDate,
       newImageFile,
       removeImage,
       oldPublicId,
@@ -585,6 +632,8 @@ export default function ExhibitionPage() {
         exhibitionName,
         location,
         description,
+        startDate,
+        endDate,
         logo: logoData,
       };
 
@@ -636,6 +685,8 @@ export default function ExhibitionPage() {
         exhibitionName: addFormData.exhibitionName,
         location: addFormData.location,
         description: addFormData.description,
+        startDate: addFormData.startDate,
+        endDate: addFormData.endDate,
         logo: uploadedLogo,
       };
 
@@ -643,7 +694,13 @@ export default function ExhibitionPage() {
       setData((prev) => [...prev, response.data.data]);
 
       // Reset form
-      setAddFormData({ exhibitionName: "", location: "", description: "" });
+      setAddFormData({
+        exhibitionName: "",
+        location: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+      });
       setAddImageFile(null);
       setAddImagePreview(null);
       setShowForm(false);
@@ -654,6 +711,17 @@ export default function ExhibitionPage() {
     } finally {
       setSkeletonLoading(false);
     }
+  };
+
+  // Helper to format date (YYYY-MM-DD → readable)
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "—";
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -746,6 +814,34 @@ export default function ExhibitionPage() {
                   className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
                 />
 
+                {/* Date inputs */}
+                <input
+                  type="date"
+                  placeholder="Start Date"
+                  required
+                  value={addFormData.startDate}
+                  onChange={(e) =>
+                    setAddFormData((prev) => ({
+                      ...prev,
+                      startDate: e.target.value,
+                    }))
+                  }
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+                <input
+                  type="date"
+                  placeholder="End Date"
+                  required
+                  value={addFormData.endDate}
+                  onChange={(e) =>
+                    setAddFormData((prev) => ({
+                      ...prev,
+                      endDate: e.target.value,
+                    }))
+                  }
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                />
+
                 <input
                   type="text"
                   placeholder="Description"
@@ -757,11 +853,11 @@ export default function ExhibitionPage() {
                       description: e.target.value,
                     }))
                   }
-                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none"
+                  className="border p-3 rounded-lg focus:ring-2 focus:ring-primary outline-none md:col-span-2"
                 />
 
                 {/* Image Upload in Add Form */}
-                <div>
+                <div className="md:col-span-2">
                   <ImageUpload
                     label="Upload Logo"
                     value={
@@ -789,7 +885,7 @@ export default function ExhibitionPage() {
       {/* Loading State for Form Submission */}
       {skeletonLoading && <SubmitLoading />}
 
-      {/* Table (Same as before) */}
+      {/* Table */}
       <div className="bg-white p-5 md:p-6 rounded-xl shadow-sm border">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
           <h2 className="text-lg font-semibold text-gray-700">
@@ -859,6 +955,10 @@ export default function ExhibitionPage() {
                       <MapPin className="w-3 h-3" />
                       {item.location}
                     </p>
+                    <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatDate(item.startDate)} → {formatDate(item.endDate)}
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
@@ -895,6 +995,7 @@ export default function ExhibitionPage() {
                   <th className="w-24">Image</th>
                   <th>Name</th>
                   <th>Location</th>
+                  <th>Date</th>
                   <th>Description</th>
                   <th className="text-center w-32">Actions</th>
                 </tr>
@@ -902,7 +1003,7 @@ export default function ExhibitionPage() {
               <tbody>
                 {filteredData.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center">
+                    <td colSpan={7} className="py-12 text-center">
                       <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                       <p className="text-gray-500">No exhibitions found</p>
                       {searchTerm && (
@@ -938,6 +1039,13 @@ export default function ExhibitionPage() {
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-gray-400" />
                           {item.location}
+                        </span>
+                      </td>
+                      <td className="text-gray-600 text-sm">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                          {formatDate(item.startDate)} →{" "}
+                          {formatDate(item.endDate)}
                         </span>
                       </td>
                       <td className="text-gray-600 max-w-xs truncate">
