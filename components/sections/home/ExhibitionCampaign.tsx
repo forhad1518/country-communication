@@ -237,7 +237,7 @@ export default function ExhibitionCampaign() {
                 </span>
               </div>
               <div className="mt-auto pt-6 flex justify-center">
-                <Link href="/contact">
+                <Link href={`/portfolio?exhibition=${encodeURIComponent(running[0].exhibitionName)}`}>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
