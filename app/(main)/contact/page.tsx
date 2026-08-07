@@ -255,7 +255,7 @@ export default function ContactPage() {
   const socialLinks = [
     {
       platform: "Facebook",
-      url: "https://facebook.com/countrycommunication",
+      url: "https://www.facebook.com/countrycommunicaton",
       icon: <FacebookIcon />,
     },
     {

@@ -50,7 +50,7 @@ export default function Offer_service() {
   const fetchExhibitions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/api/exhibition");
+      const res = await axios.get("/api/exhibition/forHome");
       const data = res.data.data || [];
       setServices(data);
     } catch (error) {

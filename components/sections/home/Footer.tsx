@@ -75,7 +75,7 @@ const SocialIcon = ({ platform }: { platform: string }) => {
 const socialLinks = [
   {
     name: "Facebook",
-    href: "https://facebook.com/countrycommunication",
+    href: "https://www.facebook.com/countrycommunicaton",
     platform: "facebook",
     hoverColor: "hover:text-[#1877F2] hover:bg-[#1877F2]/10",
   },

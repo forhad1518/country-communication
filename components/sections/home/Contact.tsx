@@ -209,7 +209,7 @@ export default function Contact() {
   const socialLinks = [
     {
       platform: "Facebook",
-      url: "https://facebook.com/countrycommunication",
+      url: "https://www.facebook.com/countrycommunicaton",
       icon: <FacebookIcon />,
     },
     {
