@@ -12,29 +12,29 @@ import OurClients from "@/components/ValuableClient";
 
 export default function Home() {
   return (
-    <main className="">
+    <main >
       {/* Our Services Section */}
-      <div className="">
+      <div >
         <TripleSlider />
       </div>
-      <div className="">
+      <div >
         <Offer_service />
       </div>
       {/* About Us Section */}
-      <div className="">
+      <div >
         <Our_services />
       </div>
       {/* WorkFLow Section */}
-      <div className="">
+      <div >
         <Workflow />
       </div>
       {/* Working process */}
       {/* next exhibition */}
-      <div className="">
+      <div >
         <ExhibitionCampaign />
       </div>
       {/* next exhibition */}
-      <div className="">
+      <div >
         <OurClients />
       </div>
       {/* Contact Section */}
