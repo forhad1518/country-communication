@@ -14,6 +14,8 @@ import {
   Eye,
   X,
   Heart,
+  MapPin,
+  Calendar,
 } from "lucide-react";
 import Heading1 from "@/components/Heading1";
 
@@ -51,7 +53,32 @@ type Exhibition = {
   _id: string;
   exhibitionName: string;
   location: string;
+  description?: string;
+  startDate?: string;
+  endDate?: string;
   logo?: { url: string; publicId: string };
+};
+
+// Helper: Format date range
+const formatDateRange = (start?: string, end?: string): string => {
+  if (!start && !end) return "";
+  const s = start ? new Date(start) : null;
+  const e = end ? new Date(end) : null;
+  const startStr = s
+    ? s.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "?";
+  const endStr = e
+    ? e.toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "?";
+  return `${startStr} – ${endStr}`;
 };
 
 // Helper: Get thumbnail
@@ -276,33 +303,75 @@ export default function Portfolio() {
         >
           {selectedExhibition !== "All" && activeExhibition && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-3 px-5 py-3 bg-primary/10 border border-primary/20 rounded-2xl mb-6"
+              transition={{ duration: 0.5 }}
+              className="relative mb-8 bg-linear-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 md:p-8 overflow-hidden"
             >
-              {activeExhibition.logo?.url && (
-                <Image
-                  src={activeExhibition.logo.url}
-                  alt={activeExhibition.exhibitionName}
-                  width={40}
-                  height={40}
-                  className="rounded-lg object-contain bg-white p-1"
-                />
-              )}
-              <div className="text-left">
-                <p className="text-white font-semibold text-sm">
-                  {activeExhibition.exhibitionName}
-                </p>
-                <p className="text-gray-400 text-xs">
-                  {activeExhibition.location}
-                </p>
+              {/* Background glow effect for logo */}
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-pulse animation-delay-2000" />
               </div>
-              <button
-                onClick={() => setSelectedExhibition("All")}
-                className="ml-2 p-1.5 hover:bg-red-500/20 rounded-lg transition"
-              >
-                <X className="w-4 h-4 text-gray-400 hover:text-red-400" />
-              </button>
+
+              <div className="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                {/* Logo with glow */}
+                <div className="relative shrink-0">
+                  <div className="absolute inset-0 bg-linear-to-br from-primary/30 to-accent/30 rounded-2xl blur-xl animate-pulse" />
+                  <div className="relative w-24 h-24 md:w-32 md:h-32 bg-white backdrop-blur rounded-2xl p-3 border border-white/20 shadow-2xl flex items-center justify-center">
+                    {activeExhibition.logo?.url ? (
+                      <Image
+                        src={activeExhibition.logo.url}
+                        alt={activeExhibition.exhibitionName}
+                        fill
+                        className="object-contain p-3"
+                      />
+                    ) : (
+                      <span className="text-4xl">🏢</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Exhibition Details */}
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                    <span className="px-3 py-1 text-xs font-semibold text-primary bg-primary/10 rounded-full border border-primary/20">
+                      EXHIBITION
+                    </span>
+                    <button
+                      onClick={() => setSelectedExhibition("All")}
+                      className="p-1.5 hover:bg-red-500/20 rounded-lg transition group"
+                      title="Clear filter"
+                    >
+                      <X className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-colors" />
+                    </button>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                    {activeExhibition.exhibitionName}
+                  </h2>
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm text-gray-300 mb-3">
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-emerald-400" />
+                      {activeExhibition.location}
+                    </span>
+                    {(activeExhibition.startDate ||
+                      activeExhibition.endDate) && (
+                      <span className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-400" />
+                        {formatDateRange(
+                          activeExhibition.startDate,
+                          activeExhibition.endDate,
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  {activeExhibition.description && (
+                    <p className="text-gray-400 text-sm text-justify leading-relaxed">
+                      {activeExhibition.description}
+                    </p>
+                  )}
+                </div>
+              </div>
             </motion.div>
           )}
           <Heading1 text="Our Portfolio" />
