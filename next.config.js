@@ -1,5 +1,5 @@
 module.exports = {
-    allowedDevOrigins: ['172.30.130.146',"10.21.173.146", "https://country-communication.vercel.app", "10.204.87.146", "https://countrycommu.com", "http://countrycommu.com"],
+    allowedDevOrigins: ["https://country-communication.vercel.app", "https://countrycommu.com", "http://countrycommu.com"],
     images: {
         remotePatterns: [
             {
