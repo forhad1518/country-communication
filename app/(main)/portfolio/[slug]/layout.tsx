@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
   try {
-    const res = await fetch(`/api/portfolio/${slug}`, {
+    const res = await fetch(`${baseUrl}/api/portfolio/${slug}`, {
       next: { revalidate: 3600 }, // ISR: revalidate every hour
     });
     const data = await res.json();
