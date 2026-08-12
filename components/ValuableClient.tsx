@@ -109,7 +109,7 @@ export default function OurClients() {
             {row1Logos.map((client, index) => (
               <div
                 key={`${client._id}-${index}`}
-                className="relative shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
+                className="relative shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 transition-all duration-300 group"
               >
                 <div className="relative w-full h-full">
                   <Image
@@ -150,7 +150,7 @@ export default function OurClients() {
             {row2Logos.map((client, index) => (
               <div
                 key={`${client._id}-${index}`}
-                className="relative shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 hover:bg-white/5 transition-all duration-300 group"
+                className="relative shrink-0 w-32 sm:w-40 md:w-44 lg:w-48 h-16 sm:h-18 md:h-20 bg-white backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/5 flex items-center justify-center p-2 sm:p-3 hover:border-white/20 transition-all duration-300 group"
               >
                 <div className="relative w-full h-full">
                   <Image
