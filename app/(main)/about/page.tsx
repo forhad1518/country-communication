@@ -3,7 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import logo from "@/public/logo_COCO.png"
+import heroImage from "@/public/images/about/trina solar 24.jpg"
 import {
   ArrowRight,
   CheckCircle,
@@ -47,46 +47,6 @@ const companyStats = [
     color: "text-primary",
   },
   { icon: Users, value: "200+", label: "Team Members", color: "text-accent" },
-];
-
-// Timeline Data
-const timelineData = [
-  {
-    year: "2010",
-    title: "The Beginning",
-    description:
-      "Country Communication established in Dhaka, Bangladesh with a vision to revolutionize exhibition booth design.",
-  },
-  {
-    year: "2013",
-    title: "Expansion Phase",
-    description:
-      "Expanded operations to major cities across Bangladesh. Built first 200 sqm mega booth at Dhaka International Trade Fair.",
-  },
-  {
-    year: "2015",
-    title: "Going Global",
-    description:
-      "First international project in Dubai. Started serving clients across Middle East and Southeast Asia.",
-  },
-  {
-    year: "2018",
-    title: "Innovation Hub",
-    description:
-      "Launched in-house manufacturing facility with advanced CNC machines, 3D printers, and state-of-the-art production line.",
-  },
-  {
-    year: "2020",
-    title: "Digital Transformation",
-    description:
-      "Introduced VR booth preview, 3D walkthrough, and virtual exhibition solutions during global pandemic.",
-  },
-  {
-    year: "2024",
-    title: "Industry Leader",
-    description:
-      "Recognized as Bangladesh's #1 exhibition booth design company. Served 500+ clients across 15+ countries.",
-  },
 ];
 
 // Team Members
@@ -318,11 +278,9 @@ export default function AboutPage() {
                   </h1>
 
                   <p className="text-gray-400 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
-                    Country Communication is Bangladesh's premier exhibition
-                    booth design and management company. With over a decade of
-                    experience, we transform your brand vision into stunning,
-                    engagement-driven exhibition spaces that captivate audiences
-                    and deliver results.
+                    Country Communication creates exhibition stands, event environments, interior experiences, and brand activations
+                    that help organizations show up with clarity and confidence. From the first idea to on-site delivery, we combine
+                    thoughtful design, practical planning, and detail-focused execution.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4">
@@ -343,7 +301,7 @@ export default function AboutPage() {
                         whileTap={{ scale: 0.95 }}
                         className="px-8 py-4 border border-white/30 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300"
                       >
-                        Get In Touch
+                        Get Free Booth Design
                       </motion.button>
                     </Link>
                   </div>
@@ -359,7 +317,7 @@ export default function AboutPage() {
               >
                 <div className="relative h-100 md:h-125 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
                   <Image
-                    src="https://picsum.photos/800/600?booth"
+                    src={heroImage}
                     alt="Country Communication Exhibition Booth"
                     fill
                     className="object-cover"
@@ -374,7 +332,7 @@ export default function AboutPage() {
                   transition={{ delay: 0.8 }}
                   className="absolute -bottom-6 -left-6 bg-linear-to-r from-primary to-primary-hover text-white px-6 py-4 rounded-2xl shadow-2xl"
                 >
-                  <div className="text-3xl font-bold">500+</div>
+                  <div className="text-3xl font-bold">1000+</div>
                   <div className="text-sm opacity-90">Booths Delivered</div>
                 </motion.div>
               </motion.div>
@@ -628,31 +586,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ===== OUR JOURNEY ===== */}
-        <section className="py-20 md:py-28">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <span className="text-accent text-sm font-medium">
-                Our Journey
-              </span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
-                From Dhaka to the World
-              </h2>
-            </motion.div>
-
-            <div className="max-w-3xl mx-auto">
-              {timelineData.map((item, i) => (
-                <TimelineItem key={i} {...item} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ===== TESTIMONIAL ===== */}
         <section className="py-20 bg-linear-to-b from-transparent via-accent/5 to-transparent">
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
@@ -724,11 +657,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-                Ready to Build Your{" "}
-                <span className="bg-linear-to-r from-primary-light to-accent bg-clip-text text-transparent">
-                  Dream Booth
-                </span>
-                ?
+                Ready to Build Your Dream Booth?
               </h2>
               <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto">
                 Let's create an exhibition experience that captivates your

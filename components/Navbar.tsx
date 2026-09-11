@@ -32,7 +32,6 @@ const navLinks: NavLink[] = [
     { href: "/services", label: "Services" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
-    { href: "/contact", label: "Contact" }
 ];
 
 export default function Navbar() {
