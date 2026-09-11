@@ -27,10 +27,12 @@ const navLinks: NavLink[] = [
     //         { href: "/services/interior", label: "Interior Design" },
     //     ]
     // },
+    { href: "/about", label: "About Us" },
     { href: "/exhibitions", label: "Exhibitions" },
+    { href: "/services", label: "Services" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
-    {href: "/contact", label: "Contact"}
+    { href: "/contact", label: "Contact" }
 ];
 
 export default function Navbar() {
