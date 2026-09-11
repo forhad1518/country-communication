@@ -30,23 +30,23 @@ import {
 const companyStats = [
   {
     icon: Building2,
-    value: "500+",
+    value: "1000+",
     label: "Booths Delivered",
     color: "text-primary",
   },
   {
     icon: Globe,
-    value: "15+",
+    value: "10+",
     label: "Countries Served",
     color: "text-accent",
   },
   {
     icon: Award,
-    value: "50+",
+    value: "10+",
     label: "Industry Awards",
     color: "text-primary",
   },
-  { icon: Users, value: "200+", label: "Team Members", color: "text-accent" },
+  { icon: Users, value: "50+", label: "Team Members", color: "text-accent" },
 ];
 
 // Team Members
@@ -277,7 +277,7 @@ export default function AboutPage() {
                     </span>
                   </h1>
 
-                  <p className="text-gray-400 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
+                  <p className="text-gray-400 text-base md:text-lg mb-8 max-w-xl text-justify leading-relaxed">
                     Country Communication creates exhibition stands, event environments, interior experiences, and brand activations
                     that help organizations show up with clarity and confidence. From the first idea to on-site delivery, we combine
                     thoughtful design, practical planning, and detail-focused execution.
@@ -341,7 +341,7 @@ export default function AboutPage() {
         </section>
 
         {/* ===== COMPANY STATS ===== */}
-        <section className="py-16 border-t border-white/10">
+        <section className="py-16 border-y border-white/10">
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {companyStats.map((stat, i) => (
@@ -410,36 +410,27 @@ export default function AboutPage() {
                   Who We Are
                 </span>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2 mb-6">
-                  Bangladesh's Most Trusted Exhibition Partner
+                  A Partner for Exhibition and Brand Experiences
                 </h2>
 
-                <div className="space-y-4 text-gray-400 leading-relaxed">
+                <div className="space-y-4 text-gray-400 leading-relaxed text-justify">
                   <p>
-                    Country Communication started its journey in 2010 with a
-                    simple mission: to help Bangladeshi brands shine on the
-                    global stage. Today, we are the country's largest exhibition
-                    booth design and management company.
+                    Country Communication works with brands and event teams to turn ideas into purposeful physical environments.
+                    Our approach connects brand understanding, visitor flow, material choices, and project coordination so every
+                    space is engaging, functional, and ready for the show floor.
                   </p>
                   <p>
-                    Our 50,000 sqft state-of-the-art manufacturing facility in
-                    Dhaka is equipped with the latest CNC machines, 3D printers,
-                    metal fabrication units, and large-format printing
-                    technology.
-                  </p>
-                  <p>
-                    From conceptual 3D design to on-site installation and
-                    dismantling, we handle every aspect of your exhibition
-                    presence. Our in-house team of designers, engineers,
-                    carpenters, and project managers ensures seamless execution.
+                    Whether the brief is an exhibition stand, event environment, interior installation, or brand activation, we focus on
+                    clear communication, reliable delivery, and details that support your objectives.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mt-8">
                   {[
-                    "In-house Manufacturing",
-                    "3D Design & Visualization",
-                    "Global Logistics Support",
-                    "On-site Installation",
+                    "Design and Visualization",
+                    "Project Coordination",
+                    "Graphics and Brand Application",
+                    "On-site Delivery",
                   ].map((item, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-accent shrink-0" />
