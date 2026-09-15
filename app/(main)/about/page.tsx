@@ -1,9 +1,13 @@
 "use client"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import heroImage from "@/public/images/about/trina solar 24.jpg"
+import hero1 from "@/public/images/about/hero1.jpeg"
+import hero2 from "@/public/images/about/hero2.jpeg"
+import hero3 from "@/public/images/about/hero3.jpeg"
+import hero4 from "@/public/images/about/hero4.jpeg"
 import {
   ArrowRight,
   CheckCircle,
@@ -25,6 +29,8 @@ import {
   Eye,
   Heart,
 } from "lucide-react";
+import axios from "axios";
+import OurClients from "@/components/ValuableClientAbout";
 
 // Stats Data
 const companyStats = [
@@ -81,55 +87,55 @@ const teamMembers = [
 const coreValues = [
   {
     icon: Target,
-    title: "Precision Engineering",
+    title: "Design with Purpose",
     description:
-      "Every booth is crafted with millimeter-perfect precision using advanced CNC machinery and skilled craftsmanship.",
+      "We shape every space around the brand, audience, venue, and outcome that matter most.",
   },
   {
     icon: Palette,
-    title: "Creative Excellence",
+    title: "Plan for Delivery",
     description:
-      "Our award-winning design team creates unique, brand-focused concepts that make your booth stand out.",
+      "Creative ideas become stronger when materials, timelines, and on-site realities are considered early.",
   },
   {
     icon: Heart,
-    title: "Client Partnership",
+    title: "Work as Partners",
     description:
-      "We don't just build booths — we build relationships. Your success is our success.",
+      "We collaborate closely, communicate clearly, and keep the project moving from brief to build.",
   },
   {
     icon: Eye,
-    title: "Attention to Detail",
+    title: "Care About the Details",
     description:
-      "From the smallest screw to the largest display, every element undergoes rigorous quality checks.",
+      "From visitor flow to finishing touches, we focus on the elements that make a space feel complete.",
   },
 ];
 
 // Manufacturing Facilities
 const manufacturingData = [
   {
-    title: "CNC Machine Workshop",
+    title: "Design and Visualization",
     image: "https://picsum.photos/400/300?cnc",
     description:
-      "3-axis and 5-axis CNC routers for precise cutting of wood, acrylic, and aluminum composite panels.",
+      "Translate objectives into spatial concepts, layouts, and visual direction before production begins.",
   },
   {
-    title: "Metal Fabrication Unit",
+    title: "Production and Finishing",
     image: "https://picsum.photos/400/300?metal",
     description:
-      "Complete metal workshop with welding, bending, and powder coating facilities for structural components.",
+      "Select structures, materials, and finishes that support the intended brand expression and practical use.",
   },
   {
-    title: "Printing & Graphics Studio",
+    title: "Graphics and Brand Application",
     image: "https://picsum.photos/400/300?printing",
     description:
-      "Large format UV printing, fabric printing, and vinyl cutting for vibrant booth graphics.",
+      "Apply messaging, signage, and visual details consistently across the visitor journey.",
   },
   {
-    title: "Assembly & Testing Area",
+    title: "Installation and Quality Check",
     image: "https://picsum.photos/400/300?assembly",
     description:
-      "Pre-assembly area where every booth is fully set up and tested before delivery to ensure perfection.",
+      "Coordinate on-site set-up and final checks before the event opens.",
   },
 ];
 
@@ -242,10 +248,41 @@ const TeamCard = ({
     </div>
   </motion.div>
 );
-
+type SliderItem = {
+  _id: string;
+  image: {
+    url: string;
+    publicId: string;
+  };
+  comment: string;
+  isActive: boolean;
+  order: number;
+};
 // Main Component
 export default function AboutPage() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
+  const [slides, setSlides] = useState<SliderItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // ===== FETCH SLIDERS FROM API =====
+  useEffect(() => {
+    fetchSliders();
+  }, []);
+
+  const fetchSliders = async () => {
+    try {
+      const res = await axios.get("/api/slider");
+      // API returns only active sliders sorted by order
+      const activeSlides = (res.data.data || []).filter(
+        (slide: SliderItem) => slide.isActive && slide.image?.url,
+      );
+      setSlides(activeSlides);
+    } catch (error) {
+      console.error("Error fetching sliders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative bg-black overflow-hidden">
@@ -363,9 +400,10 @@ export default function AboutPage() {
                 className="grid grid-cols-2 gap-4"
               >
                 <div className="space-y-4">
+
                   <div className="relative h-48 rounded-2xl overflow-hidden">
                     <Image
-                      src="https://picsum.photos/400/300?factory1"
+                      src={hero1}
                       alt="Manufacturing"
                       fill
                       className="object-cover"
@@ -373,7 +411,7 @@ export default function AboutPage() {
                   </div>
                   <div className="relative h-64 rounded-2xl overflow-hidden">
                     <Image
-                      src="https://picsum.photos/400/500?booth1"
+                      src={hero2}
                       alt="Booth"
                       fill
                       className="object-cover"
@@ -383,7 +421,7 @@ export default function AboutPage() {
                 <div className="space-y-4 pt-8">
                   <div className="relative h-64 rounded-2xl overflow-hidden">
                     <Image
-                      src="https://picsum.photos/400/500?team1"
+                      src={hero3}
                       alt="Team"
                       fill
                       className="object-cover"
@@ -391,7 +429,7 @@ export default function AboutPage() {
                   </div>
                   <div className="relative h-48 rounded-2xl overflow-hidden">
                     <Image
-                      src="https://picsum.photos/400/300?event1"
+                      src={hero4}
                       alt="Event"
                       fill
                       className="object-cover"
@@ -444,7 +482,7 @@ export default function AboutPage() {
         </section>
 
         {/* ===== CORE VALUES ===== */}
-        <section className="py-20 bg-linear-to-b from-transparent via-primary/5 to-transparent">
+        <section className=" bg-linear-to-b from-transparent via-primary/5 to-transparent">
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -452,7 +490,7 @@ export default function AboutPage() {
               viewport={{ once: true }}
               className="text-center mb-14"
             >
-              <span className="text-accent text-sm font-medium">
+              <span className="text-primary text-sm font-medium">
                 Our Values
               </span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
@@ -496,14 +534,14 @@ export default function AboutPage() {
               className="text-center mb-14"
             >
               <span className="text-primary text-sm font-medium">
-                Our Facilities
+                How We Deliver
               </span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
-                State-of-the-Art Manufacturing
+                Our Process
               </h2>
               <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-                Our 50,000 sqft facility houses everything needed to build
-                world-class exhibition booths
+                Every project is planned around the realities of its venue, timeline, and audience. We coordinate design,
+                production, graphics, and on-site readiness so the final space feels considered and performs as intended.
               </p>
             </motion.div>
 
@@ -548,32 +586,14 @@ export default function AboutPage() {
               className="text-center mb-10"
             >
               <h3 className="text-xl font-semibold text-white mb-2">
-                Trusted by Leading Brands
+                Trusted by Our Clients
               </h3>
               <p className="text-gray-400 text-sm">
-                From local champions to global enterprises
+                A selection of organizations we have had the opportunity to support.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-6">
-              {clientLogos.map((logo, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className="relative h-16 bg-white/5 rounded-xl overflow-hidden border border-white/10 hover:border-primary/30 transition-colors"
-                >
-                  <Image
-                    src={logo}
-                    alt={`Client ${i + 1}`}
-                    fill
-                    className="object-contain p-2 opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                </motion.div>
-              ))}
-            </div>
+            <OurClients/>
           </div>
         </section>
 
