@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import heroImage from "@/public/images/about/trina solar 24.jpg"
 import hero1 from "@/public/images/about/hero1.jpeg"
 import hero2 from "@/public/images/about/hero2.jpeg"
@@ -19,6 +19,7 @@ import {
   Quote,
   Play,
   Pause,
+  ChevronLeft,
   ChevronRight,
   Building2,
   Factory,
@@ -80,6 +81,29 @@ const teamMembers = [
     role: "Client Relations",
     image: "https://picsum.photos/200/200?client",
     bio: "Client satisfaction specialist",
+  },
+];
+
+// Testimonial Type & Default Fallback
+type TestimonialItem = {
+  id?: string;
+  testimonial: string;
+  clientName: string;
+  clientImage?: string | null;
+  projectTitle?: string;
+  exhibitionName?: string;
+  location?: string;
+  slug?: string;
+};
+
+const defaultTestimonials: TestimonialItem[] = [
+  {
+    testimonial:
+      "Country Communication didn't just build us a booth — they created an experience that generated 3x more leads than any previous exhibition. Their attention to detail and professional execution is unmatched in Bangladesh.",
+    clientName: "Ahmed Karim",
+    projectTitle: "Leading Telecom Company",
+    exhibitionName: "Corporate Exhibition",
+    clientImage: "https://picsum.photos/100/100?testimonial",
   },
 ];
 
@@ -264,11 +288,15 @@ export default function AboutPage() {
   const [slides, setSlides] = useState<SliderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [teamList, setTeamList] = useState(teamMembers);
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(defaultTestimonials);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
 
-  // ===== FETCH SLIDERS FROM API =====
+  // ===== FETCH DATA FROM API =====
   useEffect(() => {
     fetchSliders();
     fetchTeamMembers();
+    fetchTestimonials();
   }, []);
 
   const fetchSliders = async () => {
@@ -303,6 +331,45 @@ export default function AboutPage() {
       console.error("Error fetching team members:", error);
     }
   };
+
+  const fetchTestimonials = async () => {
+    try {
+      const res = await axios.get("/api/portfolio/testimonials");
+      if (res.data?.data && res.data.data.length > 0) {
+        setTestimonials(res.data.data);
+        // Random starting index
+        setCurrentTestimonialIndex(
+          Math.floor(Math.random() * res.data.data.length)
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
+    }
+  };
+
+  // 5-Second Auto-Slide with Pause-on-Hover
+  useEffect(() => {
+    if (isTestimonialHovered || testimonials.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [isTestimonialHovered, testimonials.length]);
+
+  const handlePrevTestimonial = () => {
+    setCurrentTestimonialIndex((prev) =>
+      prev === 0 ? testimonials.length - 1 : prev - 1
+    );
+  };
+
+  const handleNextTestimonial = () => {
+    setCurrentTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+  };
+
+  const currentTestimonial =
+    testimonials[currentTestimonialIndex] || testimonials[0];
 
   return (
     <div className="relative bg-black overflow-hidden">
@@ -618,40 +685,115 @@ export default function AboutPage() {
         </section>
 
         {/* ===== TESTIMONIAL ===== */}
-        <section className="py-20 bg-linear-to-b from-transparent via-accent/5 to-transparent">
+        <section className="py-24 bg-linear-to-b from-transparent via-accent/5 to-transparent relative overflow-hidden">
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="max-w-4xl mx-auto text-center"
+              className="max-w-4xl mx-auto text-center relative"
+              onMouseEnter={() => setIsTestimonialHovered(true)}
+              onMouseLeave={() => setIsTestimonialHovered(false)}
             >
-              <Quote className="w-16 h-16 text-primary/30 mx-auto mb-8" />
-
-              <blockquote className="text-2xl md:text-3xl lg:text-4xl text-white font-medium leading-relaxed mb-8">
-                "Country Communication didn't just build us a booth — they
-                created an experience that generated 3x more leads than any
-                previous exhibition. Their attention to detail and professional
-                execution is unmatched in Bangladesh."
-              </blockquote>
-
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-16 h-16 rounded-full overflow-hidden bg-linear-to-r from-primary to-accent">
-                  <Image
-                    src="https://picsum.photos/100/100?testimonial"
-                    alt="Client"
-                    width={64}
-                    height={64}
-                    className="object-cover"
-                  />
-                </div>
-                <div className="text-left">
-                  <p className="text-white font-semibold">Ahmed Karim</p>
-                  <p className="text-gray-400 text-sm">
-                    Marketing Director, Leading Telecom Company
-                  </p>
-                </div>
+              {/* Header Badge */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6">
+                <Quote className="w-3.5 h-3.5" />
+                <span>Client Testimonials</span>
+                {isTestimonialHovered && (
+                  <span className="text-[10px] bg-primary/20 px-1.5 py-0.5 rounded text-primary-light">
+                    Paused on hover
+                  </span>
+                )}
               </div>
+
+              {/* Animated Testimonial Card */}
+              <div className="relative min-h-[220px] sm:min-h-[200px] flex items-center justify-center">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentTestimonialIndex}
+                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -16, scale: 0.98 }}
+                    transition={{ duration: 0.45, ease: "easeOut" }}
+                    className="w-full"
+                  >
+                    <Quote className="w-12 h-12 text-primary/30 mx-auto mb-6 opacity-80" />
+
+                    <blockquote className="text-xl sm:text-2xl md:text-3xl text-white font-medium leading-relaxed mb-8 px-4">
+                      "{currentTestimonial?.testimonial}"
+                    </blockquote>
+
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-primary/30 bg-linear-to-r from-primary/20 to-accent/20 shrink-0">
+                        {currentTestimonial?.clientImage ? (
+                          <Image
+                            src={currentTestimonial.clientImage}
+                            alt={currentTestimonial.clientName || "Client"}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center font-bold text-primary text-lg">
+                            {(currentTestimonial?.clientName || "C")
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <p className="text-white font-semibold text-base sm:text-lg">
+                          {currentTestimonial?.clientName}
+                        </p>
+                        <p className="text-gray-400 text-xs sm:text-sm">
+                          {[
+                            currentTestimonial?.projectTitle,
+                            currentTestimonial?.exhibitionName,
+                            currentTestimonial?.location,
+                          ]
+                            .filter(Boolean)
+                            .join(" • ")}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Navigation Arrows & Dot Indicators */}
+              {testimonials.length > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-10">
+                  <button
+                    onClick={handlePrevTestimonial}
+                    aria-label="Previous testimonial"
+                    className="p-2 rounded-full border border-white/10 hover:border-primary/50 text-gray-400 hover:text-white hover:bg-white/5 transition cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    {testimonials.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        aria-label={`Go to testimonial ${idx + 1}`}
+                        className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                          idx === currentTestimonialIndex
+                            ? "w-7 bg-primary"
+                            : "w-2 bg-white/20 hover:bg-white/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleNextTestimonial}
+                    aria-label="Next testimonial"
+                    className="p-2 rounded-full border border-white/10 hover:border-primary/50 text-gray-400 hover:text-white hover:bg-white/5 transition cursor-pointer"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         </section>
