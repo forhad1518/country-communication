@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,6 +32,9 @@ import {
   Menu,
   Tag,
   TrendingUp,
+  Maximize2,
+  Minimize2,
+  MoveHorizontal,
 } from "lucide-react";
 
 // ---- Social Icons ----
@@ -141,7 +144,7 @@ const formatDate = (d?: string): string =>
       })
     : "";
 
-// ---- Before/After Slider (with auto-preview) ----
+// ---- Before/After Slider (Responsive Device Fit, Drag & Click, Both Badges) ----
 const BeforeAfterSlider = ({
   before,
   after,
@@ -151,88 +154,277 @@ const BeforeAfterSlider = ({
 }) => {
   const [pos, setPos] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [fitMode, setFitMode] = useState<"contain" | "cover">("contain");
   const containerRef = useRef<HTMLDivElement>(null);
-  const autoTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isDraggingRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
 
+  // Smooth sinusoidal preview sweep on initial load
   useEffect(() => {
-    const steps = [40, 70, 50];
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < steps.length) {
-        setPos(steps[index]);
-        index++;
+    let start: number | null = null;
+    const duration = 2200;
+    let cancelled = false;
+
+    const animatePreview = (timestamp: number) => {
+      if (cancelled) return;
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Smooth sine wave motion: 50 -> 36 -> 64 -> 50
+      const offset = Math.sin(progress * Math.PI * 2) * 14;
+      setPos(50 + offset);
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animatePreview);
       } else {
-        clearInterval(interval);
+        setPos(50);
       }
-    }, 700);
-    autoTimerRef.current = interval;
-    return () => clearInterval(interval);
+    };
+
+    const timer = setTimeout(() => {
+      animationFrameRef.current = requestAnimationFrame(animatePreview);
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
-  const handleMove = (clientX: number) => {
+  const stopAnimation = () => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  };
+
+  const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const newPos = Math.max(
-      0,
-      Math.min(100, ((clientX - rect.left) / rect.width) * 100),
-    );
+    const clampedX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const newPos = (clampedX / rect.width) * 100;
     setPos(newPos);
-    if (autoTimerRef.current) {
-      clearInterval(autoTimerRef.current);
-      autoTimerRef.current = null;
-    }
+  }, []);
+
+  const startDrag = useCallback(
+    (clientX: number) => {
+      stopAnimation();
+      setHasInteracted(true);
+      isDraggingRef.current = true;
+      setIsDragging(true);
+      handleMove(clientX);
+    },
+    [handleMove],
+  );
+
+  // Global window listeners so dragging never gets stuck or lost
+  useEffect(() => {
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDraggingRef.current) return;
+      handleMove(e.clientX);
+    };
+
+    const onPointerUp = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        setIsDragging(false);
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [handleMove]);
+
+  // Click or drag from anywhere on the photo
+  const handleContainerPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    e.preventDefault();
+    startDrag(e.clientX);
   };
 
-  const handleStart = () => {
-    setIsDragging(true);
-    if (autoTimerRef.current) {
-      clearInterval(autoTimerRef.current);
-      autoTimerRef.current = null;
-    }
+  // Click or drag directly on the divider bar or knob
+  const handleBarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    startDrag(e.clientX);
   };
-
-  const handleEnd = () => setIsDragging(false);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh] rounded-3xl overflow-hidden cursor-ew-resize select-none"
-      onMouseMove={(e) => isDragging && handleMove(e.clientX)}
-      onMouseDown={handleStart}
-      onMouseUp={handleEnd}
-      onMouseLeave={handleEnd}
-      onTouchMove={(e) => isDragging && handleMove(e.touches[0].clientX)}
-      onTouchStart={handleStart}
-      onTouchEnd={handleEnd}
-    >
-      <div className="absolute inset-0">
-        <Image src={before} alt="Design" fill className="object-cover" />
-        <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-xs z-10">
-          DESIGN
-        </div>
-      </div>
+    <div className="relative group w-full">
       <div
-        className="absolute inset-0 overflow-hidden"
-        style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
+        ref={containerRef}
+        onPointerDown={handleContainerPointerDown}
+        className="relative w-full aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] max-h-[78vh] min-h-[260px] sm:min-h-[360px] md:min-h-[440px] rounded-2xl md:rounded-3xl overflow-hidden cursor-ew-resize select-none border border-white/10 shadow-2xl bg-neutral-950 touch-none"
       >
-        <Image src={after} alt="Real" fill className="object-cover" />
-        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded-full text-xs z-10">
-          REALITY
+        {/* Ambient Blurred Background (keeps luxury ambient lighting when fitMode is contain) */}
+        {fitMode === "contain" && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 blur-3xl scale-110">
+            <Image
+              src={after || before}
+              alt=""
+              fill
+              sizes="100vw"
+              draggable={false}
+              className="object-cover pointer-events-none"
+              priority
+            />
+          </div>
+        )}
+
+        {/* 1. Base Layer: 3D Render Image (Left Side from 0 to pos) */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Image
+            src={before}
+            alt="3D Image"
+            fill
+            sizes="(max-width: 1280px) 100vw, 1200px"
+            draggable={false}
+            className={`transition-all duration-300 pointer-events-none ${
+              fitMode === "contain" ? "object-contain" : "object-cover"
+            }`}
+            priority
+          />
         </div>
-      </div>
-      <div
-        className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-        style={{ left: `${pos}%` }}
-      >
-        <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
-          <div className="flex gap-1">
-            <div className="w-1 h-3 bg-gray-400 rounded-full" />
-            <div className="w-1 h-3 bg-gray-400 rounded-full" />
+
+        {/* 2. Top Layer: Real Image (Right Side from pos to 100) */}
+        <div
+          className={`absolute inset-0 overflow-hidden flex items-center justify-center pointer-events-none ${
+            isDragging ? "" : "transition-[clip-path] duration-150 ease-out"
+          }`}
+          style={{
+            clipPath: `inset(0 0 0 ${pos}%)`,
+            willChange: "clip-path",
+          }}
+        >
+          {fitMode === "contain" && (
+            <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 blur-3xl scale-110">
+              <Image
+                src={after}
+                alt=""
+                fill
+                sizes="100vw"
+                draggable={false}
+                className="object-cover pointer-events-none"
+                priority
+              />
+            </div>
+          )}
+
+          <Image
+            src={after}
+            alt="Real Image"
+            fill
+            sizes="(max-width: 1280px) 100vw, 1200px"
+            draggable={false}
+            className={`transition-all duration-300 pointer-events-none ${
+              fitMode === "contain" ? "object-contain" : "object-cover"
+            }`}
+            priority
+          />
+        </div>
+
+        {/* 3. Badges (Both permanently visible on top of their respective image zones) */}
+        {/* 3D Image Badge (Left) */}
+        <div
+          className={`absolute top-4 left-4 z-20 pointer-events-none transition-opacity duration-200 ${
+            pos < 18 ? "opacity-20" : "opacity-100"
+          }`}
+        >
+          <span className="px-3.5 py-1.5 bg-black/75 backdrop-blur-md text-white text-xs font-semibold rounded-full border border-white/20 shadow-lg flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span>3D Image</span>
+          </span>
+        </div>
+
+        {/* Real Image Badge (Right) */}
+        <div
+          className={`absolute top-4 right-4 z-20 pointer-events-none transition-opacity duration-200 ${
+            pos > 82 ? "opacity-20" : "opacity-100"
+          }`}
+        >
+          <span className="px-3.5 py-1.5 bg-black/75 backdrop-blur-md text-white text-xs font-semibold rounded-full border border-white/20 shadow-lg flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Real Image</span>
+          </span>
+        </div>
+
+        {/* 4. Divider Line & Interactive Handle Bar (Draggable directly and clickable) */}
+        <div
+          className={`absolute top-0 bottom-0 z-30 cursor-ew-resize select-none ${
+            isDragging ? "" : "transition-[left] duration-150 ease-out"
+          }`}
+          style={{
+            left: `${pos}%`,
+            willChange: "left",
+          }}
+          onPointerDown={handleBarPointerDown}
+        >
+          {/* Wider invisible grab target for easy grabbing */}
+          <div className="absolute top-0 bottom-0 -left-5 w-10 cursor-ew-resize" />
+
+          {/* Vertical Glowing Divider Line */}
+          <div className="absolute top-0 bottom-0 -left-[1.5px] w-[3px] bg-gradient-to-b from-white/95 via-primary to-white/95 shadow-[0_0_14px_rgba(255,255,255,0.8)] pointer-events-none" />
+
+          {/* Handle Knob with grab cursor and hover scale */}
+          <div
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 sm:w-12 sm:h-12 bg-white text-neutral-900 rounded-full shadow-[0_4px_25px_rgba(0,0,0,0.5)] flex items-center justify-center border-2 border-primary/50 ring-4 ring-black/40 cursor-grab active:cursor-grabbing select-none transition-transform duration-150 ${
+              isDragging ? "scale-115 ring-primary/60 shadow-primary/40 cursor-grabbing" : "hover:scale-110"
+            }`}
+          >
+            <MoveHorizontal className="w-5 h-5 text-neutral-800 pointer-events-none" />
           </div>
         </div>
-      </div>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-1.5 rounded-full text-xs">
-        ← Drag to compare →
+
+        {/* 5. Controls Overlay: Fit/Fill Toggle */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setFitMode((m) => (m === "contain" ? "cover" : "contain"));
+            }}
+            className="px-3 py-1.5 bg-black/75 hover:bg-black/95 backdrop-blur-md text-white text-xs font-medium rounded-xl border border-white/20 hover:border-primary/50 transition-all flex items-center gap-1.5 shadow-lg cursor-pointer"
+            title={fitMode === "contain" ? "Switch to Fill Screen" : "Switch to Fit Whole Image"}
+          >
+            {fitMode === "contain" ? (
+              <>
+                <Maximize2 className="w-3.5 h-3.5 text-primary" />
+                <span className="hidden sm:inline">Fit Whole Image</span>
+                <span className="sm:hidden">Fit</span>
+              </>
+            ) : (
+              <>
+                <Minimize2 className="w-3.5 h-3.5 text-primary" />
+                <span className="hidden sm:inline">Fill Screen</span>
+                <span className="sm:hidden">Fill</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* 6. Hint label */}
+        <div
+          className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-opacity duration-300 ${
+            hasInteracted ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <div className="bg-black/75 backdrop-blur-md text-gray-200 px-4 py-1.5 rounded-full text-xs border border-white/15 shadow-lg flex items-center gap-1.5">
+            <MoveHorizontal className="w-3.5 h-3.5 text-primary animate-pulse" />
+            <span>Drag bar or click photo to compare</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -736,14 +928,25 @@ export default function PortfolioDetailPage({ slug }: { slug: string }) {
             {beforeImage && afterImage ? (
               <BeforeAfterSlider before={beforeImage} after={afterImage} />
             ) : (
-              <div className="relative rounded-3xl overflow-hidden h-[50vh] md:h-[60vh]">
+              <div className="relative rounded-2xl md:rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/10] md:aspect-[16/9] max-h-[78vh] min-h-[260px] sm:min-h-[360px] md:min-h-[440px] border border-white/10 shadow-2xl bg-neutral-950 flex items-center justify-center">
+                {/* Ambient Blurred Background */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-25 blur-3xl scale-110">
+                  <Image
+                    src={getOptimizedUrl(heroImage, 600, 300)}
+                    alt=""
+                    fill
+                    className="object-cover"
+                  />
+                </div>
                 <Image
-                  src={getOptimizedUrl(heroImage, 1200, 600)}
+                  src={getOptimizedUrl(heroImage, 1400, 800)}
                   alt={portfolio.title}
                   fill
-                  className="object-cover"
+                  sizes="(max-width: 1280px) 100vw, 1200px"
+                  className="object-contain"
+                  priority
                 />
-                <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
               </div>
             )}
           </motion.div>
