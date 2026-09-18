@@ -110,6 +110,7 @@ const socialLinks = [
 const footerLinks = {
   company: [
     { label: "About Us", href: "/about" },
+    { label: "Get Free Quote", href: "/get-free-quote" },
     { label: "Our Team", href: "/team" },
     { label: "Careers", href: "/careers" },
     { label: "Contact Us", href: "/contact" },
@@ -121,6 +122,7 @@ const footerLinks = {
     { label: "Brand Activation", href: "/services/brand-activation" },
   ],
   resources: [
+    { label: "Get Free Quote", href: "/get-free-quote" },
     { label: "Portfolio", href: "/portfolio" },
     { label: "Blog & News", href: "/blog" },
     { label: "Case Studies", href: "/case-studies" },

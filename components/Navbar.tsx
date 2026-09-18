@@ -32,6 +32,7 @@ const navLinks: NavLink[] = [
     { href: "/services", label: "Services" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
+    { href: "/get-free-quote", label: "Get Free Quote" },
 ];
 
 export default function Navbar() {
@@ -235,10 +236,16 @@ export default function Navbar() {
                                 ))}
 
                                 {/* Mobile CTA */}
-                                <div className="px-2 pt-4">
+                                <div className="px-2 pt-4 space-y-2">
+                                    <Link
+                                        href="/get-free-quote"
+                                        className="block w-full bg-primary hover:bg-primary-hover text-white text-center px-6 py-3 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg shadow-primary/25"
+                                    >
+                                        Get Free Quote
+                                    </Link>
                                     <Link
                                         href="/contact"
-                                        className="block w-full bg-primary hover:bg-primary-hover text-white text-center px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 shadow-md hover:shadow-lg"
+                                        className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-center px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300"
                                     >
                                         Let's Talk
                                     </Link>
