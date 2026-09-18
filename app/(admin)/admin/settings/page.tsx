@@ -55,7 +55,9 @@ type TeamMemberItem = {
 
 type ContactInfoType = {
   whatsapp: string;
+  whatsappQrCode?: { url: string; publicId: string };
   wechat: string;
+  wechatQrCode?: { url: string; publicId: string };
   primaryEmail: string;
   primaryPhone: string;
   secondaryPhone: string;
@@ -118,7 +120,9 @@ export default function SettingsPage() {
   // ===== CONTACT INFO STATE =====
   const [contactInfo, setContactInfo] = useState<ContactInfoType>({
     whatsapp: "",
+    whatsappQrCode: { url: "", publicId: "" },
     wechat: "",
+    wechatQrCode: { url: "", publicId: "" },
     primaryEmail: "",
     primaryPhone: "",
     secondaryPhone: "",
@@ -264,7 +268,15 @@ export default function SettingsPage() {
       if (res.data.data) {
         setContactInfo({
           whatsapp: res.data.data.whatsapp || "",
+          whatsappQrCode: {
+            url: res.data.data.whatsappQrCode?.url || "",
+            publicId: res.data.data.whatsappQrCode?.publicId || "",
+          },
           wechat: res.data.data.wechat || "",
+          wechatQrCode: {
+            url: res.data.data.wechatQrCode?.url || "",
+            publicId: res.data.data.wechatQrCode?.publicId || "",
+          },
           primaryEmail: res.data.data.primaryEmail || "",
           primaryPhone: res.data.data.primaryPhone || "",
           secondaryPhone: res.data.data.secondaryPhone || "",
@@ -272,6 +284,40 @@ export default function SettingsPage() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleWhatsAppQrUpload = (images: UploadedImage[]) => {
+    if (images.length > 0) {
+      setContactInfo((prev) => ({
+        ...prev,
+        whatsappQrCode: {
+          url: images[0].url,
+          publicId: images[0].publicId,
+        },
+      }));
+    } else {
+      setContactInfo((prev) => ({
+        ...prev,
+        whatsappQrCode: { url: "", publicId: "" },
+      }));
+    }
+  };
+
+  const handleWeChatQrUpload = (images: UploadedImage[]) => {
+    if (images.length > 0) {
+      setContactInfo((prev) => ({
+        ...prev,
+        wechatQrCode: {
+          url: images[0].url,
+          publicId: images[0].publicId,
+        },
+      }));
+    } else {
+      setContactInfo((prev) => ({
+        ...prev,
+        wechatQrCode: { url: "", publicId: "" },
+      }));
     }
   };
 
@@ -997,40 +1043,129 @@ export default function SettingsPage() {
                 )}
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  <MessageCircle className="w-4 h-4 inline mr-1 text-green-500" />
-                  WhatsApp
-                </label>
-                <input
-                  type="text"
-                  value={contactInfo.whatsapp}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({
-                      ...prev,
-                      whatsapp: e.target.value,
-                    }))
-                  }
-                  className="w-full border rounded-lg px-4 py-2.5 text-sm"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* WhatsApp Card */}
+              <div className="border border-gray-200 bg-gray-50/50 rounded-xl p-4 md:p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                  <span className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4 text-green-500" />
+                    WhatsApp
+                  </span>
+                  <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                    Chat & QR
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                    WhatsApp Number
+                  </label>
+                  <input
+                    type="text"
+                    value={contactInfo.whatsapp}
+                    onChange={(e) =>
+                      setContactInfo((prev) => ({
+                        ...prev,
+                        whatsapp: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. +8801816756997"
+                    className="w-full border rounded-lg px-4 py-2.5 text-sm bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                    WhatsApp QR Code Image
+                  </label>
+                  <ImageUpload
+                    mode="single"
+                    label=""
+                    existingImages={
+                      contactInfo.whatsappQrCode?.url
+                        ? [
+                            {
+                              url: contactInfo.whatsappQrCode.url,
+                              publicId: contactInfo.whatsappQrCode.publicId,
+                            },
+                          ]
+                        : []
+                    }
+                    onChange={handleWhatsAppQrUpload}
+                    onRemove={() =>
+                      setContactInfo((prev) => ({
+                        ...prev,
+                        whatsappQrCode: { url: "", publicId: "" },
+                      }))
+                    }
+                    maxFileSize={5}
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Upload WhatsApp QR code (scannable from contact page).
+                  </p>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  <MessageCircle className="w-4 h-4 inline mr-1 text-green-600" />
-                  WeChat
-                </label>
-                <input
-                  type="text"
-                  value={contactInfo.wechat}
-                  onChange={(e) =>
-                    setContactInfo((prev) => ({
-                      ...prev,
-                      wechat: e.target.value,
-                    }))
-                  }
-                  className="w-full border rounded-lg px-4 py-2.5 text-sm"
-                />
+
+              {/* WeChat Card */}
+              <div className="border border-gray-200 bg-gray-50/50 rounded-xl p-4 md:p-5 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+                  <span className="text-sm font-semibold text-gray-800 flex items-center gap-1.5">
+                    <MessageCircle className="w-4 h-4 text-green-600" />
+                    WeChat
+                  </span>
+                  <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded-full">
+                    ID & QR
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                    WeChat ID / Number
+                  </label>
+                  <input
+                    type="text"
+                    value={contactInfo.wechat}
+                    onChange={(e) =>
+                      setContactInfo((prev) => ({
+                        ...prev,
+                        wechat: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. country_communication"
+                    className="w-full border rounded-lg px-4 py-2.5 text-sm bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium text-gray-700 mb-1.5 block">
+                    WeChat QR Code Image
+                  </label>
+                  <ImageUpload
+                    mode="single"
+                    label=""
+                    existingImages={
+                      contactInfo.wechatQrCode?.url
+                        ? [
+                            {
+                              url: contactInfo.wechatQrCode.url,
+                              publicId: contactInfo.wechatQrCode.publicId,
+                            },
+                          ]
+                        : []
+                    }
+                    onChange={handleWeChatQrUpload}
+                    onRemove={() =>
+                      setContactInfo((prev) => ({
+                        ...prev,
+                        wechatQrCode: { url: "", publicId: "" },
+                      }))
+                    }
+                    maxFileSize={5}
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    Upload WeChat personal or business QR code.
+                  </p>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/config/connectDB";
 import ContactInfo from "@/models/ContactInfo";
+import cloudinary from "@/lib/cloudinary";
 
 // GET - Fetch contact info
 export async function GET(req: NextRequest) {
@@ -14,7 +15,9 @@ export async function GET(req: NextRequest) {
     if (!contactInfo) {
       contactInfo = await ContactInfo.create({
         whatsapp: "",
+        whatsappQrCode: { url: "", publicId: "" },
         wechat: "",
+        wechatQrCode: { url: "", publicId: "" },
         primaryEmail: "",
         primaryPhone: "",
         secondaryPhone: "",
@@ -37,8 +40,15 @@ export async function PUT(req: NextRequest) {
     await dbConnect();
 
     const body = await req.json();
-    const { whatsapp, wechat, primaryEmail, primaryPhone, secondaryPhone } =
-      body;
+    const {
+      whatsapp,
+      whatsappQrCode,
+      wechat,
+      wechatQrCode,
+      primaryEmail,
+      primaryPhone,
+      secondaryPhone,
+    } = body;
 
     // Find first document or create new
     let contactInfo = await ContactInfo.findOne();
@@ -52,12 +62,56 @@ export async function PUT(req: NextRequest) {
       if (secondaryPhone !== undefined)
         contactInfo.secondaryPhone = secondaryPhone;
 
+      // WhatsApp QR Code
+      if (whatsappQrCode !== undefined) {
+        if (
+          contactInfo.whatsappQrCode?.publicId &&
+          contactInfo.whatsappQrCode.publicId !== whatsappQrCode?.publicId
+        ) {
+          try {
+            await cloudinary.uploader.destroy(contactInfo.whatsappQrCode.publicId);
+          } catch (cErr) {
+            console.error("Failed to delete old WhatsApp QR code:", cErr);
+          }
+        }
+        contactInfo.whatsappQrCode = {
+          url: whatsappQrCode?.url || "",
+          publicId: whatsappQrCode?.publicId || "",
+        };
+      }
+
+      // WeChat QR Code
+      if (wechatQrCode !== undefined) {
+        if (
+          contactInfo.wechatQrCode?.publicId &&
+          contactInfo.wechatQrCode.publicId !== wechatQrCode?.publicId
+        ) {
+          try {
+            await cloudinary.uploader.destroy(contactInfo.wechatQrCode.publicId);
+          } catch (cErr) {
+            console.error("Failed to delete old WeChat QR code:", cErr);
+          }
+        }
+        contactInfo.wechatQrCode = {
+          url: wechatQrCode?.url || "",
+          publicId: wechatQrCode?.publicId || "",
+        };
+      }
+
       await contactInfo.save();
     } else {
       // Create new
       contactInfo = await ContactInfo.create({
         whatsapp: whatsapp || "",
+        whatsappQrCode: {
+          url: whatsappQrCode?.url || "",
+          publicId: whatsappQrCode?.publicId || "",
+        },
         wechat: wechat || "",
+        wechatQrCode: {
+          url: wechatQrCode?.url || "",
+          publicId: wechatQrCode?.publicId || "",
+        },
         primaryEmail: primaryEmail || "",
         primaryPhone: primaryPhone || "",
         secondaryPhone: secondaryPhone || "",

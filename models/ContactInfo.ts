@@ -1,5 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+const ImageSchema = new Schema(
+  {
+    url: { type: String, default: "" },
+    publicId: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const ContactInfoSchema = new Schema(
   {
     whatsapp: {
@@ -7,10 +15,18 @@ const ContactInfoSchema = new Schema(
       trim: true,
       default: "",
     },
+    whatsappQrCode: {
+      type: ImageSchema,
+      default: () => ({ url: "", publicId: "" }),
+    },
     wechat: {
       type: String,
       trim: true,
       default: "",
+    },
+    wechatQrCode: {
+      type: ImageSchema,
+      default: () => ({ url: "", publicId: "" }),
     },
     primaryEmail: {
       type: String,
@@ -34,6 +50,10 @@ const ContactInfoSchema = new Schema(
   },
 );
 
+if (mongoose.models && mongoose.models.ContactInfo) {
+  delete (mongoose.models as any).ContactInfo;
+}
+
 const ContactInfo =
   mongoose.models.ContactInfo ||
   mongoose.model("ContactInfo", ContactInfoSchema);
@@ -43,7 +63,15 @@ export default ContactInfo;
 // TypeScript interface
 export interface IContactInfo extends Document {
   whatsapp: string;
+  whatsappQrCode: {
+    url: string;
+    publicId: string;
+  };
   wechat: string;
+  wechatQrCode: {
+    url: string;
+    publicId: string;
+  };
   primaryEmail: string;
   primaryPhone: string;
   secondaryPhone: string;

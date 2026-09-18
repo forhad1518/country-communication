@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Heading1 from "@/components/Heading1";
@@ -112,7 +113,9 @@ const YoutubeIcon = () => (
 type ContactInfoType = {
   googleMapUrl: string | undefined;
   whatsapp: string;
+  whatsappQrCode?: { url: string; publicId: string };
   wechat: string;
+  wechatQrCode?: { url: string; publicId: string };
   primaryEmail: string;
   primaryPhone: string;
   secondaryPhone: string;
@@ -342,42 +345,134 @@ export default function ContactClient() {
           </div>
         </section>
 
-        {/* Quick Contact Buttons */}
-        <section className="pb-12">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
-            <div className="flex flex-wrap justify-center gap-4">
-              {contactInfo.whatsapp && (
-                <QuickContactButton
-                  icon={<WhatsAppIcon />}
-                  label="Chat on WhatsApp"
-                  value={contactInfo.whatsapp}
-                  onClick={openWhatsApp}
-                  bgColor="bg-[#25D366] hover:bg-[#20bd5a]"
-                />
-              )}
-              {contactInfo.wechat && (
-                <QuickContactButton
-                  icon={<WeChatIcon />}
-                  label={wechatCopied ? "Copied!" : "WeChat ID"}
-                  value={wechatCopied ? "✓ Copied!" : contactInfo.wechat}
-                  onClick={copyWeChat}
-                  bgColor="bg-[#7BB32E] hover:bg-[#6a9a27]"
-                />
-              )}
+        {/* WhatsApp & WeChat with QR Codes */}
+        {(contactInfo.whatsapp || contactInfo.wechat) && (
+          <section className="pb-10">
+            <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                {/* WhatsApp Card */}
+                {contactInfo.whatsapp && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="bg-linear-to-br from-gray-900 via-black to-gray-900 p-6 rounded-2xl border border-green-500/30 hover:border-green-500/60 shadow-lg shadow-green-500/5 transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-6"
+                  >
+                    <div className="flex-1 text-center sm:text-left space-y-3">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-xs font-semibold border border-green-500/20">
+                        <WhatsAppIcon />
+                        <span>WhatsApp Direct</span>
+                      </div>
+                      <h4 className="text-xl font-bold text-white tracking-wide">
+                        {contactInfo.whatsapp}
+                      </h4>
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Click below to chat directly or scan the QR code with your phone camera.
+                      </p>
+                      <button
+                        onClick={openWhatsApp}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-sm font-semibold shadow-md transition-all cursor-pointer"
+                      >
+                        <WhatsAppIcon />
+                        <span>Chat on WhatsApp</span>
+                      </button>
+                    </div>
+
+                    {/* QR Code */}
+                    {contactInfo.whatsappQrCode?.url ? (
+                      <div className="flex flex-col items-center gap-1.5 shrink-0">
+                        <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border-2 border-green-500/40 shadow-md">
+                          <Image
+                            src={contactInfo.whatsappQrCode.url}
+                            alt="WhatsApp QR Code"
+                            fill
+                            className="object-contain p-1"
+                          />
+                        </div>
+                        <span className="text-[11px] text-green-400 font-medium">
+                          Scan to Chat
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="w-32 h-32 sm:w-36 sm:h-36 bg-white/5 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-center p-3 shrink-0 text-gray-400">
+                        <WhatsAppIcon />
+                        <span className="text-[11px] mt-2">Chat Available</span>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {/* WeChat Card */}
+                {contactInfo.wechat && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-linear-to-br from-gray-900 via-black to-gray-900 p-6 rounded-2xl border border-emerald-500/30 hover:border-emerald-500/60 shadow-lg shadow-emerald-500/5 transition-all duration-300 flex flex-col sm:flex-row items-center justify-between gap-6"
+                  >
+                    <div className="flex-1 text-center sm:text-left space-y-3">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
+                        <WeChatIcon />
+                        <span>WeChat Connect</span>
+                      </div>
+                      <h4 className="text-xl font-bold text-white tracking-wide">
+                        {contactInfo.wechat}
+                      </h4>
+                      <p className="text-xs text-gray-400 leading-relaxed">
+                        Copy WeChat ID or scan the QR code to connect with us immediately.
+                      </p>
+                      <button
+                        onClick={copyWeChat}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#7BB32E] hover:bg-[#6a9a27] text-white rounded-xl text-sm font-semibold shadow-md transition-all cursor-pointer"
+                      >
+                        <WeChatIcon />
+                        <span>{wechatCopied ? "✓ ID Copied!" : "Copy WeChat ID"}</span>
+                      </button>
+                    </div>
+
+                    {/* QR Code */}
+                    {contactInfo.wechatQrCode?.url ? (
+                      <div className="flex flex-col items-center gap-1.5 shrink-0">
+                        <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl border-2 border-emerald-500/40 shadow-md">
+                          <Image
+                            src={contactInfo.wechatQrCode.url}
+                            alt="WeChat QR Code"
+                            fill
+                            className="object-contain p-1"
+                          />
+                        </div>
+                        <span className="text-[11px] text-emerald-400 font-medium">
+                          Scan to Add
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="w-32 h-32 sm:w-36 sm:h-36 bg-white/5 rounded-xl border border-dashed border-white/20 flex flex-col items-center justify-center text-center p-3 shrink-0 text-gray-400">
+                        <WeChatIcon />
+                        <span className="text-[11px] mt-2">ID Available</span>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Call Us Button */}
               {contactInfo.primaryPhone && (
-                <QuickContactButton
-                  icon={<PhoneIcon />}
-                  label="Call Us"
-                  value={contactInfo.primaryPhone}
-                  onClick={() =>
-                    (window.location.href = `tel:${contactInfo.primaryPhone.replace(/\s/g, "")}`)
-                  }
-                  bgColor="bg-primary hover:bg-primary-hover"
-                />
+                <div className="flex justify-center pt-6">
+                  <QuickContactButton
+                    icon={<PhoneIcon />}
+                    label="Call Us Directly"
+                    value={contactInfo.primaryPhone}
+                    onClick={() =>
+                      (window.location.href = `tel:${contactInfo.primaryPhone.replace(/\s/g, "")}`)
+                    }
+                    bgColor="bg-primary hover:bg-primary-hover"
+                  />
+                </div>
               )}
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Contact Cards */}
         <section className="pb-16">
