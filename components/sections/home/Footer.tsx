@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, ArrowRight } from "lucide-react";
+import axios from "axios";
 import logo from "@/public/logo_COCO.png";
 
 // Custom Social Icons Component
@@ -129,6 +130,63 @@ const footerLinks = {
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+
+  const [contactData, setContactData] = useState({
+    primaryEmail: "countrycommu@gmail.com",
+    primaryPhone: "+880181675699711",
+    secondaryPhone: "0248814900",
+    whatsapp: "+880181675699711",
+  });
+
+  const [officeData, setOfficeData] = useState({
+    streetAddress: "House-30, (lift-03), Road-07 Bloac-C, Niketan, Gulsan-1",
+    city: "Dhaka",
+    country: "Bangladesh",
+    postalCode: "Dhaka-1212",
+  });
+
+  useEffect(() => {
+    const fetchFooterContactData = async () => {
+      try {
+        const [contactRes, officeRes] = await Promise.allSettled([
+          axios.get("/api/contact-info"),
+          axios.get("/api/office-info"),
+        ]);
+
+        if (
+          contactRes.status === "fulfilled" &&
+          contactRes.value.data?.data
+        ) {
+          const c = contactRes.value.data.data;
+          setContactData({
+            primaryEmail: c.primaryEmail || "countrycommu@gmail.com",
+            primaryPhone: c.primaryPhone || "+880181675699711",
+            secondaryPhone: c.secondaryPhone || "",
+            whatsapp: c.whatsapp || "",
+          });
+        }
+
+        if (
+          officeRes.status === "fulfilled" &&
+          officeRes.value.data?.data
+        ) {
+          const o = officeRes.value.data.data;
+          setOfficeData({
+            streetAddress:
+              o.streetAddress ||
+              "House-30, (lift-03), Road-07 Bloac-C, Niketan, Gulsan-1",
+            city: o.city || "Dhaka",
+            country: o.country || "Bangladesh",
+            postalCode: o.postalCode || "Dhaka-1212",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load footer contact info:", err);
+      }
+    };
+
+    fetchFooterContactData();
+  }, []);
 
   return (
     <footer className="bg-linear-to-br from-gray-900 to-black text-white">
@@ -262,34 +320,55 @@ export default function Footer() {
                 {/* Address */}
                 <div className="flex items-start gap-3 text-gray-300 group">
                   <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
-                  <span className="text-sm">
-                    123 Main Street, Gulshan Avenue
-                    <br />
-                    Dhaka 1212, Bangladesh
+                  <span className="text-sm leading-relaxed">
+                    {officeData.streetAddress}
+                    {(officeData.city || officeData.postalCode || officeData.country) && (
+                      <>
+                        <br />
+                        {[officeData.city, officeData.postalCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                        {officeData.country ? ` - ${officeData.country}` : ""}
+                      </>
+                    )}
                   </span>
                 </div>
 
                 {/* Email */}
-                <div className="flex items-center gap-3 text-gray-300 group">
-                  <Mail className="w-5 h-5 text-primary shrink-0 group-hover:text-accent transition-colors" />
-                  <a
-                    href="mailto:info@countrycomm.com"
-                    className="text-sm hover:text-accent transition-colors"
-                  >
-                    info@countrycomm.com
-                  </a>
-                </div>
+                {contactData.primaryEmail && (
+                  <div className="flex items-center gap-3 text-gray-300 group">
+                    <Mail className="w-5 h-5 text-primary shrink-0 group-hover:text-accent transition-colors" />
+                    <a
+                      href={`mailto:${contactData.primaryEmail}`}
+                      className="text-sm hover:text-accent transition-colors break-all"
+                    >
+                      {contactData.primaryEmail}
+                    </a>
+                  </div>
+                )}
 
                 {/* Phone */}
-                <div className="flex items-center gap-3 text-gray-300 group">
-                  <Phone className="w-5 h-5 text-primary shrink-0 group-hover:text-accent transition-colors" />
-                  <a
-                    href="tel:+880123456789"
-                    className="text-sm hover:text-accent transition-colors"
-                  >
-                    +880 1234 56789
-                  </a>
-                </div>
+                {contactData.primaryPhone && (
+                  <div className="flex items-start gap-3 text-gray-300 group">
+                    <Phone className="w-5 h-5 text-primary shrink-0 mt-0.5 group-hover:text-accent transition-colors" />
+                    <div className="flex flex-col">
+                      <a
+                        href={`tel:${contactData.primaryPhone.replace(/\s+/g, "")}`}
+                        className="text-sm hover:text-accent transition-colors"
+                      >
+                        {contactData.primaryPhone}
+                      </a>
+                      {contactData.secondaryPhone && (
+                        <a
+                          href={`tel:${contactData.secondaryPhone.replace(/\s+/g, "")}`}
+                          className="text-xs text-gray-400 hover:text-accent transition-colors mt-0.5"
+                        >
+                          {contactData.secondaryPhone}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
               </address>
 
               {/* Social Links */}
