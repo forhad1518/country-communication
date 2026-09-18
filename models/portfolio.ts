@@ -21,6 +21,12 @@ const PortfolioSchema = new Schema(
       trim: true,
     },
 
+    // THUMBNAIL / COVER IMAGE
+    thumbnailImage: {
+      url: { type: String, default: "" },
+      publicId: { type: String, default: "" },
+    },
+
     // PROJECT INFO
     projectInfo: {
       clientName: {
@@ -130,6 +136,11 @@ PortfolioSchema.index({ createdAt: -1 });
 PortfolioSchema.index({ views: -1 });
 PortfolioSchema.index({ likes: -1 });
 
+// Ensure model recompiles with new fields in dev mode
+if (mongoose.models && mongoose.models.Portfolio) {
+  delete (mongoose.models as any).Portfolio;
+}
+
 // Export the model
 const Portfolio =
   mongoose.models.Portfolio || mongoose.model("Portfolio", PortfolioSchema);
@@ -144,6 +155,7 @@ export interface IImage {
 export interface IPortfolio extends Document {
   title: string;
   exhibition_name: string;
+  thumbnailImage?: IImage;
   projectInfo: {
     clientName: string;
     boothSize: string;

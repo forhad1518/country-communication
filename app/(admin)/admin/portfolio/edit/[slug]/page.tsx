@@ -40,6 +40,7 @@ type PortfolioData = {
   _id?: string;
   title: string;
   exhibition_name: string;
+  thumbnailImage?: ImageObject | null;
   projectInfo: {
     clientName: string;
     boothSize: string;
@@ -497,6 +498,7 @@ export default function EditPortfolio() {
   const [realImages, setRealImages] = useState<ImageObject[]>([]);
   const [moodImages, setMoodImages] = useState<ImageObject[]>([]);
   const [clientImage, setClientImage] = useState<ImageObject | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<ImageObject | null>(null);
 
   // Uploading status
   const [uploading, setUploading] = useState(false);
@@ -559,6 +561,7 @@ export default function EditPortfolio() {
         setRealImages(data.process.realImages || []);
         setMoodImages(data.process.moodboardImages || []);
         setClientImage(data.results.clientImage || null);
+        setThumbnailImage(data.thumbnailImage || null);
       } catch (err) {
         console.error(err);
         setToast({ message: "Failed to load portfolio data", type: "error" });
@@ -608,6 +611,7 @@ export default function EditPortfolio() {
     const payload = {
       title,
       exhibition_name: exhibition,
+      thumbnailImage,
       projectInfo: {
         clientName,
         boothSize,
@@ -890,6 +894,19 @@ export default function EditPortfolio() {
                       onChange={(e) => setOverview(e.target.value)}
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                     />
+                  </div>
+
+                  <div>
+                    <SingleImageUpload
+                      label="Portfolio Thumbnail Image (Card Cover Image)"
+                      value={thumbnailImage}
+                      onChange={setThumbnailImage}
+                      onRemove={() => setThumbnailImage(null)}
+                      slug={`${imageSlug}_thumb`}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      This cover photo will be displayed on the portfolio showcase grid. If omitted, the first 3D render photo will be used as fallback.
+                    </p>
                   </div>
                 </motion.div>
               )}

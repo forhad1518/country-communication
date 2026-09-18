@@ -103,6 +103,7 @@ export async function POST(req: NextRequest) {
     const portfolio = await Portfolio.create({
       title: body.title,
       exhibition_name: body.exhibition_name,
+      thumbnailImage: body.thumbnailImage || { url: "", publicId: "" },
       projectInfo: {
         clientName: body.projectInfo?.clientName || "",
         boothSize: body.projectInfo?.boothSize || "",

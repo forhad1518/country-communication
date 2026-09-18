@@ -32,6 +32,7 @@ type PreviewState = {
   real: string[];
   mood: string[];
   client: string | null;
+  thumbnail: string | null;
 };
 
 type Exhibition = {
@@ -357,6 +358,7 @@ export default function AddPortfolio() {
     real: [],
     mood: [],
     client: null,
+    thumbnail: null,
   });
 
   const sections = [
@@ -391,8 +393,8 @@ export default function AddPortfolio() {
 
   const handleImage = (e: any, type: keyof PreviewState) => {
     const files = e.target.files;
-    if (!files) return;
-    if (type === "client")
+    if (!files || files.length === 0) return;
+    if (type === "client" || type === "thumbnail")
       setPreview((p) => ({ ...p, [type]: URL.createObjectURL(files[0]) }));
     else
       setPreview((p) => ({
@@ -460,10 +462,18 @@ export default function AddPortfolio() {
         slug: `${slug}_client`,
         api: "/api/upload/image",
       });
+      const thumbnailImage = await uploadFiles({
+        type: "single",
+        files: formData.get("thumbnailImage") as unknown as File[],
+        slug: `${slug}_thumb`,
+        api: "/api/upload/image",
+      });
 
       const data = {
         title: formData.get("title"),
         exhibition_name: formData.get("exhibition"),
+        thumbnailImage:
+          thumbnailImage || (rendersImages?.[0] || realImages?.[0] || { url: "", publicId: "" }),
         projectInfo: {
           clientName: formData.get("clientName"),
           boothSize: formData.get("boothSize"),
@@ -731,6 +741,19 @@ export default function AddPortfolio() {
                       placeholder="Brief description of the project..."
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
                     />
+                  </div>
+
+                  <div className="pt-2">
+                    <FileUpload
+                      label="Portfolio Thumbnail Image (Card Cover Image)"
+                      name="thumbnailImage"
+                      onChange={(e: any) => handleImage(e, "thumbnail")}
+                      preview={preview.thumbnail}
+                      onRemove={() => removePreview("thumbnail")}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      This photo will be displayed on the portfolio listing page as the main card thumbnail. If omitted, the first 3D render will be used.
+                    </p>
                   </div>
                 </motion.div>
               )}
