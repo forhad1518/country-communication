@@ -24,6 +24,9 @@ import {
   Plus,
   Trash2,
   ArrowLeft,
+  Users,
+  Edit,
+  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ImageUpload, {
@@ -37,6 +40,17 @@ type SliderItem = {
   comment: string;
   isActive: boolean;
   order: number;
+};
+
+type TeamMemberItem = {
+  _id?: string;
+  name: string;
+  photo: { url: string; publicId: string };
+  designation: string;
+  experienceComment: string;
+  order?: number;
+  isActive?: boolean;
+  createdAt?: string;
 };
 
 type ContactInfoType = {
@@ -123,6 +137,19 @@ export default function SettingsPage() {
   const [officeSaving, setOfficeSaving] = useState(false);
 
 
+  // ===== TEAM MEMBERS STATE =====
+  const [teamMembers, setTeamMembers] = useState<TeamMemberItem[]>([]);
+  const [teamLoading, setTeamLoading] = useState(true);
+  const [teamSubmitting, setTeamSubmitting] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [teamForm, setTeamForm] = useState({
+    name: "",
+    photo: { url: "", publicId: "" },
+    designation: "",
+    experienceComment: "",
+  });
+  const [teamFormError, setTeamFormError] = useState("");
+
   // ===== PASSWORD STATE =====
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -143,6 +170,7 @@ export default function SettingsPage() {
     fetchSliders();
     fetchContactInfo();
     fetchOfficeInfo();
+    fetchTeamMembers();
   }, []);
 
   // ===== SLIDER API =====
@@ -347,8 +375,150 @@ export default function SettingsPage() {
     }
   };
 
+  // ===== TEAM MEMBERS API =====
+  const fetchTeamMembers = async () => {
+    setTeamLoading(true);
+    try {
+      const res = await axios.get("/api/team?admin=true");
+      if (res.data?.data) {
+        setTeamMembers(res.data.data);
+      }
+    } catch (err: any) {
+      console.error("Failed to fetch team members:", err);
+      setToast({
+        message: err.response?.data?.error || "Failed to load team members",
+        type: "error",
+      });
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  const handleTeamPhotoUpload = (images: UploadedImage[]) => {
+    if (images.length > 0) {
+      setTeamForm((prev) => ({
+        ...prev,
+        photo: {
+          url: images[0].url,
+          publicId: images[0].publicId,
+        },
+      }));
+    } else {
+      setTeamForm((prev) => ({
+        ...prev,
+        photo: { url: "", publicId: "" },
+      }));
+    }
+  };
+
+  const handleTeamFormSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setTeamFormError("");
+
+    if (!teamForm.name.trim()) {
+      setTeamFormError("Member name is required");
+      return;
+    }
+
+    if (!teamForm.photo.url) {
+      setTeamFormError("Member photo is required. Please upload an image.");
+      return;
+    }
+
+    if (!teamForm.designation.trim()) {
+      setTeamFormError("Member designation is required");
+      return;
+    }
+
+    setTeamSubmitting(true);
+    try {
+      if (editingMemberId) {
+        const res = await axios.put(`/api/team/${editingMemberId}`, teamForm);
+        setToast({
+          message: res.data?.message || "Team member updated successfully!",
+          type: "success",
+        });
+        setEditingMemberId(null);
+      } else {
+        const res = await axios.post("/api/team", teamForm);
+        setToast({
+          message: res.data?.message || "Team member added successfully!",
+          type: "success",
+        });
+      }
+
+      setTeamForm({
+        name: "",
+        photo: { url: "", publicId: "" },
+        designation: "",
+        experienceComment: "",
+      });
+      fetchTeamMembers();
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.error || "Failed to save team member";
+      setTeamFormError(errMsg);
+      setToast({
+        message: errMsg,
+        type: "error",
+      });
+    } finally {
+      setTeamSubmitting(false);
+    }
+  };
+
+  const handleEditMember = (member: TeamMemberItem) => {
+    setEditingMemberId(member._id || null);
+    setTeamForm({
+      name: member.name,
+      photo: {
+        url: member.photo?.url || "",
+        publicId: member.photo?.publicId || "",
+      },
+      designation: member.designation,
+      experienceComment: member.experienceComment || "",
+    });
+    setTeamFormError("");
+    window.scrollTo({ top: 120, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMemberId(null);
+    setTeamForm({
+      name: "",
+      photo: { url: "", publicId: "" },
+      designation: "",
+      experienceComment: "",
+    });
+    setTeamFormError("");
+  };
+
+  const handleDeleteMember = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete ${name}?`)) {
+      return;
+    }
+
+    try {
+      const res = await axios.delete(`/api/team/${id}`);
+      setToast({
+        message: res.data?.message || "Team member deleted successfully",
+        type: "success",
+      });
+      if (editingMemberId === id) {
+        handleCancelEdit();
+      }
+      setTeamMembers((prev) => prev.filter((m) => m._id !== id));
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.error || "Failed to delete team member",
+        type: "error",
+      });
+    }
+  };
+
   const tabs = [
     { id: "slider", label: "Hero Slider", icon: ImageIcon },
+    { id: "team", label: "Team Members", icon: Users },
     { id: "contact", label: "Contact Info", icon: Phone },
     { id: "office", label: "Office Info", icon: Building2 },
     { id: "password", label: "Password", icon: Lock },
@@ -507,6 +677,294 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 ))
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* ===== TEAM MEMBERS MANAGEMENT ===== */}
+        {activeTab === "team" && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-8"
+          >
+            {/* Header */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Team Members Management
+              </h3>
+              <p className="text-sm text-gray-500">
+                Add, update, and manage your company team members
+              </p>
+            </div>
+
+            {/* Form Section */}
+            <div className="bg-gray-50/70 border border-gray-200 rounded-xl p-5 md:p-6 shadow-xs">
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200">
+                <div>
+                  <h4 className="font-semibold text-gray-800 text-base">
+                    {editingMemberId ? "Edit Team Member" : "Add New Team Member"}
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {editingMemberId
+                      ? "Update the team member's details below"
+                      : "Fill in the details and upload a photo to add a new member"}
+                  </p>
+                </div>
+                {editingMemberId && (
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-lg transition cursor-pointer"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
+
+              <form onSubmit={handleTeamFormSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Photo Upload Column */}
+                  <div className="lg:col-span-1">
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                      Member Photo <span className="text-red-500">*</span>
+                    </label>
+                    <ImageUpload
+                      mode="single"
+                      label=""
+                      existingImages={
+                        teamForm.photo.url
+                          ? [
+                              {
+                                url: teamForm.photo.url,
+                                publicId: teamForm.photo.publicId,
+                              },
+                            ]
+                          : []
+                      }
+                      onChange={handleTeamPhotoUpload}
+                      onRemove={() =>
+                        setTeamForm((prev) => ({
+                          ...prev,
+                          photo: { url: "", publicId: "" },
+                        }))
+                      }
+                      maxFileSize={5}
+                    />
+                    <p className="text-xs text-gray-400 mt-2">
+                      Upload portrait or square photo (max 5MB).
+                    </p>
+                  </div>
+
+                  {/* Form Details Column */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={teamForm.name}
+                        onChange={(e) =>
+                          setTeamForm((prev) => ({
+                            ...prev,
+                            name: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g. Engr. Forhad Hossain"
+                        className="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                        Designation <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={teamForm.designation}
+                        onChange={(e) =>
+                          setTeamForm((prev) => ({
+                            ...prev,
+                            designation: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g. CEO & Managing Director / Chief Architect"
+                        className="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                        Experience Comment / Bio
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={teamForm.experienceComment}
+                        onChange={(e) =>
+                          setTeamForm((prev) => ({
+                            ...prev,
+                            experienceComment: e.target.value,
+                          }))
+                        }
+                        placeholder="e.g. 15+ years experience in exhibition booth design and fabrication"
+                        className="w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                      />
+                    </div>
+
+                    {teamFormError && (
+                      <div className="bg-red-50 border border-red-200 text-red-700 text-xs px-3 py-2 rounded-lg flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                        <span>{teamFormError}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        type="submit"
+                        disabled={teamSubmitting}
+                        className="px-5 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-hover text-sm font-medium cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-sm transition"
+                      >
+                        {teamSubmitting ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {editingMemberId ? "Updating..." : "Adding..."}
+                          </>
+                        ) : editingMemberId ? (
+                          <>
+                            <CheckCircle className="w-4 h-4" /> Update Member
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="w-4 h-4" /> Add Team Member
+                          </>
+                        )}
+                      </button>
+
+                      {editingMemberId && (
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 text-sm cursor-pointer transition"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Members Table Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-gray-800 text-base flex items-center gap-2">
+                  Team Members List
+                  <span className="text-xs bg-primary/10 text-primary font-bold px-2 py-0.5 rounded-full">
+                    {teamMembers.length}
+                  </span>
+                </h4>
+              </div>
+
+              {teamLoading ? (
+                <div className="py-12 text-center text-gray-400">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                  <p className="text-sm">Loading team members...</p>
+                </div>
+              ) : teamMembers.length === 0 ? (
+                <div className="border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50/50">
+                  <Users className="w-10 h-10 text-gray-400 mx-auto mb-2 opacity-60" />
+                  <p className="text-sm font-medium text-gray-600">
+                    No team members added yet
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Fill in the form above to add your first team member.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-gray-200 rounded-xl shadow-xs">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50/80 border-b border-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        <th className="py-3 px-4 w-12 text-center">#</th>
+                        <th className="py-3 px-4">Photo</th>
+                        <th className="py-3 px-4">Name</th>
+                        <th className="py-3 px-4">Designation</th>
+                        <th className="py-3 px-4">Experience Comment</th>
+                        <th className="py-3 px-4 text-center w-28">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
+                      {teamMembers.map((member, idx) => (
+                        <tr
+                          key={member._id || idx}
+                          className={`hover:bg-gray-50/60 transition ${
+                            editingMemberId === member._id ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <td className="py-3 px-4 text-center text-xs text-gray-400 font-medium">
+                            {idx + 1}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gray-200 bg-gray-100 shrink-0">
+                              {member.photo?.url ? (
+                                <Image
+                                  src={member.photo.url}
+                                  alt={member.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                  <Users className="w-5 h-5" />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-gray-900 whitespace-nowrap">
+                            {member.name}
+                          </td>
+                          <td className="py-3 px-4 whitespace-nowrap">
+                            <span className="inline-block bg-primary/10 text-primary font-medium text-xs px-2.5 py-1 rounded-md">
+                              {member.designation}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-gray-600 max-w-xs truncate">
+                            {member.experienceComment || (
+                              <span className="text-gray-400 italic">
+                                No comment
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleEditMember(member)}
+                                title="Edit Member"
+                                className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition cursor-pointer"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteMember(member._id!, member.name)
+                                }
+                                title="Delete Member"
+                                className="p-1.5 hover:bg-red-50 text-red-600 rounded-lg transition cursor-pointer"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </motion.div>

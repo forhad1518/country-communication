@@ -263,10 +263,12 @@ export default function AboutPage() {
   const [activeVideo, setActiveVideo] = useState<string | null>(null);
   const [slides, setSlides] = useState<SliderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [teamList, setTeamList] = useState(teamMembers);
 
   // ===== FETCH SLIDERS FROM API =====
   useEffect(() => {
     fetchSliders();
+    fetchTeamMembers();
   }, []);
 
   const fetchSliders = async () => {
@@ -281,6 +283,24 @@ export default function AboutPage() {
       console.error("Error fetching sliders:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const res = await axios.get("/api/team");
+      if (res.data?.data && res.data.data.length > 0) {
+        setTeamList(
+          res.data.data.map((item: any) => ({
+            name: item.name,
+            role: item.designation,
+            image: item.photo?.url || "https://picsum.photos/200/200",
+            bio: item.experienceComment || "",
+          })),
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching team members:", error);
     }
   };
 
@@ -652,7 +672,7 @@ export default function AboutPage() {
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {teamMembers.map((member, i) => (
+              {teamList.map((member, i) => (
                 <TeamCard key={i} member={member} index={i} />
               ))}
             </div>
