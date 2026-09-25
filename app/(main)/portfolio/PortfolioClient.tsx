@@ -91,37 +91,14 @@ const getThumbnail = (item: PortfolioType): string => {
   return "";
 };
 
-// Helper: Freepik-style asymmetric aspect ratios & heights
-const getAspectVariation = (index: number) => {
-  const variations = [
-    "aspect-[4/5] min-h-[330px]", // tall portrait
-    "aspect-[16/11] min-h-[230px]", // compact landscape
-    "aspect-[3/4] min-h-[390px]", // tall feature
-    "aspect-square min-h-[290px]", // square
-    "aspect-[16/10] min-h-[245px]", // standard landscape
-    "aspect-[4/5] min-h-[355px]", // medium portrait
-  ];
-  return variations[index % variations.length];
-};
-
-// Skeleton Loader (Freepik-style masonry heights)
+// Skeleton Loader (uniform grid)
 const PortfolioSkeleton = () => {
-  const heights = [
-    "aspect-[4/5] min-h-[330px]",
-    "aspect-[16/11] min-h-[230px]",
-    "aspect-[3/4] min-h-[390px]",
-    "aspect-square min-h-[290px]",
-    "aspect-[16/10] min-h-[245px]",
-    "aspect-[4/5] min-h-[355px]",
-    "aspect-[16/11] min-h-[230px]",
-    "aspect-[3/4] min-h-[390px]",
-  ];
   return (
-    <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
-      {heights.map((h, i) => (
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
         <div
           key={i}
-          className={`break-inside-avoid mb-6 bg-gray-900/60 border border-white/10 rounded-2xl overflow-hidden animate-pulse ${h}`}
+          className="aspect-[4/3] bg-gray-900/60 border border-white/10 rounded-2xl overflow-hidden animate-pulse"
         >
           <div className="w-full h-full bg-gradient-to-b from-gray-800/40 via-gray-900/60 to-black/80" />
         </div>
@@ -130,7 +107,7 @@ const PortfolioSkeleton = () => {
   );
 };
 
-// Portfolio Card (Freepik-style asymmetric card)
+// Portfolio Card
 const PortfolioCard = ({
   project,
   index,
@@ -139,7 +116,6 @@ const PortfolioCard = ({
   index: number;
 }) => {
   const thumbnail = getThumbnail(project);
-  const aspectClass = getAspectVariation(index);
 
   return (
     <motion.div
@@ -147,36 +123,32 @@ const PortfolioCard = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.45, delay: (index % 6) * 0.05 }}
-      className="break-inside-avoid mb-6 group"
+      className="group relative h-full"
     >
-      <Link href={`/portfolio/${project.slug}`} className="block">
-        <div className="relative rounded-2xl overflow-hidden bg-neutral-900/80 border border-white/10 group-hover:border-primary/50 shadow-md group-hover:shadow-2xl group-hover:shadow-primary/20 transition-all duration-500">
-          {/* Asymmetrical Image Box */}
-          <div
-            className={`relative w-full ${aspectClass} overflow-hidden bg-neutral-950`}
-          >
-            {thumbnail ? (
-              <Image
-                src={thumbnail}
-                alt={project.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 gap-2">
-                <span className="text-4xl">🏢</span>
-                <span className="text-xs text-gray-500">No preview</span>
-              </div>
-            )}
+      <Link href={`/portfolio/${project.slug}`} className="block h-full">
+        <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-neutral-900 border border-white/10 group-hover:border-primary/50 shadow-md group-hover:shadow-2xl group-hover:shadow-primary/20 transition-all duration-500">
+          {/* Thumbnail Image - Only thumbnail visible normally */}
+          {thumbnail ? (
+            <Image
+              src={thumbnail}
+              alt={project.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-gray-600 gap-2 bg-neutral-950">
+              <span className="text-4xl">🏢</span>
+              <span className="text-xs text-gray-500">No preview</span>
+            </div>
+          )}
 
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 opacity-75 group-hover:opacity-90 transition-opacity duration-300" />
-
-            {/* Top Floating Badges */}
-            <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2 z-10 pointer-events-none">
+          {/* Hover Overlay - Portfolio Information appears on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/75 to-black/35 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-5 z-10">
+            {/* Top Badges */}
+            <div className="flex items-center justify-between gap-2 transform -translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
               {project.exhibition_name ? (
-                <span className="px-2.5 py-1 text-[11px] font-semibold bg-black/65 backdrop-blur-md text-gray-200 rounded-full border border-white/15 line-clamp-1 max-w-[70%] shadow-sm">
+                <span className="px-2.5 py-1 text-[11px] font-semibold bg-white/15 backdrop-blur-md text-white rounded-full border border-white/20 line-clamp-1 max-w-[70%] shadow-sm">
                   {project.exhibition_name}
                 </span>
               ) : (
@@ -184,40 +156,43 @@ const PortfolioCard = ({
               )}
 
               {project.projectInfo?.boothSize && (
-                <span className="px-2.5 py-0.5 text-[10px] font-semibold bg-primary/85 backdrop-blur-md text-white rounded-full border border-primary/30 shadow-sm shrink-0">
+                <span className="px-2.5 py-0.5 text-[10px] font-semibold bg-primary text-white rounded-full shadow-sm shrink-0">
                   {project.projectInfo.boothSize} sqm
                 </span>
               )}
             </div>
 
             {/* Hover Center Button */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100 z-10 pointer-events-none">
+            <div className="flex items-center justify-center transform scale-85 group-hover:scale-100 transition-transform duration-300 pointer-events-none">
               <span className="px-4 py-2 bg-primary/95 backdrop-blur-md text-white rounded-full text-xs font-semibold flex items-center gap-2 shadow-xl shadow-primary/40">
-                <Eye className="w-3.5 h-3.5" /> View Project
+                <Eye className="w-3.5 h-3.5" /> View Details
               </span>
             </div>
 
-            {/* Bottom Info Overlay */}
-            <div className="absolute bottom-0 inset-x-0 p-4 z-10">
-              <h3 className="font-bold text-white text-base md:text-lg mb-1 group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+            {/* Bottom Info */}
+            <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 space-y-1.5">
+              <h3 className="font-bold text-white text-base md:text-lg group-hover:text-primary transition-colors line-clamp-2 leading-snug">
                 {project.title}
               </h3>
 
               {project.projectInfo?.clientName && (
-                <p className="text-xs text-gray-300 mb-2 line-clamp-1">
-                  Client: {project.projectInfo.clientName}
+                <p className="text-xs text-gray-300 line-clamp-1">
+                  <span className="text-gray-400">Client:</span>{" "}
+                  {project.projectInfo.clientName}
                 </p>
               )}
 
-              <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-white/10">
+              <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-white/15">
                 <div className="flex items-center gap-2">
-                  {project.projectInfo?.location && (
+                  {project.projectInfo?.location ? (
                     <span className="flex items-center gap-1 text-[11px] text-gray-300">
                       <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
                       <span className="line-clamp-1">
                         {project.projectInfo.location}
                       </span>
                     </span>
+                  ) : (
+                    <span className="text-[11px] text-gray-400">Exhibition Stall</span>
                   )}
                 </div>
 
@@ -530,7 +505,7 @@ function PortfolioContent() {
             </button>
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {currentProjects.map((project, index) => (
               <PortfolioCard
                 key={project._id}
