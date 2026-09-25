@@ -74,7 +74,11 @@ const AVAILABLE_SERVICES = [
   "Post-Event Dismantling & Warehousing",
 ];
 
-export default function QuoteClient() {
+interface QuoteClientProps {
+  showBreadcrumb?: boolean;
+}
+
+export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps = {}) {
   const [exhibitions, setExhibitions] = useState<{ _id: string; exhibitionName: string; location: string }[]>([]);
   const [loadingExhibitions, setLoadingExhibitions] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -283,7 +287,7 @@ export default function QuoteClient() {
   return (
     <div className="relative bg-black min-h-screen text-white overflow-hidden py-12 md:py-16">
       {/* Background Glows */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-10 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute top-1/3 right-10 w-96 h-96 bg-red-600/10 rounded-full blur-3xl" />
         <div className="absolute bottom-10 left-1/3 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
@@ -291,13 +295,15 @@ export default function QuoteClient() {
 
       <div className="relative z-10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <Link href="/" className="hover:text-primary transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
-          <span className="text-white font-medium">Get Free Quote</span>
-        </div>
+        {showBreadcrumb && (
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
+            <Link href="/" className="hover:text-primary transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+            <span className="text-white font-medium">Get Free Quote</span>
+          </div>
+        )}
 
         {/* Page Heading */}
         <div className="text-center max-w-3xl mx-auto mb-12">

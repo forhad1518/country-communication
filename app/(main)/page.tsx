@@ -8,6 +8,7 @@ import Working_process from "@/components/sections/home/Working_process";
 import ExhibitionCampaign from "@/components/sections/home/ExhibitionCampaign";
 import Contact from "@/components/sections/home/Contact";
 import OurClients from "@/components/ValuableClient";
+import GetFreeQuote from "@/components/sections/home/GetFreeQuote";
 
 
 export default function Home() {
@@ -29,9 +30,13 @@ export default function Home() {
       <div >
         <ExhibitionCampaign />
       </div>
-      {/* next exhibition */}
+      {/* Valuable Clients */}
       <div >
         <OurClients />
+      </div>
+      {/* Get Free Quote */}
+      <div >
+        <GetFreeQuote />
       </div>
       {/* Contact Section */}
       <div>

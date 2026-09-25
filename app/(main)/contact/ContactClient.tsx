@@ -221,8 +221,11 @@ const SocialIcon = ({
   );
 };
 
-// ===== MAIN COMPONENT =====
-export default function ContactClient() {
+interface ContactClientProps {
+  isSection?: boolean;
+}
+
+export default function ContactClient({ isSection = false }: ContactClientProps = {}) {
   const [contactInfo, setContactInfo] = useState<ContactInfoType>({
     whatsapp: "",
     wechat: "",
@@ -320,15 +323,15 @@ export default function ContactClient() {
   };
 
   return (
-    <div className="relative min-h-screen bg-black overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
+    <div className={`relative bg-black overflow-hidden ${isSection ? "py-8 md:py-12" : "min-h-screen"}`}>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-0 w-150 h-150 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-0 w-125 h-125 bg-accent/10 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10">
         {/* Hero */}
-        <section className="pt-20 md:pt-28 pb-12">
+        <section className={isSection ? "pt-4 pb-10" : "pt-20 md:pt-28 pb-12"}>
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
