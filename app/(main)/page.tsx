@@ -20,10 +20,6 @@ export default function Home() {
       <div >
         <Offer_service />
       </div>
-      {/* About Us Section */}
-      <div >
-        <Our_services />
-      </div>
       {/* WorkFLow Section */}
       <div >
         <Workflow />

@@ -258,12 +258,12 @@ const TeamCard = ({
     className="group"
   >
     <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl p-6 border border-white/10 hover:border-primary/30 transition-all duration-300 text-center">
-      <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden border-2 border-primary/30 group-hover:border-primary transition-colors">
+      <div className="relative w-50 h-50 mx-auto mb-4 rounded-lg overflow-hidden border-2 border-primary/30 group-hover:border-primary transition-colors">
         <Image
           src={member.image}
           alt={member.name}
           fill
-          className="object-cover"
+          className="object-fill w-full h-full"
         />
       </div>
       <h3 className="text-lg font-semibold text-white mb-1">{member.name}</h3>
@@ -685,7 +685,7 @@ export default function AboutPage() {
         </section>
 
         {/* ===== TESTIMONIAL ===== */}
-        <section className="py-24 bg-linear-to-b from-transparent via-accent/5 to-transparent relative overflow-hidden">
+        <section className="bg-linear-to-b from-transparent via-accent/5 to-transparent relative overflow-hidden">
           <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0 }}
@@ -799,18 +799,18 @@ export default function AboutPage() {
         </section>
 
         {/* ===== TEAM SECTION ===== */}
-        <section className="py-20">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
+        <section>
+          <div className="py-20 border-t border-white/10 w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-center mb-14"
             >
-              <span className="text-primary text-sm font-medium">Our Team</span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
-                Meet the Experts
+                Meet the <span className="bg-linear-to-r from-primary to-primary-hover bg-clip-text text-transparent">Experts</span>
               </h2>
+              <span className="text-primary text-sm font-medium">Talent Behind Our Success</span>
             </motion.div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">

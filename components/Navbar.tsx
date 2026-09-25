@@ -29,7 +29,6 @@ const navLinks: NavLink[] = [
     // },
     { href: "/about", label: "About Us" },
     { href: "/exhibitions", label: "Exhibitions" },
-    { href: "/services", label: "Services" },
     { href: "/portfolio", label: "Portfolio" },
     { href: "/blog", label: "Blog/News" },
     { href: "/get-free-quote", label: "Get Free Quote" },
