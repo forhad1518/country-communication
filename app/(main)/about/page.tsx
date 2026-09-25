@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import OurClients from "@/components/ValuableClientAbout";
+import Workflow from "@/components/sections/home/Workflow";
 
 // Stats Data
 const companyStats = [
@@ -135,33 +136,7 @@ const coreValues = [
   },
 ];
 
-// Manufacturing Facilities
-const manufacturingData = [
-  {
-    title: "Design and Visualization",
-    image: "https://picsum.photos/400/300?cnc",
-    description:
-      "Translate objectives into spatial concepts, layouts, and visual direction before production begins.",
-  },
-  {
-    title: "Production and Finishing",
-    image: "https://picsum.photos/400/300?metal",
-    description:
-      "Select structures, materials, and finishes that support the intended brand expression and practical use.",
-  },
-  {
-    title: "Graphics and Brand Application",
-    image: "https://picsum.photos/400/300?printing",
-    description:
-      "Apply messaging, signage, and visual details consistently across the visitor journey.",
-  },
-  {
-    title: "Installation and Quality Check",
-    image: "https://picsum.photos/400/300?assembly",
-    description:
-      "Coordinate on-site set-up and final checks before the event opens.",
-  },
-];
+
 
 // Client Logos (Sample)
 const clientLogos = [
@@ -611,57 +586,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ===== MANUFACTURING FACILITIES ===== */}
-        <section className="py-20 md:py-28">
-          <div className="w-[90%] sm:w-[85%] lg:w-[80%] max-w-400 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-14"
-            >
-              <span className="text-primary text-sm font-medium">
-                How We Deliver
-              </span>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
-                Our Process
-              </h2>
-              <p className="text-gray-400 mt-4 max-w-2xl mx-auto">
-                Every project is planned around the realities of its venue, timeline, and audience. We coordinate design,
-                production, graphics, and on-site readiness so the final space feels considered and performs as intended.
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {manufacturingData.map((facility, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="group"
-                >
-                  <div className="relative h-48 rounded-2xl overflow-hidden mb-4">
-                    <Image
-                      src={facility.image}
-                      alt={facility.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
-                    {facility.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm">
-                    {facility.description}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* ===== WORKING PROCESS / WORKFLOW ===== */}
+        <Workflow />
 
         {/* ===== OUR CLIENTS ===== */}
         <section className="py-16 border-t border-white/10">
