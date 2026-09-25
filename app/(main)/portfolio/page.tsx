@@ -2,39 +2,48 @@ import type { Metadata } from "next";
 import PortfolioClient from "./PortfolioClient";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://countrycommu.com";
 
   return {
-    title: "Our Portfolio | Exhibition Booth Designs | Country Communication",
+    title: "Exhibition Booth Portfolio & Trade Show Stands",
     description:
-      "Explore our portfolio of award-winning exhibition booth designs, trade show stands, and brand activations. View design renders, real images, and project details from leading exhibitions in Bangladesh.",
+      "Explore 1000+ award-winning exhibition booth designs, custom trade show stands, pavilions, and brand activations by Country Communication at ICCB Dhaka and worldwide.",
     keywords: [
-      "portfolio",
-      "exhibition booth design",
-      "trade show booth",
-      "booth fabrication",
-      "3D booth render",
-      "exhibition stand",
-      "Country Communication",
-      "Bangladesh exhibition",
-      "ICCB Dhaka",
-      "booth contractor",
+      "exhibition booth portfolio",
+      "trade show booth design Bangladesh",
+      "booth fabrication photos",
+      "3D stall render ICCB",
+      "exhibition stand contractor Dhaka",
+      "Country Communication portfolio",
+      "Bangladesh exhibition stall builder",
+      "custom expo booth examples",
     ].join(", "),
     openGraph: {
-      title: "Our Portfolio | Exhibition Booth Designs | Country Communication",
+      title: "Exhibition Booth Portfolio & Trade Show Stands | Country Communication",
       description:
-        "Explore our portfolio of award-winning exhibition booth designs, trade show stands, and brand activations.",
+        "Explore 1000+ award-winning exhibition booth designs, trade show stands, and brand activations built by Country Communication.",
       type: "website",
       url: `${baseUrl}/portfolio`,
       siteName: "Country Communication",
       locale: "en_US",
+      images: [
+        {
+          url: `${baseUrl}/og-portfolio.png`,
+          width: 1200,
+          height: 630,
+          alt: "Country Communication Exhibition Booth Portfolio",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Our Portfolio | Exhibition Booth Designs | Country Communication",
+      title: "Exhibition Booth Portfolio | Country Communication",
       description:
-        "Explore our portfolio of award-winning exhibition booth designs, trade show stands, and brand activations.",
+        "Explore 1000+ award-winning exhibition booth designs and trade show stands built by Country Communication.",
+      images: [`${baseUrl}/og-portfolio.png`],
       creator: "@CountryCommBD",
+      site: "@CountryCommBD",
     },
     alternates: {
       canonical: `${baseUrl}/portfolio`,
