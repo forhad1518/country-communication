@@ -86,6 +86,24 @@ body {
   animation: gradient-x 8s ease infinite;
 }
 
+/* Live Status Blinking Animation */
+@keyframes live-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 16px rgba(0, 153, 153, 0.9);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.85);
+    box-shadow: 0 0 3px rgba(0, 153, 153, 0.3);
+  }
+}
+
+.animate-live-blink {
+  animation: live-blink 1.4s ease-in-out infinite;
+}
+
 /* admin css */
 /* Custom scrollbar for sidebar */
 .admin-sidebar-scroll::-webkit-scrollbar {

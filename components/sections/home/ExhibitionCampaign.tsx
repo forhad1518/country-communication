@@ -259,21 +259,38 @@ export default function ExhibitionCampaign() {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
           {/* 1. LEFT: Timeline Sidebar */}
           <div className="lg:w-40 shrink-0 flex flex-row lg:flex-col items-start lg:items-center gap-4 lg:gap-0 relative pb-8 lg:pb-0">
-            {/* Timeline Line */}
-            <div className="absolute left-3 lg:left-1/2 top-2 bottom-4 w-px bg-white/10 lg:-translate-x-1/2 hidden lg:block" />
+            {/* Timeline Line (Align Bar) */}
+            <div className="absolute left-3 lg:left-1/2 top-10 bottom-6 w-px bg-white/20 lg:-translate-x-1/2 hidden lg:block" />
             <div className="absolute left-3 lg:left-1/2 top-2 h-full w-px bg-linear-to-b from-primary/0 via-primary/20 to-primary/0 lg:-translate-x-1/2 block lg:hidden" />
 
             {/* Running Status */}
-            <div className="relative z-10 flex items-center gap-3 lg:flex-col lg:gap-2 mb-0 lg:mb-16 group cursor-pointer w-full lg:w-auto">
-              <div className="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-primary ring-4 ring-primary/20 group-hover:ring-primary/40 transition-all shadow-lg shadow-primary/30" />
-              <div className="text-xs font-medium text-white bg-black/60 backdrop-blur px-3 py-1 rounded-full border border-white/10">
+            <div
+              className={`relative z-10 flex items-center gap-3 lg:flex-col lg:gap-2 mb-0 ${
+                running.length > 0 ? "lg:mb-[340px]" : "lg:mb-[160px]"
+              } group cursor-pointer w-full lg:w-auto pt-0 lg:pt-8`}
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75 duration-1000" />
+                <div className="w-3.5 h-3.5 lg:w-4 lg:h-4 rounded-full bg-primary ring-4 ring-primary/30 group-hover:ring-primary/50 transition-all shadow-lg shadow-primary/50 animate-live-blink relative z-10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                </div>
+              </div>
+              <div className="text-xs font-medium text-white bg-black/60 backdrop-blur px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-80" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
+                </span>
                 RUNNING
               </div>
             </div>
 
             {/* Next Status */}
-            <div className="relative z-10 flex items-center gap-3 lg:flex-col lg:gap-2 mb-0 lg:mb-16 group cursor-pointer w-full lg:w-auto">
-              <div className="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-accent ring-4 ring-accent/20 group-hover:ring-accent/40 transition-all shadow-lg shadow-accent/30" />
+            <div
+              className={`relative z-10 flex items-center gap-3 lg:flex-col lg:gap-2 mb-0 ${
+                next ? "lg:mb-[330px]" : "lg:mb-[160px]"
+              } group cursor-pointer w-full lg:w-auto`}
+            >
+              <div className="w-3.5 h-3.5 lg:w-4 lg:h-4 rounded-full bg-accent ring-4 ring-accent/20 group-hover:ring-accent/40 transition-all shadow-lg shadow-accent/30" />
               <div className="text-xs font-medium text-white bg-black/60 backdrop-blur px-3 py-1 rounded-full border border-white/10">
                 NEXT
               </div>
@@ -281,7 +298,7 @@ export default function ExhibitionCampaign() {
 
             {/* Upcoming Status */}
             <div className="relative z-10 flex items-center gap-3 lg:flex-col lg:gap-2 group cursor-pointer w-full lg:w-auto">
-              <div className="w-3 h-3 lg:w-4 lg:h-4 rounded-full bg-gray-600 ring-4 ring-gray-600/20 group-hover:ring-gray-600/40 transition-all" />
+              <div className="w-3.5 h-3.5 lg:w-4 lg:h-4 rounded-full bg-gray-600 ring-4 ring-gray-600/20 group-hover:ring-gray-600/40 transition-all" />
               <div className="text-xs font-medium text-gray-400 bg-black/60 backdrop-blur px-3 py-1 rounded-full border border-white/10">
                 UPCOMING
               </div>
@@ -304,7 +321,11 @@ export default function ExhibitionCampaign() {
                       fill
                       className="object-contain p-3"
                     />
-                    <div className="absolute -top-3 -right-3 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full border-2 border-[#070d16]">
+                    <div className="absolute -top-3 -right-3 bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full border-2 border-[#070d16] flex items-center gap-1.5 shadow-lg shadow-primary/40">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80 duration-1000"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-white animate-pulse"></span>
+                      </span>
                       LIVE NOW
                     </div>
                   </div>
@@ -350,7 +371,13 @@ export default function ExhibitionCampaign() {
                       />
                     </div>
                     <div className="flex justify-between text-xs text-gray-400 max-w-md mx-auto md:mx-0">
-                      <span>Expo is Running</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                        </span>
+                        Expo is Running
+                      </span>
                       <span>
                         {calculateProgress(
                           running[0].startDate,
