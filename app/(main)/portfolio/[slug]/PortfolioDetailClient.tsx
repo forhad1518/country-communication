@@ -559,7 +559,7 @@ const AccordionItem = ({
   );
 };
 
-// ---- Full Width Image Gallery ----
+// ---- Full Width Image Gallery with High-Resolution Lightbox Modal ----
 const FullWidthGallery = ({
   images,
   title,
@@ -567,26 +567,215 @@ const FullWidthGallery = ({
   images: ImageItem[];
   title: string;
 }) => {
+  const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
+
+  // Keyboard Navigation: Esc to close, Arrow keys to navigate
+  useEffect(() => {
+    if (activeImageIndex === null) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setActiveImageIndex(null);
+      } else if (e.key === "ArrowLeft") {
+        setActiveImageIndex((prev) =>
+          prev !== null ? (prev === 0 ? images.length - 1 : prev - 1) : null,
+        );
+      } else if (e.key === "ArrowRight") {
+        setActiveImageIndex((prev) =>
+          prev !== null ? (prev === images.length - 1 ? 0 : prev + 1) : null,
+        );
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [activeImageIndex, images.length]);
+
   if (!images || images.length === 0) return null;
 
+  const currentImage =
+    activeImageIndex !== null ? images[activeImageIndex] : null;
+
   return (
-    <div className="space-y-3">
-      <h3 className="text-xl font-semibold text-white">{title}</h3>
-      <div className="space-y-4">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold text-white">{title}</h3>
+        <span className="text-xs text-gray-400 font-mono">
+          {images.length} {images.length === 1 ? "Photo" : "Photos"}
+        </span>
+      </div>
+
+      <div className="space-y-5">
         {images.map((img, index) => (
           <div
             key={index}
-            className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black/30"
+            onClick={() => setActiveImageIndex(index)}
+            className="group relative w-full aspect-video sm:aspect-[16/10] md:aspect-[16/9] rounded-2xl md:rounded-3xl overflow-hidden bg-neutral-900 border border-white/10 hover:border-primary/60 shadow-lg hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 cursor-pointer select-none"
           >
+            {/* Main Image with object-cover filling the card */}
             <Image
-              src={getOptimizedUrl(img.url, 1200, 700)}
+              src={getOptimizedUrl(img.url, 1400, 850)}
               alt={`${title} ${index + 1}`}
               fill
-              className="object-contain bg-black/20"
+              sizes="(max-width: 1024px) 100vw, 850px"
+              className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
+
+            {/* Gradient Overlay for badge contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/35 pointer-events-none" />
+
+            {/* Top-Left: Index Badge */}
+            <div className="absolute top-3.5 left-3.5 px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-xs font-mono text-white font-semibold shadow-md pointer-events-none">
+              {index + 1} / {images.length}
+            </div>
+
+            {/* Top-Right: Zoom / Maximize Icon */}
+            <div className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md pointer-events-none">
+              <Maximize2 className="w-4 h-4 text-primary" />
+            </div>
+
+            {/* Center Hover Overlay Banner */}
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+              <div className="px-5 py-2.5 rounded-xl bg-black/85 backdrop-blur-md border border-white/25 text-xs sm:text-sm font-semibold text-white flex items-center gap-2 shadow-2xl transform scale-95 group-hover:scale-100 transition-transform duration-300">
+                <Maximize2 className="w-4 h-4 text-primary" />
+                <span>View Full Image</span>
+              </div>
+            </div>
           </div>
         ))}
       </div>
+
+      {/* High-Resolution Lightbox Modal (Full View) */}
+      <AnimatePresence>
+        {activeImageIndex !== null && currentImage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/95 backdrop-blur-md">
+            {/* Backdrop click to close */}
+            <div
+              className="absolute inset-0"
+              onClick={() => setActiveImageIndex(null)}
+            />
+
+            {/* Prominent Floating Close Button (Top-Right) */}
+            <button
+              onClick={() => setActiveImageIndex(null)}
+              className="fixed top-4 right-4 sm:top-6 sm:right-6 z-60 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-red-600 hover:bg-red-500 text-white border-2 border-white/30 backdrop-blur-xl flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all cursor-pointer group"
+              title="Close Full View (Esc)"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6 text-white stroke-[2.5]" />
+            </button>
+
+            {/* Modal Dialog */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 max-w-6xl w-full bg-neutral-900/90 border border-white/20 rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between p-3.5 sm:p-4 px-4 sm:px-6 border-b border-white/10 bg-black/50">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-sm sm:text-base font-bold text-white line-clamp-1">
+                    {title}
+                  </h3>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-[11px] font-mono text-gray-300 border border-white/10">
+                    {activeImageIndex + 1} of {images.length}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setActiveImageIndex(null)}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-red-600/90 hover:bg-red-500 text-white border border-red-400/50 shadow-lg shadow-red-600/20 transition-all cursor-pointer text-xs sm:text-sm font-semibold hover:scale-105 active:scale-95"
+                    title="Close (Esc)"
+                  >
+                    <span>Close</span>
+                    <X className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                </div>
+              </div>
+
+              {/* High-Res Image Display Container */}
+              <div className="relative p-2 sm:p-4 md:p-6 bg-neutral-950 flex items-center justify-center min-h-[50vh] max-h-[78vh] overflow-hidden">
+                {/* Navigation Chevrons */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveImageIndex((prev) =>
+                          prev !== null
+                            ? prev === 0
+                              ? images.length - 1
+                              : prev - 1
+                            : 0,
+                        );
+                      }}
+                      className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/80 hover:bg-primary text-white backdrop-blur-md border border-white/20 hover:border-primary flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer z-20"
+                      title="Previous (←)"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </button>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveImageIndex((prev) =>
+                          prev !== null
+                            ? prev === images.length - 1
+                              ? 0
+                              : prev + 1
+                            : 0,
+                        );
+                      }}
+                      className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/80 hover:bg-primary text-white backdrop-blur-md border border-white/20 hover:border-primary flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer z-20"
+                      title="Next (→)"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </button>
+                  </>
+                )}
+
+                {/* Displayed Image */}
+                <img
+                  src={currentImage.url}
+                  alt={`${title} ${activeImageIndex + 1}`}
+                  className="max-h-[74vh] w-auto max-w-full rounded-xl object-contain border border-white/10 shadow-2xl select-none"
+                />
+              </div>
+
+              {/* Footer with Image navigation thumbnails if > 1 images */}
+              {images.length > 1 && (
+                <div className="p-3 px-4 bg-black/60 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto py-2.5">
+                  {images.map((thumb, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImageIndex(idx)}
+                      className={`relative w-12 h-10 sm:w-14 sm:h-11 rounded-lg overflow-hidden border transition-all cursor-pointer shrink-0 ${
+                        idx === activeImageIndex
+                          ? "border-primary ring-2 ring-primary/40 scale-105"
+                          : "border-white/15 opacity-50 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={getOptimizedUrl(thumb.url, 80, 60)}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
