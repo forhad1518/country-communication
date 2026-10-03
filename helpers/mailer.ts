@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import path from "path";
+import fs from "fs";
 import dbConnect from "@/config/connectDB";
 import ContactInfo from "@/models/ContactInfo";
 
@@ -20,6 +22,9 @@ interface QuoteEmailPayload {
   attachment?: {
     url?: string;
     publicId?: string;
+    originalName?: string;
+    fileSize?: number;
+    fileType?: string;
   };
 }
 
@@ -127,6 +132,13 @@ export async function sendQuoteEmails(data: QuoteEmailPayload) {
 
   const cleanWhatsApp = contact.whatsapp.replace(/[^0-9]/g, "");
   const clientCleanPhone = data.phone.replace(/[^0-9]/g, "");
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://countrycommu.com";
+  const fullAttachmentUrl = data.attachment?.url
+    ? data.attachment.url.startsWith("http")
+      ? data.attachment.url
+      : `${baseUrl.replace(/\/$/, "")}${data.attachment.url}`
+    : "";
 
   const servicesListHtml =
     data.services && data.services.length > 0
@@ -297,10 +309,17 @@ export async function sendQuoteEmails(data: QuoteEmailPayload) {
               <!-- Section 5: Attachment -->
               ${
                 data.attachment?.url
-                  ? `<div style="padding:14px 18px;background:#f3f4f6;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:24px;">
-                      <strong style="color:#111827;">📎 Attached Reference / Layout:</strong>
-                      <a href="${data.attachment.url}" target="_blank" style="color:#b91c1c;font-weight:700;margin-left:8px;text-decoration:none;">
-                        Open / Download Attachment File →
+                  ? `<div style="padding:16px 20px;background:#fef2f2;border-radius:12px;border:1px solid #fee2e2;margin-bottom:24px;">
+                      <div style="margin-bottom:6px;">
+                        <span style="font-size:16px;margin-right:6px;">📄</span>
+                        <strong style="color:#991b1b;font-size:14px;">Attached Floor Plan / Layout Document:</strong>
+                      </div>
+                      <p style="margin:4px 0 10px 0;font-size:13px;color:#4b5563;">
+                        File: <strong>${data.attachment.originalName || "Floor-Plan.pdf"}</strong>
+                        ${data.attachment.fileSize ? ` (${(data.attachment.fileSize / (1024 * 1024)).toFixed(2)} MB)` : ""}
+                      </p>
+                      <a href="${fullAttachmentUrl}" target="_blank" style="display:inline-block;background:#b91c1c;color:#ffffff;padding:8px 18px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;">
+                        📥 Download / View Floor Plan PDF →
                       </a>
                     </div>`
                   : ""
@@ -374,6 +393,7 @@ export async function sendQuoteEmails(data: QuoteEmailPayload) {
                   <li><strong>Booth Dimensions:</strong> ${data.boothSize}</li>
                   <li><strong>Booth Style / Sides:</strong> ${data.boothType || "Custom"}</li>
                   ${data.budget ? `<li><strong>Estimated Budget:</strong> ${data.budget}</li>` : ""}
+                  ${data.attachment?.url ? `<li><strong>Floor Plan Attached:</strong> Yes (${data.attachment.originalName || "PDF Document"})</li>` : ""}
                 </ul>
               </div>
 
@@ -481,13 +501,33 @@ export async function sendQuoteEmails(data: QuoteEmailPayload) {
   }
 
   try {
-    // 1. Dispatch to Admin (contains full client & project specifications)
+    // Prepare file attachments for email
+    const attachmentsList: any[] = [];
+    if (data.attachment?.url) {
+      if (data.attachment.url.startsWith("/uploads/")) {
+        const localFilePath = path.join(process.cwd(), "public", data.attachment.url);
+        if (fs.existsSync(localFilePath)) {
+          attachmentsList.push({
+            filename: data.attachment.originalName || path.basename(localFilePath),
+            path: localFilePath,
+          });
+        }
+      } else if (data.attachment.url.startsWith("http")) {
+        attachmentsList.push({
+          filename: data.attachment.originalName || "floor-plan.pdf",
+          path: data.attachment.url,
+        });
+      }
+    }
+
+    // 1. Dispatch to Admin (contains full client & project specifications + direct floor plan attachment)
     const adminPromise = transporter.sendMail({
       from: `"Country Communication Portal" <${fromEmail}>`,
       to: adminEmail,
       replyTo: data.email,
       subject: `🔔 New Free Quote Request: ${data.companyName} - ${data.exhibitionName} (${data.boothSize})`,
       html: adminEmailHtml,
+      attachments: attachmentsList,
     });
 
     // 2. Dispatch to Client (contains warm greetings, assurance to contact soon, and WhatsApp & WeChat QR codes)

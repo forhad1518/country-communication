@@ -1,5 +1,5 @@
 module.exports = {
-    allowedDevOrigins: ["https://country-communication.vercel.app", "https://countrycommu.com", "http://countrycommu.com"],
+    allowedDevOrigins: ["https://country-communication.vercel.app", "https://countrycommu.com", "http://countrycommu.com", "192.168.68.103"],
     images: {
         remotePatterns: [
             {
@@ -22,5 +22,14 @@ module.exports = {
             },
 
         ],
+    },
+    async redirects() {
+        return [
+            {
+                source: "/quote",
+                destination: "/get-free-quote",
+                permanent: true,
+            },
+        ];
     },
 }

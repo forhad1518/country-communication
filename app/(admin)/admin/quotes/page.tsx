@@ -49,7 +49,10 @@ type QuoteItem = {
   message?: string;
   attachment?: {
     url: string;
-    publicId: string;
+    publicId?: string;
+    originalName?: string;
+    fileSize?: number;
+    fileType?: string;
   };
   status: "pending" | "reviewed" | "contacted" | "completed" | "cancelled";
   createdAt: string;
@@ -424,6 +427,14 @@ export default function AdminQuotesPage() {
                           <span>•</span>
                           <span className="text-gray-400 line-clamp-1">{quote.boothType}</span>
                         </div>
+                        {quote.attachment?.url && (
+                          <div className="mt-1.5">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-red-50 text-red-700 border border-red-200">
+                              <FileText className="w-3 h-3 text-red-500" />
+                              <span>Floor Plan PDF</span>
+                            </span>
+                          </div>
+                        )}
                       </td>
 
                       {/* Contact Info */}
@@ -732,19 +743,49 @@ export default function AdminQuotesPage() {
                 {selectedQuote.attachment?.url && (
                   <div>
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
-                      Attached Layout / Drawing
+                      Attached Floor Plan / Layout Document
                     </h3>
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
-                      <ExternalLink className="w-5 h-5 text-primary shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs font-bold text-gray-800">Client Reference File Attached</p>
+                    <div className="p-4 bg-gradient-to-r from-red-50/50 via-white to-gray-50 border border-red-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-red-100 border border-red-200 flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[9px] font-black text-red-700 tracking-wider">PDF</span>
+                          <FileText className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-gray-900 truncate">
+                            {selectedQuote.attachment.originalName || "Floor-Plan.pdf"}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] text-gray-500">
+                            {selectedQuote.attachment.fileSize && selectedQuote.attachment.fileSize > 0 && (
+                              <span>
+                                {selectedQuote.attachment.fileSize < 1024 * 1024
+                                  ? `${(selectedQuote.attachment.fileSize / 1024).toFixed(1)} KB`
+                                  : `${(selectedQuote.attachment.fileSize / (1024 * 1024)).toFixed(2)} MB`}
+                              </span>
+                            )}
+                            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3" /> Attached
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
                         <a
                           href={selectedQuote.attachment.url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs text-primary font-semibold hover:underline"
+                          className="px-3.5 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-hover transition flex items-center gap-1.5 shadow-sm"
                         >
-                          Open / Download Attachment File →
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>View / Open PDF</span>
+                        </a>
+                        <a
+                          href={selectedQuote.attachment.url}
+                          download={selectedQuote.attachment.originalName || "floor-plan.pdf"}
+                          className="px-3 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-xs font-medium transition"
+                        >
+                          Download
                         </a>
                       </div>
                     </div>

@@ -400,13 +400,17 @@ export default function ExhibitionCampaign() {
                           Visit Expo →
                         </motion.button>
                       </Link>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-6 py-2.5 border border-white/20 text-white font-medium rounded-lg hover:bg-white/5 transition flex items-center gap-2"
+                      <Link
+                        href={`/get-free-quote?exhibition=${encodeURIComponent(running[0].exhibitionName)}`}
                       >
-                        <LayoutGrid className="w-4 h-4" /> Floor Plan →
-                      </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-6 py-2.5 border border-white/20 text-white font-medium rounded-lg hover:bg-white/5 transition flex items-center gap-2 cursor-pointer"
+                        >
+                          <LayoutGrid className="w-4 h-4" /> Floor Plan & Quote →
+                        </motion.button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -472,13 +476,13 @@ export default function ExhibitionCampaign() {
                         >
                           <CalendarDays className="w-4 h-4" /> Add to Calendar
                         </motion.button>
-                        <Link href="/contact">
+                        <Link href={`/get-free-quote?exhibition=${encodeURIComponent(next.exhibitionName)}`}>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="px-6 py-2 bg-linear-to-r from-primary to-primary-hover text-white font-medium rounded-lg shadow-lg hover:shadow-primary/30 transition flex items-center gap-2"
+                            className="px-6 py-2 bg-linear-to-r from-primary to-primary-hover text-white font-medium rounded-lg shadow-lg hover:shadow-primary/30 transition flex items-center gap-2 cursor-pointer"
                           >
-                            Book Your Stand →
+                            Book Your Stand & Quote →
                           </motion.button>
                         </Link>
                       </div>
@@ -600,13 +604,13 @@ export default function ExhibitionCampaign() {
                   </p>
                 </div>
               </div>
-              <Link href="/contact">
+              <Link href="/get-free-quote">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-3 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-lg shadow-xl hover:shadow-primary/30 transition-all flex items-center gap-2 z-10 whitespace-nowrap w-full md:w-auto justify-center"
+                  className="px-8 py-3 bg-linear-to-r from-primary to-primary-hover text-white font-semibold rounded-lg shadow-xl hover:shadow-primary/30 transition-all flex items-center gap-2 z-10 whitespace-nowrap w-full md:w-auto justify-center cursor-pointer"
                 >
-                  Book Your Stand Now <ArrowRight className="w-4 h-4" />
+                  Book Your Stand & Get Quote <ArrowRight className="w-4 h-4" />
                 </motion.button>
               </Link>
             </div>

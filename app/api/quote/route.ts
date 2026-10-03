@@ -53,8 +53,15 @@ export async function POST(req: NextRequest) {
       budget: budget?.trim() || "",
       services: Array.isArray(services) ? services : [],
       eventDate: eventDate?.trim() || "",
-      message: message?.trim() || "",
-      attachment: attachment || { url: "", publicId: "" },
+      attachment: attachment
+        ? {
+            url: attachment.url || "",
+            publicId: attachment.publicId || "",
+            originalName: attachment.originalName || "",
+            fileSize: attachment.fileSize || 0,
+            fileType: attachment.fileType || "",
+          }
+        : { url: "", publicId: "", originalName: "", fileSize: 0, fileType: "" },
       status: "pending",
     });
 

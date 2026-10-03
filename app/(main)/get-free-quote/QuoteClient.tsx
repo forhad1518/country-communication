@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -11,6 +12,7 @@ import {
   Calendar,
   CheckCircle2,
   ChevronRight,
+  ExternalLink,
   FileText,
   HelpCircle,
   Layers,
@@ -28,7 +30,6 @@ import {
   X,
 } from "lucide-react";
 import Heading1 from "@/components/Heading1";
-import uploadFiles from "@/helpers/upload.image";
 
 // Preset booth dimensions
 const BOOTH_SIZES = [
@@ -78,11 +79,13 @@ interface QuoteClientProps {
   showBreadcrumb?: boolean;
 }
 
-export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps = {}) {
+function QuoteClientContent({ showBreadcrumb = true }: QuoteClientProps = {}) {
+  const searchParams = useSearchParams();
   const [exhibitions, setExhibitions] = useState<{ _id: string; exhibitionName: string; location: string }[]>([]);
   const [loadingExhibitions, setLoadingExhibitions] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -109,7 +112,13 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
     "Raised Wooden Platform Flooring & Carpet",
   ]);
 
-  const [attachment, setAttachment] = useState<{ url: string; publicId: string } | null>(null);
+  const [attachment, setAttachment] = useState<{
+    url: string;
+    publicId?: string;
+    originalName: string;
+    fileSize: number;
+    fileType?: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch exhibitions for dropdown
@@ -117,7 +126,28 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
     const fetchExhibitions = async () => {
       try {
         const res = await axios.get("/api/exhibition");
-        setExhibitions(res.data.data || []);
+        const list = res.data.data || [];
+        setExhibitions(list);
+
+        // Pre-select exhibition if URL searchParam exists
+        const exhibitionQuery = searchParams?.get("exhibition");
+        if (exhibitionQuery) {
+          const found = list.some(
+            (e: any) => e.exhibitionName.toLowerCase() === exhibitionQuery.toLowerCase()
+          );
+          if (found) {
+            const matched = list.find(
+              (e: any) => e.exhibitionName.toLowerCase() === exhibitionQuery.toLowerCase()
+            );
+            setFormData((prev) => ({ ...prev, exhibitionName: matched.exhibitionName }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              exhibitionName: "Other",
+              customExhibition: exhibitionQuery,
+            }));
+          }
+        }
       } catch (err) {
         console.error("Failed to load exhibitions:", err);
       } finally {
@@ -125,7 +155,7 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
       }
     };
     fetchExhibitions();
-  }, []);
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -138,35 +168,118 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
     );
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Helper to format file sizes nicely
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return "";
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  // Dedicated PDF & Floor Plan Upload Handler (No Cloudinary)
+  const processFileUpload = async (file: File) => {
+    // 1. Validate file extension / mime type
+    const validExtensions = [".pdf", ".jpg", ".jpeg", ".png", ".webp"];
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    const isPdf = ext === ".pdf" || file.type === "application/pdf";
+    const isImage = file.type.startsWith("image/") || [".jpg", ".jpeg", ".png", ".webp"].includes(ext);
+
+    if (!isPdf && !isImage) {
+      Swal.fire({
+        icon: "warning",
+        title: "Unsupported File Format",
+        text: "Please upload a PDF document (.pdf) or layout image (.jpg, .png).",
+        background: "#111827",
+        color: "#ffffff",
+        confirmButtonColor: "#b91c1c",
+      });
+      return;
+    }
+
+    // 2. Validate file size (max 25MB)
+    const MAX_MB = 25;
+    if (file.size > MAX_MB * 1024 * 1024) {
+      Swal.fire({
+        icon: "warning",
+        title: "File Too Large",
+        text: `Your file size is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Maximum allowed size is ${MAX_MB}MB.`,
+        background: "#111827",
+        color: "#ffffff",
+        confirmButtonColor: "#b91c1c",
+      });
+      return;
+    }
 
     try {
       setUploadingFile(true);
-      const slug = `quote_${Date.now()}`;
-      const result = await uploadFiles({
-        type: "single",
-        files: file,
-        slug,
-        api: "/api/upload/image",
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      // Direct local upload without Cloudinary!
+      const res = await axios.post("/api/upload/floor-plan", formDataUpload, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const imgObj = result?.data || result;
-      if (imgObj?.url) {
-        setAttachment({ url: imgObj.url, publicId: imgObj.publicId || "" });
+      if (res.data.success) {
+        setAttachment({
+          url: res.data.url,
+          publicId: res.data.fileName || "",
+          originalName: res.data.originalName || file.name,
+          fileSize: res.data.fileSize || file.size,
+          fileType: res.data.mimeType || (isPdf ? "application/pdf" : file.type),
+        });
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "success",
+          title: "Floor plan PDF attached!",
+          showConfirmButton: false,
+          timer: 2500,
+          background: "#111827",
+          color: "#ffffff",
+        });
+      } else {
+        throw new Error(res.data.message || "Failed to upload floor plan");
       }
-    } catch (err) {
-      console.error("Attachment upload error:", err);
+    } catch (err: any) {
+      console.error("Floor plan upload error:", err);
       Swal.fire({
         icon: "error",
         title: "Upload Failed",
-        text: "Could not upload attachment. You can still submit the form without it.",
+        text: err.response?.data?.message || err.message || "Could not upload floor plan. You can still submit without it.",
         background: "#111827",
         color: "#ffffff",
+        confirmButtonColor: "#b91c1c",
       });
     } finally {
       setUploadingFile(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFileUpload(file);
+    }
+  };
+
+  const handleRemoveAttachment = async () => {
+    if (!attachment) return;
+    try {
+      if (attachment.url.startsWith("/uploads/floor-plans/")) {
+        await axios.delete("/api/upload/floor-plan", {
+          data: { url: attachment.url },
+        });
+      }
+    } catch (e) {
+      console.error("Could not delete file from server:", e);
+    } finally {
+      setAttachment(null);
     }
   };
 
@@ -223,9 +336,15 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
         boothType: formData.boothType,
         budget: formData.budget,
         services: selectedServices,
-        eventDate: formData.eventDate,
-        message: formData.message,
-        attachment: attachment || { url: "", publicId: "" },
+        attachment: attachment
+          ? {
+              url: attachment.url,
+              publicId: attachment.publicId || "",
+              originalName: attachment.originalName,
+              fileSize: attachment.fileSize,
+              fileType: attachment.fileType || "",
+            }
+          : { url: "", publicId: "", originalName: "", fileSize: 0, fileType: "" },
       };
 
       const res = await axios.post("/api/quote", payload);
@@ -684,63 +803,117 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
                     />
                   </div>
 
-                  {/* Floor Plan Upload */}
+                  {/* Floor Plan Upload (PDF System) */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-300 mb-1.5">
-                      Upload Floor Plan / Reference Image (Optional)
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-semibold text-gray-200">
+                        Upload Floor Plan / Stall Blueprint (PDF)
+                      </label>
+                      <span className="text-[11px] text-gray-400">
+                        Optional • PDF up to 25MB
+                      </span>
+                    </div>
+
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*,.pdf"
-                      onChange={handleFileUpload}
+                      accept=".pdf,application/pdf,image/png,image/jpeg,image/webp"
+                      onChange={handleFileChange}
                       className="hidden"
                     />
 
                     {attachment ? (
-                      <div className="flex items-center justify-between p-3.5 bg-neutral-950 border border-primary/40 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                          <div>
-                            <p className="text-xs text-white font-medium">Reference file attached successfully</p>
-                            <a
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-[11px] text-primary hover:underline"
-                            >
-                              Preview uploaded file →
-                            </a>
+                      <div className="relative overflow-hidden p-4 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-950 border border-primary/40 rounded-2xl shadow-lg transition-all">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            {/* PDF Badge Icon */}
+                            <div className="w-12 h-12 rounded-xl bg-red-600/15 border border-red-500/30 flex flex-col items-center justify-center shrink-0">
+                              <span className="text-[10px] font-black text-red-500 tracking-wider">PDF</span>
+                              <FileText className="w-5 h-5 text-red-400" />
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-xs md:max-w-sm">
+                                  {attachment.originalName}
+                                </p>
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
+                                  <CheckCircle2 className="w-3 h-3" /> Attached
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-400">
+                                {attachment.fileSize > 0 && <span>{formatFileSize(attachment.fileSize)}</span>}
+                                <span className="text-gray-600">•</span>
+                                <a
+                                  href={attachment.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-primary hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                                >
+                                  Preview PDF <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            </div>
                           </div>
+
+                          <button
+                            type="button"
+                            onClick={handleRemoveAttachment}
+                            className="self-end sm:self-center px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-xl text-xs font-medium flex items-center gap-1.5 transition cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Remove / Change</span>
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setAttachment(null)}
-                          className="p-1.5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-red-400 transition cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
                       </div>
                     ) : (
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-white/15 hover:border-primary/50 bg-neutral-950/50 hover:bg-neutral-950 p-5 rounded-xl text-center cursor-pointer transition-all"
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setIsDragging(false);
+                          const file = e.dataTransfer.files?.[0];
+                          if (file) processFileUpload(file);
+                        }}
+                        className={`relative border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 ${
+                          isDragging
+                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 scale-[1.01]"
+                            : "border-white/15 hover:border-primary/50 bg-neutral-950/50 hover:bg-neutral-950"
+                        }`}
                       >
                         {uploadingFile ? (
-                          <div className="flex items-center justify-center gap-2 text-primary text-xs">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Uploading reference file...</span>
+                          <div className="flex flex-col items-center justify-center py-3 gap-2 text-primary">
+                            <Loader2 className="w-7 h-7 animate-spin" />
+                            <p className="text-xs font-semibold text-white">Uploading Floor Plan PDF...</p>
+                            <p className="text-[11px] text-gray-400">Saving securely to project storage</p>
                           </div>
                         ) : (
-                          <>
-                            <Upload className="w-6 h-6 mx-auto mb-2 text-gray-400" />
-                            <p className="text-xs text-gray-300 font-medium">
-                              Click to attach floor plan, logo, or design reference
-                            </p>
-                            <p className="text-[10px] text-gray-500 mt-1">
-                              Images (JPG, PNG) or layout drawings supported
-                            </p>
-                          </>
+                          <div className="space-y-2">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 mx-auto flex items-center justify-center text-primary transition-transform group-hover:scale-110">
+                              <FileText className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <p className="text-xs sm:text-sm font-bold text-white">
+                                Click to Upload Floor Plan (PDF) <span className="font-normal text-gray-400">or Drag & Drop</span>
+                              </p>
+                              <p className="text-[11px] text-gray-400 mt-1 max-w-md mx-auto">
+                                Attach the exhibition layout drawing or stall allocation PDF provided by event organizers
+                              </p>
+                            </div>
+                            <div className="pt-1 flex items-center justify-center gap-2">
+                              <span className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300">
+                                PDF (.pdf) Supported
+                              </span>
+                              <span className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+                                Max 25 MB
+                              </span>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}
@@ -859,5 +1032,19 @@ export default function QuoteClient({ showBreadcrumb = true }: QuoteClientProps 
         </div>
       </div>
     </div>
+  );
+}
+
+export default function QuoteClient(props: QuoteClientProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <QuoteClientContent {...props} />
+    </Suspense>
   );
 }

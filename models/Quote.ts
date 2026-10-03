@@ -17,7 +17,10 @@ export interface IQuote extends Document {
   message?: string;
   attachment?: {
     url: string;
-    publicId: string;
+    publicId?: string;
+    originalName?: string;
+    fileSize?: number;
+    fileType?: string;
   };
   status: "pending" | "reviewed" | "contacted" | "completed" | "cancelled";
   createdAt: Date;
@@ -99,6 +102,9 @@ const QuoteSchema = new Schema<IQuote>(
     attachment: {
       url: { type: String, default: "" },
       publicId: { type: String, default: "" },
+      originalName: { type: String, default: "" },
+      fileSize: { type: Number, default: 0 },
+      fileType: { type: String, default: "" },
     },
     status: {
       type: String,
