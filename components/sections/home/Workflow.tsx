@@ -20,7 +20,7 @@ import Link from "next/link";
 
 // Hero Assets
 import hero01 from "@/public/images/workflow_asset/hero/hero01.png";
-import hero02 from "@/public/images/workflow_asset/hero/hero02.png";
+import hero02 from "@/public/images/workflow_asset/hero/horo02.png";
 
 // 3D Design Assets
 import threeD_1 from "@/public/images/workflow_asset/3d-design/3d design 01.png";
