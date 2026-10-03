@@ -16,6 +16,45 @@ const ALLOWED_MIME_TYPES = [
 
 const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png", ".webp"];
 
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const fileName = searchParams.get("file");
+
+    if (fileName) {
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "floor-plans");
+      const targetPath = path.resolve(uploadDir, path.basename(fileName));
+
+      if (targetPath.startsWith(uploadDir) && fs.existsSync(targetPath)) {
+        const fileBuffer = fs.readFileSync(targetPath);
+        const ext = path.extname(targetPath).toLowerCase();
+        const contentType = ext === ".pdf" ? "application/pdf" : "application/octet-stream";
+        return new NextResponse(fileBuffer, {
+          headers: {
+            "Content-Type": contentType,
+            "Content-Disposition": `inline; filename="${path.basename(targetPath)}"`,
+          },
+        });
+      }
+      return NextResponse.json({ success: false, message: "File not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Floor plan upload API endpoint is active.",
+      usage: {
+        post: "Send multipart/form-data with 'file' field",
+        delete: "Send JSON with 'url' field",
+      },
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, message: error.message || "Failed to process request." },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
