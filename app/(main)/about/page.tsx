@@ -4,10 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import heroImage from "@/public/images/about/trina solar 24.jpg"
-import hero1 from "@/public/images/about/hero1.jpeg"
-import hero2 from "@/public/images/about/hero2.jpeg"
-import hero3 from "@/public/images/about/hero3.jpeg"
-import hero4 from "@/public/images/about/hero4.jpeg"
+import hero1 from "@/public/images/about/Antai.jpg"
+import hero2 from "@/public/images/about/Hashmi.jpg"
+import hero3 from "@/public/images/about/Hitium.jpg"
+import hero4 from "@/public/images/about/Sheikh MO saeed.jpg"
 import {
   ArrowRight,
   CheckCircle,
@@ -233,12 +233,12 @@ const TeamCard = ({
     className="group"
   >
     <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl p-6 border border-white/10 hover:border-primary/30 transition-all duration-300 text-center">
-      <div className="relative w-50 h-50 mx-auto mb-4 rounded-lg overflow-hidden border-2 border-primary/30 group-hover:border-primary transition-colors">
+      <div className="relative w-45 h-50 mx-auto mb-4 rounded-lg overflow-hidden border-2 border-primary/30 group-hover:border-primary transition-colors">
         <Image
           src={member.image}
           alt={member.name}
           fill
-          className="object-fill w-full h-full"
+          className="object-fill"
         />
       </div>
       <h3 className="text-lg font-semibold text-white mb-1">{member.name}</h3>
